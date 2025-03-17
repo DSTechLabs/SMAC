@@ -1,0 +1,85 @@
+<!--=======================================================
+//
+//     FILE : example.html
+//
+//  PROJECT : SMAC (Interface)
+//
+//    NOTES : Widget width/height/diameter attributes are
+//            percentages of the browser's client area.
+//
+//   AUTHOR : Bill Daniels
+//            Copyright 2022-2025, D+S Tech Labs, Inc.
+//            All Rights Reserved
+//
+//======================================================-->
+
+<!-- Sensor Demo -->
+
+<br>
+
+<div class="demoTitle">Example Tab Section</div>
+<br>
+<br>
+
+<div style="font-size:2vw">
+
+  <!-- Light Sensor -->
+  <div class="dsBlock" style="margin:0 2vw; text-align:center">
+
+    Light Sensor:<br>
+    <smac-growbar style="margin-top:0.5vw"
+      device      = "0,0"
+      orientation = "vertical"
+      width       = "3"
+      height      = "30"
+      minValue    = "0"
+      maxValue    = "4095"
+      backColor   = "#303030"
+      fillColor   = "#FF8040">
+    </smac-growbar>
+
+  </div>
+
+  <!-- Momentary Button on Board -->
+  <div class="dsBlock" style="margin:0 2vw; text-align:center">
+
+    Little Button:<br>
+    <smac-led style="margin-top:0.5vw; font-size:3vw"
+      device="0,1">
+    </smac-led><br>
+    <br>
+
+  </div>
+
+  <!-- Yellow LED on Board -->
+  <div class="dsBlock" style="margin:0 2vw; text-align:center">
+
+    Yellow LED:<br>
+    <input id="yellowLEDSwitch" type="checkbox" class="dsSwitch" style="margin-top:0.5vw; font-size:3vw" onchange="UpdateYellowLED()" />
+
+  </div><br>
+  <br>
+
+</div>
+
+
+<script>
+
+  async function UpdateYellowLED ()
+  {
+    try
+    {
+      const switchState = $("#yellowLEDSwitch").is(':checked');
+
+      if (switchState)
+        await Send_UItoRelayer (0, '02|LEON');  // Send command to turn Yellow LED on
+      else
+        await Send_UItoRelayer (0, '02|LEOF');  // Send command to turn Yellow LED off
+    }
+    catch (ex)
+    {
+      ShowException (ex);
+    }
+  }
+
+</script>
