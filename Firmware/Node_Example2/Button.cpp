@@ -50,6 +50,9 @@ Button::Button (const char *inName, int inButtonPin)
   // Init GPIO pin for a button
   buttonPin = inButtonPin;
   pinMode (buttonPin, INPUT_PULLDOWN);  // Use pulldown resistor
+
+  // No need for Periodic processing
+  periodicEnabled = false;
 }
 
 //--- DoImmediate (override) ------------------------------
