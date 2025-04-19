@@ -63,7 +63,7 @@ ProcessStatus LED::ExecuteCommand ()
     //--- Turn Off ---
     else if (strcmp (CommandPacket.command, "LEOF") == 0)
     {
-      // Turn off the panel light pin
+      // Turn off the LED pin
       digitalWrite (ledPin, LOW);
 
       // Indicate successful and no data to return

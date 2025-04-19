@@ -72,9 +72,9 @@
       const switchState = $("#yellowLEDSwitch").is(':checked');
 
       if (switchState)
-        await Send_UItoRelayer (0, '02|LEON');  // Send command to turn Yellow LED on
+        await Send_UItoRelayer (0, 2, 'LEON');  // Send command to turn Yellow LED on
       else
-        await Send_UItoRelayer (0, '02|LEOF');  // Send command to turn Yellow LED off
+        await Send_UItoRelayer (0, 2, 'LEOF');  // Send command to turn Yellow LED off
     }
     catch (ex)
     {

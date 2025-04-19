@@ -14,7 +14,7 @@
 
 //--- Globals ---------------------------------------------
 
-const AppVersion = '── 2025.03.13 ──';
+const AppVersion = '── 2025.04.19 ──';
 const Debugging  = false;  // Set to false for production use
 
 let TotalPages  = 0;
@@ -39,18 +39,17 @@ let DataString = '';
 
 //--- Node Array: ---
 const MaxNodes = 20;
-let   Nodes = [];  // The index is the nodeID
-// Holds Node objects:
-// {                                         ┌─
-//   name,                                   │  {
-//   version,                                │    name,
-//   macAddress,                             │    ipEnabled,
-//   numDevices,                             │    ppEnabled,
-//   devices[],  // array of Device objects ─┤    rate
-//   monitor,                                │  }
-//   lastMessageTime                         └─
-// }
-
+let   Nodes = [MaxNodes];  // Holds Node objects:
+                           // {                                        ┌─
+                           //   name,                                  │  {
+                           //   version,                               │    name,
+                           //   macAddress,                            │    ipEnabled,
+                           //   numDevices,                            │    ppEnabled,
+                           //   devices[],  - array of Device objects ─┤    rate
+                           //   monitor,                               │  }
+                           //   lastMessageTime                        └─
+                           // }
+                           // The index is the nodeID
 
 //--- Startup ---------------------------------------------
 
@@ -66,6 +65,10 @@ try
                              'This browser does not support serial communications.<br>Please use the Chrome or Edge browser.</h1>');
   else
   {
+    // Clear the Node array
+    for (let i=0; i<MaxNodes; i++)
+      Nodes[i] = undefined;
+
     // Create a SerialPort object
     SMACPort = new SerialPort (async (dataString) => { await ProcessRelayerMessage (dataString); }, RelayerDisconnected);
 
@@ -173,7 +176,7 @@ async function ConnectToRelayer ()
         setTimeout (async () =>
         {
           // Request full system info from the Relayer
-          await Send_UItoRelayer (0, '00|SYSI');  // System Info command
+          await Send_UItoRelayer (0, 0, 'SYSI');  // System Info command
 
           // Run 'UserStartup()' (defined by User at bottom of index.html)
           UserStartup ();
@@ -317,10 +320,10 @@ async function ProcessRelayerMessage (dataString)
           console.info ('((( Node ' + nodeID + ' connected )))');
 
         // Request Node Info: nn|00|timestamp|NOINFO|name|version|macAddress|numDevices
-        await Send_UItoRelayer (nodeIndex, '00|GNOI');
+        await Send_UItoRelayer (nodeIndex, 0, 'GNOI');
 
         // Request Device Info: nn|dd|timestamp|DEINFO|name0|ipEn0|ppEn0|rate0|name1|ipEn1|ppEn1|rate1|...
-        await Send_UItoRelayer (nodeIndex, '00|GDEI');
+        await Send_UItoRelayer (nodeIndex, 0, 'GDEI');
       }
 
       return;
@@ -549,18 +552,23 @@ async function ProcessRelayerMessage (dataString)
 
 //--- Send_UItoRelayer ------------------------------------
 
-async function Send_UItoRelayer (nodeIndex, deviceCommand)
+async function Send_UItoRelayer (nodeIndex, deviceIndex, commandString, paramString)
 {
   try
   {
-    // Device Command Format: deviceID|command|params
+    // Command Format: nodeID|deviceID|command|params
     // where:
+    //   nodeID   = 2-digits 00-19
     //   deviceID = 2-digits 00-99
-    //   command  = 4-chars (caps)
-    //   params   = optional parameters (null terminated)
+    //   command  = 4-chars (usually caps)
+    //   params   = optional parameters (null terminated string)
 
-    const nodeID = nodeIndex.toString().padLeft ('0', 2);
-    const fullUIMessage = nodeID + '|' + deviceCommand;
+    const nodeID   = nodeIndex  .toString().padLeft ('0', 2);
+    const deviceID = deviceIndex.toString().padLeft ('0', 2);
+    const command  = commandString.substring (0, 4).padRight (' ', 4);
+    const params   = (paramString == undefined || paramString == '') ? '' : '|' + paramString;
+
+    const fullUIMessage = nodeID + '|' + deviceID + '|' + command + params;
 
     try
     {
@@ -593,7 +601,7 @@ async function Send_UItoRelayer (nodeIndex, deviceCommand)
 // {
 //   try
 //   {
-//     await Send_UItoRelayer (0, 'Broadcast|' + command);
+//     await Send_UItoRelayer (0, 0, 'CAST', command);
 //   }
 //   catch (ex)
 //   {
@@ -607,7 +615,7 @@ async function Send_UItoRelayer (nodeIndex, deviceCommand)
 // {
 //   try
 //   {
-//     await Send_UItoRelayer (0, 'GetFileList|' + path + '|' + extension);
+//     await Send_UItoRelayer (0, 0, 'GFLI', path + '|' + extension);
 //   }
 //   catch (ex)
 //   {
@@ -621,7 +629,7 @@ async function Send_UItoRelayer (nodeIndex, deviceCommand)
 // {
 //   try
 //   {
-//     await Send_UItoRelayer (0, 'GetFileContents|' + path);
+//     await Send_UItoRelayer (0, 0, 'GFCO', path);
 //   }
 //   catch (ex)
 //   {
@@ -635,7 +643,7 @@ async function Send_UItoRelayer (nodeIndex, deviceCommand)
 // {
 //   try
 //   {
-//     await Send_UItoRelayer (0, 'PutFileContents|' + path + '|' + contents);
+//     await Send_UItoRelayer (0, 0, 'PFIC', path + '|' + contents);
 //   }
 //   catch (ex)
 //   {

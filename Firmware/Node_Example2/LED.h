@@ -31,7 +31,7 @@
 class LED : public Device
 {
   protected:
-    int   ledPin = 14;  // default pin
+    int   ledPin = 4;  // default pin
 
   public:
     LED (const char *inName, int inLEDPin);

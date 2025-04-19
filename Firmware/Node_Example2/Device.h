@@ -12,7 +12,7 @@
 //            Derive custom Devices from this class.
 //
 //            █ Devices are peripherals connected to a Node Module.
-//              They can be sensors, lab or industrial equipment, digital/analog electronics, motors, etc.
+//              They can be sensors, lab or industrial equipment, digital/analog electronics, motor drivers, etc.
 //
 //            █ All Devices added to your Node will be assigned a unique 1-byte ID (0-99).
 //              The Device ID is assigned automatically when your Device is added to a Node.

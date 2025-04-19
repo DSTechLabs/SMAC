@@ -8,8 +8,8 @@
 //
 //              About this template:
 //              - The SMAC System uses Espressif's ESP-NOW protocol between Node Modules and the Relayer Module.
-//              - Node and Device are the base classes from which your custom classes are derived.
-//              - This "template" creates a child Node (MyNode) with three Devices, a LightSensor, Button and LED.
+//              - Device is the base class from which your custom Devices are derived.
+//              - This "template" creates a Node with three Devices, a LightSensor, Button and LED.
 //              - Node Modules first attempt to connect to the Relayer Module.
 //              - All Device data can be visualized with gauges and graphs using the SMAC Interface (a Chrome browser app).
 //              - The SMAC System is bidirectional. You can send commands to both Nodes and individual Devices.
@@ -19,9 +19,6 @@
 //              Classes in this example:
 //
 //              ∙ Node
-//                  │
-//                  └── MyNode -- An example Node Module
-//
 //              ∙ Device
 //                  │
 //                  ├── LightSensor -- Shows how sensor data can be sent to the SMAC Interface
@@ -42,7 +39,10 @@
 #include <Arduino.h>
 #include <Preferences.h>
 #include "common.h"
-#include "MyNode.h"
+#include "Node.h"
+#include "LightSensor.h"
+#include "Button.h"
+#include "LED.h"
 
 //--- Globals ---------------------------------------------
 
@@ -61,18 +61,7 @@ DPacket      DataPacket;
 CPacket      CommandPacket;
 char         DataString[MAX_MESSAGE_LENGTH];
 
-
-//=========================================================
-// Declare an instance for your custom Node
-//=========================================================
-//
-// ┌─────────── The class name of your child Node
-// │
-// │        ┌── Don't change this
-// │        │
-MyNode  *ThisNode;
-//=========================================================
-
+Node         *ThisNode;  // The Node for this example
 
 //--- Declarations ----------------------------------------
 
@@ -110,14 +99,20 @@ void setup()
 
 
   //=======================================================
-  // Create an instance of your custom Node here.
+  // Create an instance of a Node here.
   // The 1st param is a name for your Node (to show in the SMAC Interface).
   // The 2nd param is the Node's unique ID (0-19).
   // Node ID's cannot be duplicated in your SMAC System.
   // --- Do not use the same ID for other Nodes ---
   //=======================================================
-  ThisNode = new MyNode ("My Second Node", 0);
+  ThisNode = new Node ("My Second Node", 0);
+
   //=======================================================
+  // Add all Devices to the Node
+  //=======================================================
+  ThisNode->AddDevice (new LightSensor ("Light Sensor" , 6));  // Gets assigned Device ID 00
+  ThisNode->AddDevice (new Button      ("Little Button", 5));  // Gets assigned Device ID 01
+  ThisNode->AddDevice (new LED         ("Yellow LED"   , 4));  // Gets assigned Device ID 02
 
 
 

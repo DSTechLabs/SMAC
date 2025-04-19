@@ -90,9 +90,9 @@ const Diagnostics =
               '</div><hr>' +
 
               '<div class="flexRow" style="justify-content:space-around">' +
-                '<div><button class="dsButton nodeButton"           title="Blink the Status LED" onclick="Send_UItoRelayer(' + nodeIndex + ', \'--|BLIN\')"> Blink </button></div>' +
-                '<div><button class="dsButton nodeButton nodePing"  title="Ping this Node"       onclick="Send_UItoRelayer(' + nodeIndex + ', \'--|PING\')"> Ping  </button></div>' +
-                '<div><button class="dsButton nodeButton nodeReset" title="Reset this Node"      onclick="Send_UItoRelayer(' + nodeIndex + ', \'--|RSET\')"> Reset </button></div>' +
+                '<div><button class="dsButton nodeButton"           title="Blink the Status LED" onclick="Send_UItoRelayer(' + nodeIndex + ', 0, \'BLIN\')"> Blink </button></div>' +
+                '<div><button class="dsButton nodeButton nodePing"  title="Ping this Node"       onclick="Send_UItoRelayer(' + nodeIndex + ', 0, \'PING\')"> Ping  </button></div>' +
+                '<div><button class="dsButton nodeButton nodeReset" title="Reset this Node"      onclick="Send_UItoRelayer(' + nodeIndex + ', 0, \'RSET\')"> Reset </button></div>' +
               '</div>' +
 
             '</div><br>' +
@@ -184,7 +184,7 @@ const Diagnostics =
     try
     {
       if (slideSwitch != undefined)
-        await Send_UItoRelayer (nodeIndex, devIndex.toString().padLeft('0', 2) + (slideSwitch.checked ? '|ENIP' : '|DIIP'));
+        await Send_UItoRelayer (nodeIndex, devIndex, (slideSwitch.checked ? 'ENIP' : 'DIIP'));
     }
     catch (ex)
     {
@@ -199,7 +199,7 @@ const Diagnostics =
     try
     {
       if (slideSwitch != undefined)
-        await Send_UItoRelayer (nodeIndex, devIndex.toString().padLeft('0', 2) + (slideSwitch.checked ? '|ENPP' : '|DIPP'));
+        await Send_UItoRelayer (nodeIndex, devIndex, (slideSwitch.checked ? 'ENPP' : 'DIPP'));
     }
     catch (ex)
     {
@@ -219,7 +219,7 @@ const Diagnostics =
         if (parseInt (slider.value) < 1)
           slider.value = '1';
 
-        await Send_UItoRelayer (nodeIndex, devIndex.toString().padLeft('0', 2) + '|SRAT|' + slider.value);
+        await Send_UItoRelayer (nodeIndex, devIndex, 'SRAT', slider.value);
       }
     }
     catch (ex)
@@ -292,7 +292,10 @@ const Diagnostics =
       // Send command to currently selected Node (tab)
       if (keyEvent.which === 13)
       {
-        await Send_UItoRelayer (Diagnostics.CurrentNodeIndex, $('#UserCommandBox').val());
+        const commandString = $('#UserCommandBox').val();
+        const commandParams = commandString.split ('|');
+
+        await Send_UItoRelayer (Diagnostics.CurrentNodeIndex, parseInt (commandParams[0]), commandParams[1], commandParams[2]);
       }
     }
     catch (ex)

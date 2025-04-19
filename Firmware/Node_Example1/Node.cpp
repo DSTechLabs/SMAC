@@ -131,9 +131,9 @@ Node::Node (const char *inName, int inNodeID)
   Serial.println (macAddressString);
 }
 
-//--- addDevice -------------------------------------------
+//--- AddDevice -------------------------------------------
 
-void Node::addDevice (Device *device)
+void Node::AddDevice (Device *device)
 {
   if (numDevices < MAX_DEVICES)
   {
@@ -149,6 +149,50 @@ void Node::addDevice (Device *device)
   }
 }
 
+//--- SendDataPacket --------------------------------------
+
+void Node::SendDataPacket ()
+{
+  // Convert the <DataPacket> to a Data string.
+  // The <DataPacket> structure must be populated with deviceID, timestamp and value fields.
+  //
+  // A Data string has four fields separated with the '|' char:
+  //
+  //   ┌──────────────────── 2-char nodeID (00-19)
+  //   │  ┌───────────────── 2-char deviceID (00-99)
+  //   │  │     ┌─────────── variable length timestamp (usually millis())
+  //   │  │     │        ┌── variable length value string (including NULL terminating char)
+  //   │  │     │        │   this can be a numerical value or a text message
+  //   │  │     │        │
+  //   nn|dd|timestamp|value
+  //
+  // Data Strings must be NULL terminated.
+
+  // Build the Data String
+  memset (DataString + 2, '|', 4);
+  memcpy (DataString, nodeID, ID_SIZE);
+  memcpy (DataString + 3, DataPacket.deviceID, ID_SIZE);
+  ltoa   (DataPacket.timestamp, DataString + 6, 10);
+  strcat (DataString, "|");
+  strcat (DataString, DataPacket.value);
+
+  //=============================
+  // Send Data String to Relayer
+  //=============================                                                              ┌─ include string terminator
+  ESPNOW_Result = esp_now_send (RelayerMAC, (const uint8_t *) DataString, strlen(DataString) + 1);
+  if (ESPNOW_Result != ESP_OK)
+  {
+    Serial.print   ("ERROR: Unable to send Data String: ");
+    Serial.println (ESPNOW_Result);
+  }
+
+  if (Debugging)
+  {
+    // Show the outgoing Data String
+    Serial.print   ("Node --> Relayer : ");
+    Serial.println (DataString);
+  }
+}
 
 //=========================================================
 //  Run:
@@ -256,58 +300,12 @@ void Node::Run ()
   }
 }
 
-//--- SendDataPacket --------------------------------------
-
-void Node::SendDataPacket ()
-{
-  // Convert the <DataPacket> to a Data string.
-  // The <DataPacket> structure must be populated with deviceID, timestamp and value fields.
-  //
-  // A Data string has four fields separated with the '|' char:
-  //
-  //   ┌──────────────────── 2-char nodeID (00-19)
-  //   │  ┌───────────────── 2-char deviceID (00-99)
-  //   │  │     ┌─────────── variable length timestamp (usually millis())
-  //   │  │     │        ┌── variable length value string (including NULL terminating char)
-  //   │  │     │        │   this can be a numerical value or a text message
-  //   │  │     │        │
-  //   nn|dd|timestamp|value
-  //
-  // Data Strings must be NULL terminated.
-
-  // Build the Data String
-  memset (DataString + 2, '|', 4);
-  memcpy (DataString, nodeID, ID_SIZE);
-  memcpy (DataString + 3, DataPacket.deviceID, ID_SIZE);
-  ltoa   (DataPacket.timestamp, DataString + 6, 10);
-  strcat (DataString, "|");
-  strcat (DataString, DataPacket.value);
-
-  //=============================
-  // Send Data String to Relayer
-  //=============================                                                              ┌─ include string terminator
-  ESPNOW_Result = esp_now_send (RelayerMAC, (const uint8_t *) DataString, strlen(DataString) + 1);
-  if (ESPNOW_Result != ESP_OK)
-  {
-    Serial.print   ("ERROR: Unable to send Data String: ");
-    Serial.println (ESPNOW_Result);
-  }
-
-  if (Debugging)
-  {
-    // Show the outgoing Data String
-    Serial.print   ("Node --> Relayer : ");
-    Serial.println (DataString);
-  }
-}
-
-
 //=========================================================
 //  ExecuteCommand:
 //
 //  This method handles the built-in Node commands and
 //  sets a ProcessStatus.  Override this method in your
-//  child node class to handle custom Node commands.
+//  child Node class to handle custom Node commands.
 //  Your method should first call this base class method,
 //  then handle custom commands.
 //  If the command is not handled by the Node, then pass

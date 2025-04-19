@@ -10,8 +10,7 @@
 //                          │
 //                          └── Node
 //
-//    NOTES : Node base class:
-//            Derive your custom Node from this class.
+//    NOTES : Node class:
 //
 //            █ A Node is an ESP32 Development board (with Devices attached) and use
 //              Espressif's ESP-NOW protocol to connect to a single Relayer module.
@@ -23,10 +22,11 @@
 //              ∙ Red   = Node running, waiting to connect to Relayer
 //              ∙ Green = Connected to Relayer, sending data and listening for commands
 //
-//            █ Devices, such as sensors, factory/lab equipment, etc., physically attach
+//            █ Usually, Devices such as sensors, factory/lab equipment, etc., physically attach
 //              to Nodes via shielded cable with RJ-45 connectors or other means.
 //
 //            █ Nodes can execute commands by overriding the virtual ExecuteCommand() method.
+//              Although this is rare.  Usually commands are targeted for Devices.
 //
 //              ∙ ExecuteCommand() receives commands from the Relayer Module or the User Interface.
 //
@@ -48,7 +48,7 @@
 //                BLIN = Quickly blink the Node's status LED to indicate communication or location
 //                RSET = Reset this Node's processor using esp_restart()
 //
-//            █ Your child Node class can override ExecuteCommand() to handle custom commands.
+//            █ A child Node class can override ExecuteCommand() to handle custom commands.
 //              It should first call this base class's ExecuteCommand() to handle the built-in Node commands:
 //                Node::ExecuteCommand()
 //
@@ -92,15 +92,14 @@ class Node
     char           *commandString;                      // Command string from buffer
     ProcessStatus  pStatus;
 
-    void  addDevice (Device *device);  // Child Node class calls this method to add their Devices
-
   public:
     Node (const char *inName, int inNodeID);
 
-    void  Run ();             // Run this Node; called from the loop() method of main.cpp
-    void  SendDataPacket ();  // Send the global <DataPacket> structure to the Relayer Module
+    void  AddDevice (Device *device);  // Call this method to add Devices
+    void  SendDataPacket ();           // Send the global <DataPacket> structure to the Relayer Module
+    void  Run ();                      // Run this Node; called from the loop() method of main.cpp
 
-    virtual ProcessStatus  ExecuteCommand ();  // Override this method in your child Node class
+    virtual ProcessStatus  ExecuteCommand ();  // Override this method in a child Node class
 };
 
 #endif

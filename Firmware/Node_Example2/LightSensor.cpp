@@ -2,7 +2,7 @@
 //
 //     FILE : LightSensor.cpp
 //
-//  PROJECT : SMAC Framework - Example 1
+//  PROJECT : SMAC Framework - Example 1/2
 //
 //    NOTES : Analog light sensor using a photoresistor.
 //            Derived from Device base class
