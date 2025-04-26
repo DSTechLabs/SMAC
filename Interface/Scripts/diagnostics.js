@@ -234,7 +234,7 @@ const Diagnostics =
   {
     try
     {
-      if (nodeIndex < Nodes.length)
+      if (Nodes[nodeIndex] != undefined)
       {
         // Output message to appropriate monitor
         const mBox = Nodes[nodeIndex].monitor;
@@ -263,7 +263,7 @@ const Diagnostics =
     {
       if (clearAll)
       {
-        Nodes.forEach (function (node)
+        Nodes.forEach ((node) =>
         {
           if (node.monitor != undefined)
             node.monitor.empty ();

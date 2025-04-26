@@ -2338,7 +2338,7 @@ class SMAC_TimeGraph extends HTMLElement
 
       let deviceInfo;
       const self = this;
-      deviceArray.forEach (function (item)
+      deviceArray.forEach ((item) =>
       {
         deviceInfo = item.split (',');
         self.NodeID   .push (parseInt (deviceInfo[0]));

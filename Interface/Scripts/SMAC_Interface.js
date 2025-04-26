@@ -14,7 +14,7 @@
 
 //--- Globals ---------------------------------------------
 
-const AppVersion = '── 2025.04.19 ──';
+const AppVersion = '── 2025.04.26 ──';
 const Debugging  = false;  // Set to false for production use
 
 let TotalPages  = 0;
@@ -38,7 +38,7 @@ let SMACPort = undefined;
 let DataString = '';
 
 //--- Node Array: ---
-const MaxNodes = 20;
+const MaxNodes = 20;  // Limited to 20 due to ESP-NOW peer limit
 let   Nodes = [MaxNodes];  // Holds Node objects:
                            // {                                        ┌─
                            //   name,                                  │  {
@@ -347,7 +347,8 @@ async function ProcessRelayerMessage (dataString)
     const fields = dataString.split ('|');
     if (fields.length < 4)
     {
-      Diagnostics.LogToMonitor (0, 'Invalid Data String: ' + dataString);
+      // Diagnostics.LogToMonitor (0, 'Invalid Data String: ' + dataString);
+      $("#statusBar_Message").html ('Invalid Data String: ' + dataString);
       return;
     }
 
@@ -583,7 +584,7 @@ async function Send_UItoRelayer (nodeIndex, deviceIndex, commandString, paramStr
     if (Debugging)
       console.info ('<-- ' + fullUIMessage);
 
-    // Log message to the currently viewed monitor
+    // Log message to the appropriate Node monitor
     if (Diagnostics.DataLogging)
       Diagnostics.LogToMonitor (nodeIndex, '◀── ' + fullUIMessage);
   }
