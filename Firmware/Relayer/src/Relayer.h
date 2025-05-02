@@ -39,14 +39,14 @@ class Relayer
 {
   protected:
     bool  startupStatus = false;
-    char  dataString   [MAX_ESPNOW_LENGTH+1];
-    char  commandString[MAX_ESPNOW_LENGTH+1];
-    char  nextChar;
-    int   commandLength = 0;
+    char  dataString[MAX_ESPNOW_LENGTH+1];
+    char  serial_CommandString[MAX_ESPNOW_LENGTH+1];
+    int   serial_CommandLength = 0;
+    char  serial_NextChar;
 
-    void checkSerialInput  ();
-    void processCommand    ();
-    void sendCommandString ();
+    void serial_CheckInput        ();
+    void serial_ProcessCommand    ();
+    void espnow_SendCommandString ();
 
   public:
     Relayer      ();

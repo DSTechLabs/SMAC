@@ -52,9 +52,8 @@
 
 // For the Espressif ESP32-S3-DevKitC-1 board, the built-in LED
 // is a 1-element addressable string of RGB LEDs of type WS2812.
-// Use neopixelWrite (pin, red, green, blue) to operate.
-#define LED_BUILTIN_PIN         48  // GPIO-48 for Rev1.0 boards, GPIO-38 for Rev1.1 boards
-#define LED_BUILTIN_BRIGHTNESS  20  // Set brightness: O-255 (not recommended above 40)
+#define STATUS_LED_PIN           48  // GPIO-48 for v1.0 boards, GPIO-38 for v1.1 boards
+#define STATUS_LED_BRIGHTNESS    20  // Not recommended above 64
 
 //--- Globals ----------------------------------------------
 
@@ -69,14 +68,14 @@ bool     newNode = false;
 void setup()
 {
   // Init built-in RGB LED, start off red
-  neopixelWrite (LED_BUILTIN_PIN, LED_BUILTIN_BRIGHTNESS, 0, 0);
+  rgbLedWrite (STATUS_LED_PIN, STATUS_LED_BRIGHTNESS, 0, 0);
 
   // Instantiate the Relayer
   TheRelayer = new Relayer ();
   if (TheRelayer->IsOkay ())
   {
     // All good, go green
-    neopixelWrite (LED_BUILTIN_PIN, 0, LED_BUILTIN_BRIGHTNESS, 0);
+    rgbLedWrite (STATUS_LED_PIN, 0, STATUS_LED_BRIGHTNESS, 0);
   }
 }
 

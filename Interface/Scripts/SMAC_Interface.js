@@ -14,7 +14,7 @@
 
 //--- Globals ---------------------------------------------
 
-const AppVersion = '── 2025.04.26 ──';
+const AppVersion = '── 2025.05.02 ──';
 const Debugging  = false;  // Set to false for production use
 
 let TotalPages  = 0;
@@ -35,6 +35,7 @@ const EOL = '\r\n';
 // SerialPort object (to be created if supported)
 let SMACPort = undefined;
 
+let DTInterval = undefined;
 let DataString = '';
 
 //--- Node Array: ---
@@ -81,11 +82,7 @@ try
       StopEvent (event);
       event.returnValue = '';
 
-      if (DTInterval != undefined)
-        clearInterval (DTInterval);
-
-      await CloseDataLog ();
-      await SMACPort.Close ();
+      await Unload ();
 
       return undefined;
     });
@@ -97,6 +94,24 @@ try
 catch (ex)
 {
   ShowException (ex);
+}
+
+//--- Unload ----------------------------------------------
+
+async function Unload ()
+{
+  try
+  {
+    if (DTInterval != undefined)
+      clearInterval (DTInterval);
+
+    await CloseDataLog ();
+    await SMACPort.Close ();
+  }
+  catch (ex)
+  {
+    ShowException (ex);
+  }
 }
 
 //--- UpdateConnectionBox ---------------------------------
@@ -334,11 +349,11 @@ async function ProcessRelayerMessage (dataString)
     // Show any Relayer Errors
     if (dataString.startsWith ('ERROR:'))
     {
-      PopupMessage ('SMAC Relayer Error', dataString.substring (6));
+      PopupMessage ('SMAC Relayer/Node Error', dataString.substring (6));
       return;
     }
 
-    // All other messages will be a Node/Device Data String: nodeID|deviceID|timestamp|value
+    // All other messages should be a Node/Device Data String: nodeID|deviceID|timestamp|value
     //   nodeID    = 2-digits 00-19
     //   deviceID  = 2-digits 00-99
     //   timestamp = n digits
@@ -346,11 +361,7 @@ async function ProcessRelayerMessage (dataString)
 
     const fields = dataString.split ('|');
     if (fields.length < 4)
-    {
-      // Diagnostics.LogToMonitor (0, 'Invalid Data String: ' + dataString);
-      $("#statusBar_Message").html ('Invalid Data String: ' + dataString);
       return;
-    }
 
     // Parse Data String
     const nodeIndex   = parseInt (fields[0]);
