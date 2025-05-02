@@ -75,7 +75,7 @@ Node::Node (const char *inName, int inNodeID)
   // Set this device as a Wi-Fi Station
   if (!WiFi.mode (WIFI_STA))
   {
-    Serial.println ("ERROR: Unable to set WiFi mode.");
+    Serial.println ("ERROR: Unable to set WiFi mode");
     return;
   }
   delay (100);
@@ -256,19 +256,26 @@ void Node::Run ()
     return;
 
   //--- Process next command ---
-  commandString = CommandBuffer->PopString ();
+  commandString = CommandBuffer->PopString ();  // Remember to free() this "popped" string
 
   if (commandString != NULL)
   {
+    if (Debugging)
+    {
+      Serial.print   ("commandString=");
+      Serial.println (commandString);
+    }
+
     int cLength = strlen (commandString);
 
     // Check length
     if (cLength < MIN_COMMAND_LENGTH)
-      Serial.println ("ERROR: Invalid Command.");
+      Serial.println ("ERROR: Invalid command");
     else
     {
       // Populate the global <CommandPacket>
-      CommandPacket.deviceIndex = 10*(commandString[0]-48) + (commandString[1]-48);
+      CommandPacket.deviceIndex = deviceIndex = 10*((int)(commandString[0])-48) + ((int)(commandString[1])-48);
+
       memcpy (CommandPacket.command, commandString + 3, COMMAND_SIZE);
       CommandPacket.command[COMMAND_SIZE] = 0;
 
@@ -290,11 +297,18 @@ void Node::Run ()
         // Check deviceIndex range
         if (deviceIndex >= numDevices)
         {
-          strcpy (DataPacket.value, "ERROR: Command targeted for unknown device.");
+          if (Debugging)
+          {
+            Serial.print ("Command targeted for unknown device: ");
+            Serial.print ("deviceIndex="); Serial.print (deviceIndex);
+            Serial.print (", numDevices="); Serial.println (numDevices);
+          }
+
+          strcpy (DataPacket.value, "ERROR: Command targeted for unknown device");
           pStatus = FAIL_DATA;
         }
         else
-          pStatus = devices[CommandPacket.deviceIndex]->ExecuteCommand ();
+          pStatus = devices[deviceIndex]->ExecuteCommand ();
       }
 
       // Any data to send?
