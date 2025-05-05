@@ -106,7 +106,9 @@ async function Unload ()
       clearInterval (DTInterval);
 
     await CloseDataLog ();
-    await SMACPort.Close ();
+
+    if (SMACPort != undefined)
+      await SMACPort.Close ();
   }
   catch (ex)
   {

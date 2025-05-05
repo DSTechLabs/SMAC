@@ -59,6 +59,7 @@ Relayer::Relayer ()
     Serial.println ("ERROR: Unable to set WiFi mode.");
     return;
   }
+  delay (100);
 
 
 

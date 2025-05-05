@@ -20,7 +20,7 @@
 
 //--- Globals ---------------------------------------------
 
-const AppVersion = '─── Version 2025.01.24 ───';
+const AppVersion = '─── Version 2025.05.05 ───';
 
 const SerialPortSettings =
 {
@@ -34,11 +34,8 @@ const SerialPortSettings =
 
 const EOL = '\r\n';
 
-// Create a SerialPort object
-const SMACPort = new SerialPort (async (data) =>
-{
-  await ProcessData (data);
-});
+// SerialPort object (to be created if supported)
+let SMACPort = undefined;
 
 let RelayerMAC = undefined;
 
@@ -50,7 +47,29 @@ try
   $('#title_Version'  ).html (AppVersion);
   $('#dsSplashVersion').html (AppVersion);
 
-  $('#connectToRelayer').show ();
+  // Check if this browser supports serial communication
+  if (!('serial' in navigator) || navigator.serial == undefined)
+    $('#smacPageArea').html ('<h1 style="color:#C00000; text-shadow:1px 1px 1px #000000; text-align:center">' +
+                             'This browser does not support serial communications.<br>Please use the Chrome or Edge browser.</h1>');
+  else
+  {
+    // Create a SerialPort object
+    SMACPort = new SerialPort (async (dataString) => { await ProcessModuleMessage (dataString); });  // do not include RelayerDisconnected param
+
+    $('#connectToRelayer').show ();
+
+    // Close serial port before exit
+    window.addEventListener ('beforeunload', async (event) =>
+    {
+      StopEvent (event);
+      event.returnValue = '';
+
+      if (SMACPort != undefined)
+        await SMACPort.Close ();
+
+      return undefined;
+    });
+  }
 }
 catch (ex)
 {
@@ -187,9 +206,9 @@ async function ConnectToNode_Async ()
   }
 }
 
-//--- ProcessData -----------------------------------------
+//--- ProcessModuleMessage --------------------------------
 
-async function ProcessData (data)
+async function ProcessModuleMessage (data)
 {
   try
   {

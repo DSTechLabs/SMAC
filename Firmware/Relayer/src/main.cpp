@@ -1,6 +1,6 @@
 //=============================================================================
 //
-//     FILE : Relayer.ino
+//     FILE : main.cpp
 //
 //  PROJECT : SMAC Framework
 //              │
@@ -52,8 +52,8 @@
 
 // For the Espressif ESP32-S3-DevKitC-1 board, the built-in LED
 // is a 1-element addressable string of RGB LEDs of type WS2812.
-#define STATUS_LED_PIN           48  // GPIO-48 for v1.0 boards, GPIO-38 for v1.1 boards
-#define STATUS_LED_BRIGHTNESS    20  // Not recommended above 64
+#define STATUS_LED_PIN         48  // GPIO-48 for v1.0 boards, GPIO-38 for v1.1 boards
+#define STATUS_LED_BRIGHTNESS  20  // Not recommended above 64
 
 //--- Globals ----------------------------------------------
 
