@@ -14,7 +14,7 @@
 
 //--- Globals ---------------------------------------------
 
-const AppVersion = '── 2025.05.02 ──';
+const AppVersion = '── 2025.05.08 ──';
 const Debugging  = false;  // Set to false for production use
 
 let TotalPages  = 0;
@@ -546,17 +546,6 @@ async function ProcessRelayerMessage (dataString)
       // Log PONG received
       Diagnostics.LogToMonitor (nodeIndex, 'PONG Received');
     }
-
-
-
-//  else
-//  {
-//    // Return device info
-//    $(document.body).trigger ('deviceInfo', [ nodeIndex, deviceIndex, timestamp, value ]);
-//  }
-
-
-
   }
   catch (ex)
   {
@@ -611,11 +600,11 @@ async function Send_UItoRelayer (nodeIndex, deviceIndex, commandString, paramStr
 
 // //--- BroadcastUIMessage ----------------------------------
 //
-// async function BroadcastUIMessage (command)
+// async function BroadcastUIMessage (commandString)
 // {
 //   try
 //   {
-//     await Send_UItoRelayer (0, 0, 'CAST', command);
+//     await Send_UItoRelayer (0, 0, 'CAST', commandString);
 //   }
 //   catch (ex)
 //   {

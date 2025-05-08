@@ -4,13 +4,15 @@
 //
 //    PROJECT : SMAC Framework - Example 2
 //
-//      NOTES : This is the firmware for the SMAC Node of Example 2.
+//      NOTES : This is the PIO firmware for the SMAC Node of Example 2.
 //
 //              About this template:
 //              - The SMAC System uses Espressif's ESP-NOW protocol between Node Modules and the Relayer Module.
 //              - Device is the base class from which your custom Devices are derived.
-//              - This "template" creates a Node with three Devices, a LightSensor, Button and LED.
+//              - This "template" creates a Node with a single Device, a LightSensor.
 //              - Node Modules first attempt to connect to the Relayer Module.
+//              - Once connected, the LightSensor Device "measures" a value and outputs a "Data String" with its value.
+//              - The above operation is performed periodically to maintain continuous data.
 //              - All Device data can be visualized with gauges and graphs using the SMAC Interface (a Chrome browser app).
 //              - The SMAC System is bidirectional. You can send commands to both Nodes and individual Devices.
 //              - Commands can be sent directly from the SMAC Interface using buttons, dials, sliders, etc.
@@ -18,12 +20,12 @@
 //
 //              Classes in this example:
 //
-//              ∙ Node
+//              ∙ Node   -- at least one Node is required for any SMAC system
 //              ∙ Device
 //                  │
-//                  ├── LightSensor -- Shows how sensor data can be sent to the SMAC Interface
-//                  ├── Button      -- Shows how physical Device interactions can be displayed in the SMAC Interface
-//                  └── LED         -- Shows how the SMAC Interface can send commands and control Devices
+//                  ├── LightSensor -- Demo to show how sensor data can be sent to the SMAC Interface
+//                  ├── Button      -- Demo to show how the Interface can react to remote hardware
+//                  └── LED         -- Demo to show how remote hardware can react to the Interface
 //
 //  DEBUGGING : Set the global <Debugging> to true to see debugging info in Serial Monitor.
 //              Be sure to set <Debugging> to false for production builds!
@@ -75,8 +77,9 @@ void Serial_ProcessMessage ();
 
 void setup()
 {
-  // Init built-in RGB LED, start off red
-  rgbLedWrite (STATUS_LED_PIN, STATUS_LED_BRIGHTNESS, 0, 0);
+  // Init built-in LED, start off bad
+  pinMode (STATUS_LED_PIN, OUTPUT);
+  STATUS_LED_BAD;
 
   // Init serial comms
   Serial_Message[0] = 0;
@@ -104,7 +107,7 @@ void setup()
   // Node ID's cannot be duplicated in your SMAC System.
   // --- Do not use the same ID for other Nodes ---
   //=======================================================
-  ThisNode = new Node ("My Second Node", 0);
+  ThisNode = new Node ("My First Node", 0);
 
   //=======================================================
   // Add all Devices to the Node
@@ -112,6 +115,7 @@ void setup()
   ThisNode->AddDevice (new LightSensor ("Light Sensor" , 6));  // Gets assigned Device ID 00
   ThisNode->AddDevice (new Button      ("Little Button", 5));  // Gets assigned Device ID 01
   ThisNode->AddDevice (new LED         ("Yellow LED"   , 4));  // Gets assigned Device ID 02
+
 
 
 
@@ -138,7 +142,7 @@ void setup()
 
   // Relayer responded, All good, Go green
   Serial.println ("Relayer responded to PING");
-  rgbLedWrite (STATUS_LED_PIN, 0, STATUS_LED_BRIGHTNESS, 0);
+  STATUS_LED_GOOD;
 
   Serial.println ("Node running ...");
 }
@@ -240,11 +244,11 @@ void Serial_ProcessMessage ()
       // Blink the Status LED
       for (int i=0; i<10; i++)
       {
-        rgbLedWrite (STATUS_LED_PIN, STATUS_LED_BRIGHTNESS, STATUS_LED_BRIGHTNESS, STATUS_LED_BRIGHTNESS);
-        delay (20);
-
-        rgbLedWrite (STATUS_LED_PIN, 0, 0, 0);
+        STATUS_LED_BAD;
         delay (80);
+
+        STATUS_LED_GOOD;
+        delay (20);
       }
 
       // Reset the board

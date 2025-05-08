@@ -73,8 +73,9 @@ void Serial_ProcessMessage ();
 
 void setup()
 {
-  // Init built-in RGB LED, start off red
-  rgbLedWrite (STATUS_LED_PIN, STATUS_LED_BRIGHTNESS, 0, 0);
+  // Init built-in LED, start off bad
+  pinMode (STATUS_LED_PIN, OUTPUT);
+  STATUS_LED_BAD;
 
   // Init serial comms
   Serial_Message[0] = 0;
@@ -134,7 +135,7 @@ void setup()
 
   // Relayer responded, All good, Go green
   Serial.println ("Relayer responded to PING");
-  rgbLedWrite (STATUS_LED_PIN, 0, STATUS_LED_BRIGHTNESS, 0);
+  STATUS_LED_GOOD;
 
   Serial.println ("Node running ...");
 }
@@ -236,11 +237,11 @@ void Serial_ProcessMessage ()
       // Blink the Status LED
       for (int i=0; i<10; i++)
       {
-        rgbLedWrite (STATUS_LED_PIN, STATUS_LED_BRIGHTNESS, STATUS_LED_BRIGHTNESS, STATUS_LED_BRIGHTNESS);
-        delay (20);
-
-        rgbLedWrite (STATUS_LED_PIN, 0, 0, 0);
+        STATUS_LED_BAD;
         delay (80);
+
+        STATUS_LED_GOOD;
+        delay (20);
       }
 
       // Reset the board

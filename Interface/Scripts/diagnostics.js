@@ -242,7 +242,7 @@ const Diagnostics =
 
         // Limit log messages
         if (mBox.children().length > Diagnostics.MaxLogMessages)
-          mBox.contents().slice(0, 2).remove();
+          mBox.empty ();  // mBox.contents().slice(0, 2).remove();
 
         if ($('#autoScroll').is (':checked'))
           mBox.scrollTop (1E10);

@@ -1630,7 +1630,7 @@ class SMAC_Growbar extends HTMLElement
           //       self.setAttribute ('title', 'Current rate: ' + Nodes[nodeID].devices[deviceID].rate.toString() + ' s/hour');
 
           // Update this widget
-          window.requestAnimationFrame.bind (self.updateWidget (timestamp, value));
+          window.requestAnimationFrame.bind (self.updateWidget (Number(value)));
         }
       });
     }
@@ -1746,7 +1746,7 @@ class SMAC_Growbar extends HTMLElement
 
   //--- updateWidget --------------------------------------
 
-  updateWidget = function (timestamp, value)
+  updateWidget = function (value)
   {
     try
     {
@@ -1890,7 +1890,7 @@ class SMAC_Gauge extends HTMLElement
           //       self.setAttribute ('title', 'Current rate: ' + Nodes[nodeID].devices[deviceID].rate.toString() + ' s/hour');
 
           // Update this widget
-          window.requestAnimationFrame.bind (self.updateWidget (timestamp, value));
+          window.requestAnimationFrame.bind (self.updateWidget (Number(value)));
         }
       });
     }
@@ -1982,7 +1982,7 @@ class SMAC_Gauge extends HTMLElement
 
   //--- updateWidget --------------------------------------
 
-  updateWidget = function (timestamp, value)
+  updateWidget = function (value)
   {
     try
     {
@@ -2105,7 +2105,7 @@ class SMAC_Compass extends HTMLElement
           //       self.setAttribute ('title', 'Current rate: ' + Nodes[nodeID].devices[deviceID].rate.toString() + ' s/hour');
 
           // Update this widget
-          window.requestAnimationFrame.bind (self.updateWidget (timestamp, value));
+          window.requestAnimationFrame.bind (self.updateWidget (Number(value)));
         }
       });
     }
@@ -2196,7 +2196,7 @@ class SMAC_Compass extends HTMLElement
 
   //--- updateWidget --------------------------------------
 
-  updateWidget = function (timestamp, value)
+  updateWidget = function (value)
   {
     try
     {
@@ -2382,7 +2382,7 @@ class SMAC_TimeGraph extends HTMLElement
             //       self.setAttribute ('title', 'Current rate: ' + Nodes[nodeID].devices[deviceID].rate.toString() + ' s/hour');
 
             // Update this widget
-            window.requestAnimationFrame.bind (self.updateWidget (i, timestamp, value));
+            window.requestAnimationFrame.bind (self.updateWidget (i, Number(timestamp), Number(value)));
             break;
           }
         }
