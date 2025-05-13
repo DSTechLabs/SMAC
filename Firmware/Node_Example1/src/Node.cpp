@@ -158,7 +158,7 @@ void Node::AddDevice (Device *device)
 
 //--- SendDataPacket --------------------------------------
 
-void Node::SendDataPacket ()
+IRAM_ATTR void Node::SendDataPacket ()
 {
   // Convert the <DataPacket> to a Data string.
   // The <DataPacket> structure must be populated with deviceID, timestamp and value fields.

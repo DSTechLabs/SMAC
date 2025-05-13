@@ -13,7 +13,8 @@
 const Diagnostics =
 {
   DataLogging      : false,
-  MaxLogMessages   : 200,    // Max number of log messages in a Node Monitor Box
+  NumLogMessages   : 0,
+  MaxLogMessages   : 500,    // Max number of log messages in a Node Monitor Box
   CurrentNodeIndex : 0,      // Currently selected Node Monitor Tab
 
   //--- BuildSystem----------------------------------------
@@ -123,7 +124,11 @@ const Diagnostics =
 
       // Add a tab content with a monitor box
       const newTabContent = $('<div class="dsTabContent" style="padding:0"></div>');
-      const newMonitor    = $('<div class="monitorBox dsScrollable"></div>');
+
+      const cols       = Math.floor (GetBrowserWidth () / 16).toString ();
+      const rows       = Math.floor (GetBrowserHeight() / 27).toString ();
+      // const newMonitor = $('<textarea class="monitorBox dsScrollable" cols="' + cols + '" rows="' + rows + '" readonly></textarea>');
+      const newMonitor = $('<textarea class="monitorBox dsScrollable" readonly></textarea>');
 
       newTabContent.append (newMonitor);
       tBox.append (newTabContent);
@@ -238,11 +243,18 @@ const Diagnostics =
       {
         // Output message to appropriate monitor
         const mBox = Nodes[nodeIndex].monitor;
-        mBox.append (GetTimestamp (new Date(), '24sm') + ': ' + logMessage + '<br>');
 
-        // Limit log messages
-        if (mBox.children().length > Diagnostics.MaxLogMessages)
-          mBox.empty ();  // mBox.contents().slice(0, 2).remove();
+        // Add to monitor's <textarea>
+        if (this.NumLogMessages < Diagnostics.MaxLogMessages)
+        {
+          mBox.val (mBox.val() + logMessage + '\n');
+          ++this.NumLogMessages;
+        }
+        else
+        {
+          mBox.val (logMessage + '\n');
+          this.NumLogMessages = 1;
+        }
 
         if ($('#autoScroll').is (':checked'))
           mBox.scrollTop (1E10);
@@ -266,14 +278,16 @@ const Diagnostics =
         Nodes.forEach ((node) =>
         {
           if (node.monitor != undefined)
-            node.monitor.empty ();
+            // node.monitor.empty ();
+            node.monitor.val ('');
         });
       }
       else
       {
         const node = Nodes[this.CurrentNodeIndex];
         if (node != undefined)
-          node.monitor.empty ();
+          // node.monitor.empty ();
+          node.monitor.val ('');
       }
     }
     catch (ex)

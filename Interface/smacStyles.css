@@ -219,11 +219,11 @@ body
 
 #smacStatusBar
 {
-  display   : none;
-  flex-flow : row nowrap;
-  margin    : 0;
-  padding   : 0;
-  width     : 100%;
+  display    : none;
+  flex-flow  : row nowrap;
+  margin     : 0;
+  padding    : 0;
+  width      : 100%;
   box-sizing : border-box;
   overflow   : hidden;
   z-index    : 10;
@@ -491,7 +491,9 @@ body
 .smac-panellightPurple { display:inline-block; width:2em; height:2em; border-radius:50%; background:radial-gradient(circle, #D000FF    40%, #8000C0); box-shadow:0 .2em .4em #400080  , 0 -.1em .1em var(--light); }
 .smac-panellightWhite  { display:inline-block; width:2em; height:2em; border-radius:50%; background:radial-gradient(circle, var(--white) 40%, #C0C0C0); box-shadow:0 .2em .4em #808080  , 0 -.1em .1em var(--light); }
 
-/*--- Toggle Button -------------------------------------*/
+
+
+/*--- Toggle Button ---------------------------------------
 
 .smac-toggleButton
 {
@@ -515,7 +517,7 @@ body
 
 .smac-toggleButton-on
 {
-  padding : 0.25em 0.5em 0.15em 0.5em;  /* vertically adjusted from non-active padding */
+  padding : 0.25em 0.5em 0.15em 0.5em;  /* vertically adjusted from non-active padding
 
   background  : linear-gradient(to bottom, var(--gradStart), var(--gradStop));
   text-shadow : 0.02em 0.02em #00A0F0;
@@ -524,8 +526,7 @@ body
                0 -0.1em 0.1em var(--gradStart) inset,
                0  0     0.02em 0.04em rgba(0, 0, 0, 0.5);
 }
-
-
+*/
 
 
 

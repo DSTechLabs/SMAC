@@ -1,0 +1,1271 @@
+<!doctype html>
+<!--=======================================================
+//
+//     FILE : widgets.html
+//
+//  PROJECT : SMAC Interface - Widgets
+//
+//   AUTHOR : Bill Daniels
+//            Copyright 2014-2025, D+S Tech Labs, Inc.
+//            All Rights Reserved
+//
+//======================================================-->
+
+<html lang="en-us">
+
+  <!-- Head -->
+  <head>
+
+    <!-- These three meta tags MUST come first in the <head> tag. -->
+    <!-- All other <head> content must come AFTER these tags.     -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>SMAC Demo</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="dsStyles.css" />
+    <link rel="stylesheet" href="smacStyles.css" />
+
+    <style>
+      .sectionTitle
+      {
+        display       : inline-block;
+        margin        : 1vw 0;
+        padding       : .5vw;
+        width         : 80vw;
+        border-radius : 1vw;
+
+        color      : #004080;
+        background : linear-gradient(to bottom, #FFF0C0, #D0C080);
+        box-shadow : 0 .1vw .4vw #000000;
+
+        font-family : serif;
+        font-size   : 2vw;
+      }
+
+      .mono       { font-family  : monospace }
+      .codeMargin { margin-right : 1vw;      }
+    </style>
+
+    <!-- jQuery -->
+    <script src="Scripts/jquery-3.7.1.min.js"></script>
+
+    <!-- Javascript Extras -->
+    <script src="Scripts/dsExtras.js"></script>
+
+  </head>
+
+  <!-- Body -->
+  <body class="bgLight" style="font-size:1vw; text-align:center" onpointerdown="RemoveBubble()">
+
+    <!-- For Full Screen Modal Popups -->
+    <div id="modalBackdrop"></div>
+
+    <!-- Title -->
+    <br>
+    <div style="color:#0080C0; font-family:font_ethnocentric">
+      <span class="dsTitle">smac interface</span><br>
+      <span class="dsSubtitle">─── fonts, styles and widget reference ───</span>
+    </div>
+    <br>
+
+    <div class="sectionTitle" style="margin-top:2vw; color:white; background:#800080; font-size:4vw">
+      Fonts
+    </div><br>
+    <br>
+
+    <div class="dsBlock" style="font-size:1.5vw; text-align:left">
+      <div style="font-family:font_adventure"          >font_adventure          </div>
+      <div style="font-family:font_airstrike"          >font_airstrike          </div>
+      <div style="font-family:font_anitaSemiSquare"    >font_anitaSemiSquare    </div>
+      <div style="font-family:font_atomicAge"          >font_atomicAge          </div>
+      <div style="font-family:font_audioWide"          >font_audioWide          </div>
+      <div style="font-family:font_beamweapon"         >font_beamweapon         </div>
+      <div style="font-family:font_beamweaponCondensed">font_beamweaponCondensed</div>
+      <div style="font-family:font_calligraphy"        >font_calligraphy        </div>
+      <div style="font-family:font_code"               >font_code               </div>
+      <div style="font-family:font_ethnocentric"       >font_ethnocentric       </div>
+      <div style="font-family:font_Imaki"              >font_Imaki              </div>
+      <div style="font-family:font_monospaceTypewriter">font_monospaceTypewriter</div>
+      <div style="font-family:font_rexlia"             >font_rexlia             </div>
+      <div style="font-family:font_robot"              >font_robot              </div>
+      <div style="font-family:font_robotoLight"        >font_robotoLight        </div>
+      <div style="font-family:font_robotoRegular"      >font_robotoRegular      </div>
+      <div style="font-family:font_sevenSegment_1"     >font_sevenSegment_1     </div>
+      <div style="font-family:font_sevenSegment_2"     >font_sevenSegment_2     </div>
+      <div style="font-family:font_sevenSegment_3"     >font_sevenSegment_3     </div>
+      <div style="font-family:font_sevenSegment_4"     >font_sevenSegment_4     </div>
+      <div style="font-family:font_sonoRegular"        >font_sonoRegular        </div>
+      <div style="font-family:font_spaceAge"           >font_spaceAge           </div>
+      <div style="font-family:font_xcelItalic"         >font_xcelItalic         </div>
+      <div style="font-family:font_xcel"               >font_xcel               </div>
+    </div><br>
+    <br>
+    <br>
+
+    <div class="sectionTitle" style="margin-top:2vw; color:white; background:#800080; font-size:4vw">
+      SMAC Widgets
+    </div><br>
+    <br>
+
+    <!-- Types of Widgets -->
+    <div class="dsSubtitle">
+      there are two types of smac widgets:<br>
+      <u>controls</u> and <u>data views</u>
+    </div>
+    <br>
+    <br>
+
+
+    <!--================================================-->
+    <!--  T A B L E   O F   C O N T E N T S             -->
+    <!--================================================-->
+
+    <div class="dsBlockLowered" style="padding:1vw; font-family:sans-serif; font-size:1vw; text-align:left">
+
+      <u>Controls:</u><br>
+      <br>
+
+      <a href="#inputButtons" >Buttons using HTML &lt;input&gt; and class="dsInput"   </a><br>
+      <a href="#dsButtons"    >Buttons using HTML &lt;button&gt; and class="dsButton" </a><br>
+      <a href="#roundButtons" >Round Buttons                                          </a><br>
+      <a href="#panelButtons" >Panel Buttons                                          </a><br>
+      <a href="#inputSwitches">Switches using HTML &lt;input&gt; and class="dsSwitch" </a><br>
+      <a href="#panelSwitches">Switches using On/Off Images                           </a><br>
+      <a href="#eStop"        >E-Stop                                                 </a><br>
+      <a href="#dials"        >Dials                                                  </a><br>
+      <a href="#spinners"     >Spinners                                               </a><br>
+      <a href="#sliders"      >Sliders                                                </a><br>
+      <a href="#dualSliders"  >Dual Sliders                                           </a><br>
+      <a href="#joystick"     >Joystick                                               </a><br>
+
+    </div>
+
+    <div class="dsBlockLowered" style="margin-left:3vw; padding:1vw; font-family:sans-serif; font-size:1vw; text-align:left">
+
+      <u>Data View:</u><br>
+      <br>
+
+      <a href="#leds"       >LED's and Panel Lights </a><br>
+      <a href="#flashers"   >Flashers               </a><br>
+      <a href="#digitals"   >Digitals               </a><br>
+      <a href="#displays"   >Displays               </a><br>
+      <a href="#growbars"   >Growbars               </a><br>
+      <a href="#gauges"     >Gauges                 </a><br>
+      <a href="#compass"    >Compass                </a><br>
+      <a href="#timegraphs" >Time Graphs            </a><br>
+
+    </div>
+    <br>
+    <br>
+
+
+    <!--================================================-->
+    <!--  C O N T R O L S                               -->
+    <!--================================================-->
+
+    <div class="sectionTitle" style="margin-top:2vw; color:white; background:#800080; font-size:4vw">
+      SMAC Controls
+    </div><br>
+    <br>
+
+    <!-- Buttons -------------------------------------- -->
+    <div id="inputButtons"></div>
+
+    <div class="sectionTitle">Buttons using HTML &lt;input&gt; and class="dsInput"</div>
+    <br>
+
+    <div class="dsCode codeMargin">
+&lt;input type="button" class="dsInput" style="margin:0 5px; font-size:1vw" value="Button" /&gt;
+&lt;input type="button" class="dsInput" style="margin:0 5px; font-size:2vw" value="Button" /&gt;
+&lt;input type="button" class="dsInput" style="margin:0 5px; font-size:3vw" value="Button" /&gt;
+    </div>
+
+    <input type="button" class="dsInput" style="margin:0 5px; font-size:1vw" value="Button" />
+    <input type="button" class="dsInput" style="margin:0 5px; font-size:2vw" value="Button" />
+    <input type="button" class="dsInput" style="margin:0 5px; font-size:3vw" value="Button" />
+    <br>
+    <br>
+
+    <!-- Buttons -------------------------------------- -->
+    <div id="dsButtons"></div>
+
+    <div class="sectionTitle">Buttons using HTML &lt;button&gt; and class="dsButton"</div>
+    <br>
+
+    <div class="dsCode codeMargin">
+&lt;button class="dsButton" style="margin:0 5px; font-size:1vw"&gt;Button&lt;/button&gt;
+&lt;button class="dsButton" style="margin:0 5px; font-size:2vw"&gt;Button&lt;/button&gt;
+&lt;button class="dsButton" style="margin:0 5px; font-size:3vw"&gt;Button&lt;/button&gt;
+    </div>
+
+    <button class="dsButton" style="margin:0 5px; font-size:1vw">Button</button>
+    <button class="dsButton" style="margin:0 5px; font-size:2vw">Button</button>
+    <button class="dsButton" style="margin:0 5px; font-size:3vw">Button</button>
+    <br>
+    <br>
+
+    <!-- Round Buttons -------------------------------- -->
+    <div id="roundButtons"></div>
+
+    <div class="sectionTitle">Round Buttons using HTML &lt;button&gt; and class="dsButtonRound"</div>
+    <br>
+
+    <div class="dsCode codeMargin">
+&lt;button class="dsButtonRound" style="margin:0 5px; font-size:1vw"  &gt;dsButton&gt;Round&lt;/button&gt;
+&lt;button class="dsButtonRound" style="margin:0 5px; font-size:1.5vw"&gt;dsButton&gt;Round&lt;/button&gt;
+&lt;button class="dsButtonRound" style="margin:0 5px; font-size:2vw"  &gt;dsButton&gt;Round&lt;/button&gt;
+    </div>
+
+    <button class="dsButtonRound" style="margin:0 5px; font-size:1vw"  >dsButton<br>Round</button>
+    <button class="dsButtonRound" style="margin:0 5px; font-size:1.5vw">dsButton<br>Round</button>
+    <button class="dsButtonRound" style="margin:0 5px; font-size:2vw"  >dsButton<br>Round</button><br>
+    <br>
+
+    <!-- Panel Buttons -------------------------------- -->
+    <div id="panelButtons"></div>
+
+    <div class="sectionTitle">Panel Buttons</div>
+    <br>
+
+    <div class="dsBlock">
+      <u>&nbsp;HTML Tag:&nbsp;</u> <span class="mono">&lt;smac-panelbutton&gt;</span><br>
+      <br>
+
+      <u>&nbsp;Attributes: (* = required)&nbsp;</u><br>
+      <table class="dsTable">
+        <tr><td class="mono">onImage*  </td><td>image to use when the button is pressed      </td></tr>
+        <tr><td class="mono">offImage* </td><td>image to use when the button is NOT pressed  </td></tr>
+        <tr><td class="mono">onAction  </td><td>function to call when the button is pressed  </td></tr>
+        <tr><td class="mono">offAction </td><td>function to call when the button is released </td></tr>
+      </table>
+    </div><br>
+    <br>
+
+    <div class="dsCode codeMargin">
+&lt;smac-panelbutton
+  onImage   = "Images/ui_PanelButton_Silver_In.png"
+  offImage  = "Images/ui_PanelButton_Silver_Out.png"
+  onAction  = "myPanelButtonOn"
+  offAction = "myPanelButtonOff"
+  size      = "5"&gt;
+&lt;/smac-panelbutton&gt;
+
+&lt;smac-panelbutton
+  onImage   = "Images/ui_PanelButton_Green_In.png"
+  offImage  = "Images/ui_PanelButton_Green_Out.png"
+  onAction  = "myPanelButtonOn"
+  offAction = "myPanelButtonOff"
+  size      = "8"&gt;
+&lt;/smac-panelbutton&gt;
+
+&lt;smac-panelbutton
+  onImage   = "Images/ui_PanelButton_Red_In.png"
+  offImage  = "Images/ui_PanelButton_Red_Out.png"
+  onAction  = "myPanelButtonOn"
+  offAction = "myPanelButtonOff"
+  size      = "12"&gt;
+&lt;/smac-panelbutton&gt;
+    </div>
+
+    <smac-panelbutton style="margin:0 5px"
+      offImage  = "Images/ui_PanelButton_Silver_Out.png"
+      onImage   = "Images/ui_PanelButton_Silver_In.png"
+      onAction  = "myPanelButtonOn"
+      offAction = "myPanelButtonOff"
+      size      = "5">
+    </smac-panelbutton>
+
+    <smac-panelbutton style="margin:0 5px"
+      offImage  = "Images/ui_PanelButton_Green_Out.png"
+      onImage   = "Images/ui_PanelButton_Green_In.png"
+      onAction  = "myPanelButtonOn"
+      offAction = "myPanelButtonOff"
+      size      = "8">
+    </smac-panelbutton>
+
+    <smac-panelbutton style="margin:0 5px"
+      offImage  = "Images/ui_PanelButton_Red_Out.png"
+      onImage   = "Images/ui_PanelButton_Red_In.png"
+      onAction  = "myPanelButtonOn"
+      offAction = "myPanelButtonOff"
+      size      = "12">
+    </smac-panelbutton><br>
+    <br>
+
+    <!-- Switches ------------------------------------- -->
+    <div id="inputSwitches"></div>
+
+    <div class="sectionTitle">Switches using HTML &lt;input&gt; and class="dsSwitch"</div>
+    <br>
+
+    Use font-size to size the switch.<br>
+    <br>
+
+    <div class="dsCode codeMargin">
+&lt;input type="checkbox" class="dsSwitch" style="font-size:1.5vw" /&gt;
+&lt;input type="checkbox" class="dsSwitch" style="font-size:2.0vw" /&gt;
+&lt;input type="checkbox" class="dsSwitch" style="font-size:2.5vw" /&gt;
+&lt;input type="checkbox" class="dsSwitch" style="font-size:3.0vw" /&gt;
+    </div>
+
+    <div class="dsBlock codeMargin" style="padding:1vh 0">
+      <input type="checkbox" class="dsSwitch" style="font-size:1.5vw" /> &nbsp;
+      <input type="checkbox" class="dsSwitch" style="font-size:2.0vw" /> &nbsp;
+      <input type="checkbox" class="dsSwitch" style="font-size:2.5vw" /> &nbsp;
+      <input type="checkbox" class="dsSwitch" style="font-size:3.0vw" />
+    </div><br>
+    <br>
+    <br>
+
+    <!-- Switches ------------------------------------- -->
+    <div id="panelSwitches"></div>
+
+    <div class="sectionTitle">Switches using On/Off Images</div>
+    <br>
+
+    <div class="dsBlock">
+      <u>&nbsp;HTML Tag:&nbsp;</u> <span class="mono">&lt;smac-switch&gt;</span><br>
+      <br>
+
+      <u>&nbsp;Attributes: (* = required)&nbsp;</u><br>
+      <table class="dsTable">
+        <tr><td class="mono">onImage*  </td><td>image to use when the switch is on             </td></tr>
+        <tr><td class="mono">offImage* </td><td>image to use when the switch is off            </td></tr>
+        <tr><td class="mono">onAction  </td><td>function to call when the switch is turned on  </td></tr>
+        <tr><td class="mono">offAction </td><td>function to call when the switch is turned off </td></tr>
+        <tr><td class="mono">size      </td><td>percentage of browser width                    </td></tr>
+      </table>
+    </div><br>
+    <br>
+
+    <div class="dsCode codeMargin">
+&lt;smac-switch style="margin-left:4vw"
+  onImage   = "Images/ui_Switch_Rocker_On.png"
+  offImage  = "Images/ui_Switch_Rocker_Off.png"
+  onAction  = "mySwitchOn"
+  offAction = "mySwitchOff"
+  size      = "5"&gt;
+&lt;/smac-switch&gt;
+
+&lt;smac-switch style="margin-left:4vw"
+  onImage   = "Images/ui_Switch_Lever1_On.png"
+  offImage  = "Images/ui_Switch_Lever1_Off.png"
+  onAction  = "mySwitchOn"
+  offAction = "mySwitchOff"
+  size      = "5.5"&gt;
+&lt;/smac-switch&gt;
+
+&lt;smac-switch style="margin-left:4vw"
+  onImage   = "Images/ui_Switch_Lever2_On.png"
+  offImage  = "Images/ui_Switch_Lever2_Off.png"
+  onAction  = "mySwitchOn"
+  offAction = "mySwitchOff"
+  size      = "6"&gt;
+&lt;/smac-switch&gt;&lt;br&gt;
+&lt;br&gt;
+
+&lt;smac-switch style="margin-left:4vw"
+  onImage   = "Images/ui_Switch_Slide_On.png"
+  offImage  = "Images/ui_Switch_Slide_Off.png"
+  onAction  = "mySwitchOn"
+  offAction = "mySwitchOff"
+  size      = "10"&gt;
+&lt;/smac-switch&gt;
+
+&lt;smac-switch style="margin-left:4vw"
+  onImage   = "Images/ui_PanelButton_Green_In.png"
+  offImage  = "Images/ui_PanelButton_Red_Out.png"
+  onAction  = "mySwitchOn"
+  offAction = "mySwitchOff"
+  size      = "6"&gt;
+&lt;/smac-switch&gt;
+
+&lt;smac-switch style="margin-left:4vw"
+  onImage   = "Images/ui_Switch_DualButton_On.png"
+  offImage  = "Images/ui_Switch_DualButton_Off.png"
+  onAction  = "mySwitchOn"
+  offAction = "mySwitchOff"
+  size      = "8"&gt;
+&lt;/smac-switch&gt;
+    </div>
+
+    <div class="dsBlock">
+      <smac-switch style="margin-left:4vw"
+        onImage   = "Images/ui_Switch_Rocker_On.png"
+        offImage  = "Images/ui_Switch_Rocker_Off.png"
+        onAction  = "mySwitchOn"
+        offAction = "mySwitchOff"
+        size      = "5">
+      </smac-switch>
+
+      <smac-switch style="margin-left:4vw"
+        onImage   = "Images/ui_Switch_Lever1_On.png"
+        offImage  = "Images/ui_Switch_Lever1_Off.png"
+        onAction  = "mySwitchOn"
+        offAction = "mySwitchOff"
+        size      = "5.5">
+      </smac-switch>
+
+      <smac-switch style="margin-left:4vw"
+        onImage   = "Images/ui_Switch_Lever2_On.png"
+        offImage  = "Images/ui_Switch_Lever2_Off.png"
+        onAction  = "mySwitchOn"
+        offAction = "mySwitchOff"
+        size      = "6">
+      </smac-switch><br>
+      <br>
+
+      <smac-switch style="margin-left:4vw"
+        onImage   = "Images/ui_Switch_Slide_On.png"
+        offImage  = "Images/ui_Switch_Slide_Off.png"
+        onAction  = "mySwitchOn"
+        offAction = "mySwitchOff"
+        size      = "10">
+      </smac-switch>
+
+      <smac-switch style="margin-left:4vw"
+        onImage   = "Images/ui_PanelButton_Green_In.png"
+        offImage  = "Images/ui_PanelButton_Red_Out.png"
+        onAction  = "mySwitchOn"
+        offAction = "mySwitchOff"
+        size      = "6">
+      </smac-switch>
+
+      <smac-switch style="margin-left:4vw"
+        onImage   = "Images/ui_Switch_DualButton_On.png"
+        offImage  = "Images/ui_Switch_DualButton_Off.png"
+        onAction  = "mySwitchOn"
+        offAction = "mySwitchOff"
+        size      = "8">
+      </smac-switch>
+    </div><br>
+    <br>
+    <br>
+
+    <!-- EStop ---------------------------------------- -->
+    <div id="eStop"></div>
+
+    <div class="sectionTitle">Emergency Stop (E-Stop) Button:</div>
+    <br>
+    <br>
+
+    <div class="dsBlock">
+      <u>&nbsp;HTML Tag:&nbsp;</u> <span class="mono">&lt;smac-switch&gt;</span><br>
+      <br>
+
+      A red border will flash if the image filename contains EStop in it.<br>
+      <br>
+
+      <u>&nbsp;Attributes: (* = required)&nbsp;</u><br>
+      <table class="dsTable">
+        <tr><td class="mono">onImage*  </td><td>image to use when the E-Stop is activated     </td></tr>
+        <tr><td class="mono">offImage* </td><td>image to use when the E-Stop is NOT activated </td></tr>
+        <tr><td class="mono">onAction  </td><td>function to call when the E-Stop is activated </td></tr>
+        <tr><td class="mono">offAction </td><td>function to call when the E-Stop is reset     </td></tr>
+        <tr><td class="mono">size      </td><td>percentage of browser width                   </td></tr>
+      </table>
+    </div><br>
+    <br>
+
+    <div class="dsCode codeMargin">
+&lt;smac-switch
+  onImage   = "Images/ui_Switch_EStop_On.png"
+  offImage  = "Images/ui_Switch_EStop_Off.png"
+  onAction  = "mySwitchOn"
+  offAction = "mySwitchOff"
+  size      = "4"&gt;
+&lt;/smac-switch&gt;
+
+&lt;smac-switch style="margin-left:2vw"
+  offImage  = "Images/ui_Switch_EStop_Off.png"
+  onImage   = "Images/ui_Switch_EStop_On.png"
+  onAction  = "mySwitchOn"
+  offAction = "mySwitchOff"
+  size      = "6"&gt;
+&lt;/smac-switch&gt;
+
+&lt;smac-switch style="margin-left:2vw"
+  offImage  = "Images/ui_Switch_EStop_Off.png"
+  onImage   = "Images/ui_Switch_EStop_On.png"
+  onAction  = "mySwitchOn"
+  offAction = "mySwitchOff"
+  size      = "8"&gt;
+&lt;/smac-switch&gt;
+
+&lt;smac-switch style="margin-left:2vw"
+  offImage  = "Images/ui_Switch_EStop_Off.png"
+  onImage   = "Images/ui_Switch_EStop_On.png"
+  onAction  = "mySwitchOn"
+  offAction = "mySwitchOff"
+  size      = "10"&gt;
+&lt;/smac-switch&gt;
+    </div>
+
+    <smac-switch
+      onImage   = "Images/ui_Switch_EStop_On.png"
+      offImage  = "Images/ui_Switch_EStop_Off.png"
+      onAction  = "mySwitchOn"
+      offAction = "mySwitchOff"
+      size      = "4">
+    </smac-switch>
+
+    <smac-switch style="margin-left:2vw"
+      offImage  = "Images/ui_Switch_EStop_Off.png"
+      onImage   = "Images/ui_Switch_EStop_On.png"
+      onAction  = "mySwitchOn"
+      offAction = "mySwitchOff"
+      size      = "6">
+    </smac-switch>
+
+    <smac-switch style="margin-left:2vw"
+      offImage  = "Images/ui_Switch_EStop_Off.png"
+      onImage   = "Images/ui_Switch_EStop_On.png"
+      onAction  = "mySwitchOn"
+      offAction = "mySwitchOff"
+      size      = "8">
+    </smac-switch>
+
+    <smac-switch style="margin-left:2vw"
+      offImage  = "Images/ui_Switch_EStop_Off.png"
+      onImage   = "Images/ui_Switch_EStop_On.png"
+      onAction  = "mySwitchOn"
+      offAction = "mySwitchOff"
+      size      = "10">
+    </smac-switch><br>
+    <br>
+    <br>
+
+
+<!--
+    <label class="eStop" style="                 font-size:1vw"  ><input type="checkbox" /></label>
+    <label class="eStop" style="margin-left:5vw; font-size:1.5vw"><input type="checkbox" /></label>
+    <label class="eStop" style="margin-left:5vw; font-size:2vw"  ><input type="checkbox" /></label><br>
+    <br>
+    <br>
+ -->
+
+
+    <!-- Dials ---------------------------------------- -->
+    <div id="dials"></div>
+
+    <div class="sectionTitle">Dials (Knobs):</div>
+    <br>
+
+    <div class="dsBlock">
+      <u>&nbsp;HTML Tag:&nbsp;</u> <span class="mono">&lt;smac-dial&gt;</span><br>
+      <br>
+
+      <u>&nbsp;Attributes: (* = required)&nbsp;</u><br>
+      <table class="dsTable">
+        <tr><td class="mono">faceImage*   </td><td>image to use for the dial's face plate            </td></tr>
+        <tr><td class="mono">knobImage*   </td><td>image to use for the dial's knob                  </td></tr>
+        <tr><td class="mono">numSettings* </td><td>number of angle settings                          </td></tr>
+        <tr><td class="mono">changeAction </td><td>function to call when the dial setting is changed </td></tr>
+        <tr><td class="mono">size         </td><td>percentage of browser width                       </td></tr>
+      </table>
+    </div><br>
+    <br>
+
+
+
+    <br>
+    <br>
+    <br>
+
+<!--
+
+    <smac-dial
+      device      = "0,0"
+      size        = "5"
+      angles      = "0,30,60,90,120,150,180,210,240,270,300,330"
+      labels      = "O,O,O,O,O,O,O,O,O,O,O,O"
+      labelClass  = "smac-dial"
+      position    = "0"
+      baseImage   = "dial_baseImage1.png"
+      handleImage = "dial_handleImage1.png"
+      action      = "DialAction()">
+    </smac-dial>
+
+    <smac-dial style="margin-left:2vw"
+      device      = "0,0"
+      size        = "10"
+      angles      = "30,60,90"
+      labels      = "1,2,3"
+      labelClass  = "smac-dial"
+      position    = "0"
+      baseImage   = "dial_baseImage1.png"
+      handleImage = "dial_handleImage1.png"
+      action      = "DialAction()">
+    </smac-dial>
+
+    <smac-dial style="margin-left:2vw"
+      device      = "0,0"
+      size        = "10"
+      angles      = "0,90"
+      labels      = "OFF,ON"
+      labelClass  = "smac-dial"
+      position    = "0"
+      baseImage   = "dial_baseImage1.png"
+      handleImage = "dial_handleImage1.png"
+      action      = "DialAction()">
+    </smac-dial>
+
+    <smac-dial style="margin-left:8vw"
+      device      = "0,0"
+      size        = "10"
+      angles      = "0,60,90,120,240,270,300"
+      labels      = "OFF,     LOW,     MED,       HIGH,HIGH     ,MED     ,LOW     "
+      labelClass  = "smac-dial"
+      position    = "0"
+      baseImage   = "dial_baseImage1.png"
+      handleImage = "dial_handleImage1.png"
+      action      = "DialAction()">
+    </smac-dial>
+
+    <br>
+    <br>
+    <br>
+
+
+<!--
+    <smac-dial style="margin-left:2vw"
+      size       = "10"
+      angles     = "210,240,270,300"
+      labels     = "Off,Low,Medium,High"
+      labelClass = "smac-dial"
+      position   = "0"
+      action     = "DialAction()">
+    </smac-dial>
+
+    <smac-dial style="margin-left:2vw"
+      size       = "10"
+      angles     = "270,90"
+      labels     = "Low,High"
+      labelClass = "smac-dial"
+      position   = "0"
+      action     = "DialAction()">
+    </smac-dial><br>
+ -->
+
+
+    <br>
+    <br>
+
+    <!-- Spinners ------------------------------------- -->
+    <div id="spinners"></div>
+
+    <div class="sectionTitle">Spinners</div>
+    <br>
+
+    ... coming soon ...<br>
+    <br>
+    <br>
+
+    <!-- Sliders -------------------------------------- -->
+    <div id="sliders"></div>
+
+    <div class="sectionTitle">Sliders</div>
+    <br>
+    <br>
+
+    <smac-slider style="border:1px solid red"
+      orientation = "horizontal"
+      width       = "60"
+      height      = "12"
+      minValue    = "0"
+      maxValue    = "1000"
+      value       = "200">
+    </smac-slider><br>
+    <br>
+
+    <smac-slider style="border:1px solid red"
+      orientation = "vertical"
+      width       = "10"
+      height      = "60"
+      minValue    = "0"
+      maxValue    = "1000"
+      value       = "200">
+    </smac-slider><br>
+    <br>
+    <br>
+
+    <!-- Dual Sliders --------------------------------- -->
+    <div id="dualSliders"></div>
+
+    <div class="sectionTitle">Dual Sliders</div>
+    <br>
+
+    ... coming soon ...<br>
+    <br>
+    <br>
+
+    <!-- Joystick ------------------------------------- -->
+    <div id="joystick"></div>
+
+    <div class="sectionTitle">Joystick</div>
+    <br>
+
+    ... coming soon ...<br>
+    <br>
+    <br>
+
+
+
+
+
+
+
+
+
+
+
+    <br>
+    <br>
+    <!--================================================-->
+    <!--  D A T A   V I E W S                           -->
+    <!--================================================-->
+
+    <div class="sectionTitle" style="margin-top:2vw; color:white; background:#800080; font-size:4vw">
+      SMAC Data Views
+    </div><br>
+    <br>
+
+    <!-- LEDs ----------------------------------------- -->
+    <div id="leds"></div>
+
+    <div class="sectionTitle">LED's and Panel Lights</div>
+    <br>
+
+    <div class="dsBlock" style="padding:1vw; font-size:1vw">
+      <smac-led id="ledSet" device="0,0" color="red"   ></smac-led> &nbsp; &nbsp;
+      <smac-led             device="0,1" color="green" ></smac-led> &nbsp; &nbsp;
+      <smac-led             device="0,2" color="blue"  ></smac-led> &nbsp; &nbsp;
+      <smac-led             device="0,3" color="yellow"></smac-led> &nbsp; &nbsp;
+      <smac-led             device="0,4" color="orange"></smac-led> &nbsp; &nbsp;
+      <smac-led             device="0,5" color="purple"></smac-led> &nbsp; &nbsp;
+      <smac-led             device="0,6" color="white" ></smac-led>
+    </div><br>
+    <br>
+
+    <div class="dsBlock" style="padding:1vw; font-size:2vw">
+      <smac-led device="0,0" color="red"   ></smac-led> &nbsp; &nbsp;
+      <smac-led device="0,1" color="green" ></smac-led> &nbsp; &nbsp;
+      <smac-led device="0,2" color="blue"  ></smac-led> &nbsp; &nbsp;
+      <smac-led device="0,3" color="yellow"></smac-led> &nbsp; &nbsp;
+      <smac-led device="0,4" color="orange"></smac-led> &nbsp; &nbsp;
+      <smac-led device="0,5" color="purple"></smac-led> &nbsp; &nbsp;
+      <smac-led device="0,6" color="white" ></smac-led>
+    </div><br>
+    <br>
+
+    <div class="dsBlock" style="padding:1vw; font-size:1vw">
+      <smac-panellight device="0,7"  color="red"   ></smac-panellight> &nbsp; &nbsp;
+      <smac-panellight device="0,8"  color="green" ></smac-panellight> &nbsp; &nbsp;
+      <smac-panellight device="0,9"  color="blue"  ></smac-panellight> &nbsp; &nbsp;
+      <smac-panellight device="0,10" color="yellow"></smac-panellight> &nbsp; &nbsp;
+      <smac-panellight device="0,11" color="orange"></smac-panellight> &nbsp; &nbsp;
+      <smac-panellight device="0,12" color="purple"></smac-panellight> &nbsp; &nbsp;
+      <smac-panellight device="0,13" color="white" ></smac-panellight>
+    </div><br>
+    <br>
+
+    <div class="dsBlock" style="padding:1vw; font-size:2vw">
+      <smac-panellight device="0,7"  color="red"   ></smac-panellight> &nbsp; &nbsp;
+      <smac-panellight device="0,8"  color="green" ></smac-panellight> &nbsp; &nbsp;
+      <smac-panellight device="0,9"  color="blue"  ></smac-panellight> &nbsp; &nbsp;
+      <smac-panellight device="0,10" color="yellow"></smac-panellight> &nbsp; &nbsp;
+      <smac-panellight device="0,11" color="orange"></smac-panellight> &nbsp; &nbsp;
+      <smac-panellight device="0,12" color="purple"></smac-panellight> &nbsp; &nbsp;
+      <smac-panellight device="0,13" color="white" ></smac-panellight>
+    </div><br>
+    <br>
+
+    <input type="checkbox" class="dsSwitch" style="font-size:3vw" onchange="LED_OnOff()" /><br>
+    <br>
+    <br>
+
+    <!-- Flasher -------------------------------------- -->
+    <div id="flashers"></div>
+
+    <div class="sectionTitle">Flashers</div>
+    <br>
+
+    ... coming soon ...<br>
+    <br>
+    <br>
+
+    <!-- Digital -------------------------------------- -->
+    <div id="digitals"></div>
+
+    <div class="sectionTitle">Digitals</div>
+    <br>
+
+    <div>
+      <smac-digital style="font-size:0.5vw"
+        device = "0,0">
+      </smac-digital>
+
+      <smac-digital style="font-size:1vw"
+        device = "0,0">
+      </smac-digital>
+
+      <smac-digital style="font-size:1.5vw"
+        device = "0,0">
+      </smac-digital>
+
+      <smac-digital style="font-size:2vw"
+        device = "0,0">
+      </smac-digital>
+
+      <smac-digital style="font-size:2.5vw"
+        device = "0,0">
+      </smac-digital>
+    </div>
+    <br>
+
+    <!-- Display -------------------------------------- -->
+    <div id="displays"></div>
+
+    <div class="sectionTitle">Text Displays</div>
+    <br>
+
+    <smac-display
+      device = "0,0"
+      width  = "20"
+      height = "15">
+      This is a test<br>
+    </smac-display>
+
+    <smac-display
+      device = "0,0"
+      width  = "20"
+      height = "15">
+      of the smac-display<br>
+    </smac-display>
+
+    <smac-display
+      device = "0,0"
+      width  = "20"
+      height = "15">
+      element.<br>
+    </smac-display><br>
+    <br>
+
+    <button class="dsButton" style="font-size:1.5vw" onpointerdown="RandomValue(20)"> Random Value </button><br>
+    <br>
+
+    <!-- Growbars ------------------------------------- -->
+    <div id="growbars"></div>
+
+    <div class="sectionTitle">Growbars</div>
+    <br>
+
+    <smac-growbar style="vertical-align:middle"
+      device         = "0,0"
+      orientation    = "vertical"
+      width          = "8"
+      height         = "50"
+      minValue       = "0"
+      maxValue       = "4095"
+      scaleColor     = "#202020"
+      scalePlacement = "left">
+    </smac-growbar>
+
+    <smac-growbar style="margin-left:3vw; vertical-align:middle"
+      device         = "0,0"
+      orientation    = "horizontal"
+      width          = "40"
+      height         = "10"
+      minValue       = "0"
+      maxValue       = "4095"
+      scaleColor     = "#202020"
+      scalePlacement = "top">
+    </smac-growbar><br>
+    <br>
+
+    <smac-growbar style="margin-left:3vw; vertical-align:middle"
+      device         = "0,0"
+      orientation    = "vertical"
+      width          = "8"
+      height         = "50"
+      minValue       = "0"
+      maxValue       = "4095"
+      backColor      = "#202040"
+      fillColor      = "#00A0A0"
+      scaleColor     = "#202020"
+      scalePlacement = "right">
+    </smac-growbar>
+
+    <smac-growbar style="margin-left:3vw; vertical-align:middle"
+      device         = "0,0"
+      orientation    = "horizontal"
+      width          = "40"
+      height         = "10"
+      minValue       = "0"
+      maxValue       = "4095"
+      backColor      = "#202040"
+      fillColor      = "#00A0A0"
+      scaleColor     = "#202020"
+      scalePlacement = "bottom">
+    </smac-growbar><br>
+    <br>
+
+    <button class="dsButton" style="font-size:1.5vw" onpointerdown="RandomValue(20)"> Random Value </button><br>
+    <br>
+
+    <!-- Gauges --------------------------------------- -->
+    <div id="gauges"></div>
+
+    <div class="sectionTitle">Gauges</div>
+    <br>
+
+    <smac-gauge style="border:1px solid red"
+      device    = "0,0"
+      diameter  = "10"
+      minValue  = "0"
+      maxValue  = "4095"
+      fill>
+    </smac-gauge>
+
+    <smac-gauge style="margin-left:1vw; border:1px solid red"
+      device      = "0,0"
+      diameter    = "30"
+      minValue    = "0"
+      maxValue    = "4095"
+      backColor   = "#004040"
+      needleColor = "#F0F000"
+      scaleColor  = "#202020"
+      fill>
+    </smac-gauge>
+
+    <smac-gauge style="margin-left:1vw; border:1px solid red"
+      device      = "0,0"
+      diameter    = "60"
+      minValue    = "0"
+      maxValue    = "4095"
+      backColor   = "#804020"
+      needleColor = "#F0F0F0"
+      scaleColor  = "#202020">
+    </smac-gauge><br>
+    <br>
+
+    <!-- No scale -->
+    <smac-gauge style="border:1px solid red"
+      device     = "0,0"
+      startAngle = "0"
+      stopAngle  = "180"
+      fill>
+    </smac-gauge>
+
+    <smac-gauge style="margin-left:1vw; border:1px solid red"
+      device      = "0,0"
+      startAngle  = "180"
+      stopAngle   = "360"
+      fill>
+    </smac-gauge>
+
+    <smac-gauge style="margin-left:1vw; border:1px solid red"
+      device      = "0,0"
+      startAngle  = "270"
+      stopAngle   = "450"
+      fill>
+    </smac-gauge>
+
+    <smac-gauge style="margin-left:1vw; border:1px solid red"
+      device      = "0,0"
+      startAngle  = "90"
+      stopAngle   = "270"
+      fill>
+    </smac-gauge><br>
+    <br>
+
+    <!-- With scale -->
+    <smac-gauge style="border:1px solid red"
+      device     = "0,0"
+      startAngle = "0"
+      stopAngle  = "180"
+      scaleColor = "#000000"
+      fill>
+    </smac-gauge>
+
+    <smac-gauge style="margin-left:1vw; border:1px solid red"
+      device      = "0,0"
+      startAngle  = "180"
+      stopAngle   = "360"
+      scaleColor = "#000000"
+      fill>
+    </smac-gauge>
+
+    <smac-gauge style="margin-left:1vw; border:1px solid red"
+      device      = "0,0"
+      startAngle  = "270"
+      stopAngle   = "450"
+      scaleColor = "#000000"
+      fill>
+    </smac-gauge>
+
+    <smac-gauge style="margin-left:1vw; border:1px solid red"
+      device      = "0,0"
+      startAngle  = "90"
+      stopAngle   = "270"
+      scaleColor = "#000000"
+      fill>
+    </smac-gauge><br>
+    <br>
+
+
+
+    <smac-gauge style="margin-left:1vw; border:1px solid red"
+      device      = "0,0"
+      diameter    = "15"
+      startAngle  = "1"
+      stopAngle   = "359"
+      fill>
+    </smac-gauge>
+
+    <smac-gauge style="margin-left:1vw; border:1px solid red"
+      device      = "0,0"
+      diameter    = "15"
+      startAngle  = "1"
+      stopAngle   = "359"
+      scaleColor = "#000000"
+      fill>
+    </smac-gauge><br>
+    <br>
+
+    <smac-gauge style="margin-left:1vw; border:1px solid red"
+      device      = "0,0"
+      diameter    = "80"
+      startAngle  = "1"
+      stopAngle   = "359"
+      fill>
+    </smac-gauge>
+
+    <smac-gauge style="margin-left:1vw; border:1px solid red"
+      device      = "0,0"
+      diameter    = "80"
+      startAngle  = "1"
+      stopAngle   = "359"
+      scaleColor = "#000000"
+      fill>
+    </smac-gauge><br>
+    <br>
+
+
+
+    <button class="dsButton" style="font-size:1.5vw" onpointerdown="RandomValue(20)"> Random Value </button><br>
+    <br>
+
+    <!-- Compass -------------------------------------- -->
+    <div id="compass"></div>
+
+    <div class="sectionTitle">Compass</div>
+    <br>
+
+    <smac-compass
+      device    = "0,0"
+      diameter  = "30"
+      faceColor = "#603018">
+    </smac-compass>
+
+    <smac-compass style="margin-left:2vw"
+      device    = "0,0"
+      diameter  = "50"
+      faceColor = "#00C0F0">
+    </smac-compass>
+
+    <smac-compass style="margin-left:2vw"
+      device    = "0,0"
+      diameter  = "70"
+      faceColor = "#202030">
+    </smac-compass><br>
+    <br>
+    <br>
+
+    <!-- Time Graph ----------------------------------- -->
+    <div id="timegraphs"></div>
+
+    <div class="sectionTitle">Time Graphs</div>
+    <br>
+
+    <smac-timegraph                                     style="border:1px solid red"
+      devices        = "0,0,#FF8040"
+      minValue       = "0"
+      maxValue       = "4095"
+      timeUnit       = "sec"
+      timeSpan       = "30"
+      width          = "50"
+      height         = "30"
+      scaleColor     = "#202020"
+      scalePlacement = "leftBottom">
+    </smac-timegraph><br>
+    <br>
+
+    <smac-timegraph                                     style="border:1px solid red"
+      devices        = "0,0,#FF8040"
+      minValue       = "0"
+      maxValue       = "4095"
+      timeUnit       = "sec"
+      timeSpan       = "30"
+      width          = "50"
+      height         = "30"
+      backColor      = "#202040"
+      scaleColor     = "#202020"
+      gridColor      = "#303030"
+      scalePlacement = "leftTop">
+    </smac-timegraph><br>
+    <br>
+
+    <smac-timegraph                                     style="border:1px solid red"
+      devices        = "0,0,#FF8040"
+      minValue       = "0"
+      maxValue       = "4095"
+      timeUnit       = "sec"
+      timeSpan       = "30"
+      width          = "70"
+      height         = "50"
+      backColor      = "#202040"
+      scaleColor     = "#202020"
+      gridColor      = "#303030"
+      scalePlacement = "rightBottom">
+    </smac-timegraph><br>
+    <br>
+
+    <smac-timegraph                                     style="border:1px solid red"
+      devices        = "0,0,#FF8040"
+      minValue       = "0"
+      maxValue       = "4095"
+      timeUnit       = "sec"
+      timeSpan       = "30"
+      width          = "90"
+      height         = "70"
+      backColor      = "#202040"
+      scaleColor     = "#202020"
+      gridColor      = "#303030"
+      scalePlacement = "rightTop">
+    </smac-timegraph><br>
+    <br>
+
+    <button class="dsButton" style="font-size:1.5vw" onpointerdown="RandomValue(20)"> Random Value </button><br>
+    <br>
+    <br>
+
+
+    <!--================================================-->
+    <!-- Load Scripts                                   -->
+    <!--================================================-->
+
+    <!-- SMAC Interface Scripts -->
+    <script src="Scripts/dvCanvas2D.js"></script>
+    <script src="Scripts/SMAC_Widgets.js"></script>
+
+
+    <!--================================================-->
+    <!-- Support Scripts                                -->
+    <!--================================================-->
+
+    <script>
+
+      // Trigger custom event if browser is resized.
+      // This is so custom SMAC Widgets can listen for it and resize themselves.
+      window.addEventListener ('resize', (event) => { $(document.body).trigger ('browserResized'); });
+
+
+
+
+
+
+
+
+
+//       const dialCanvas = new dvCanvas2D (820, 820, 'transparent');
+//       $("#dialContainer").append (dialCanvas.canvas);
+//
+//       dialCanvas.drawRectangle (0, 0, 820, 820, 'red');
+//       dialCanvas.cc.translate (410, 410);
+//       dialCanvas.setShadow (20, 40, shadowColor, 10);
+//       dialCanvas.drawImage (-319, -318, 'Images/DialCenter.png', () =>
+//       {
+//         // dialCanvas.cc.rotate (piOver2);
+//         dialCanvas.drawImage (-72, -407, 'Images/DialHandle.png', () =>
+//         {
+//           // Reset translate, rotate, scale, etc.
+//           dialCanvas.cc.rotate (-0.5);
+//           dialCanvas.unsetShadow ();
+//         });
+//       });
+
+
+
+
+
+      function myPanelButtonOn  () { PopupBar ('Panel Button Pressed' , 200); }
+      function myPanelButtonOff () { PopupBar ('Panel Button Released', 200); }
+      function mySwitchOn       () { PopupBar ('Switch On'            , 200); }
+      function mySwitchOff      () { PopupBar ('Switch Off'           , 200); }
+
+      function LED_OnOff ()
+      {
+        try
+        {
+          const newValue = document.getElementById ("ledSet").on ? 0 : 1;
+          for (i=0; i<14; i++)
+            $(document.body).trigger ('deviceData', [ 0, i, 1, newValue ]);
+        }
+        catch (ex)
+        {
+          ShowException (ex);
+        }
+      }
+
+      function RandomValue (deviceIndex)
+      {
+        try
+        {
+          // Trigger random value for device #20
+          const newValue = (10000.0 * Math.random()).toFixedNoPad (2);
+          $(document.body).trigger ('deviceData', [ 0, deviceIndex, Date.now() % 30000, newValue ]);
+        }
+        catch (ex)
+        {
+          ShowException (ex);
+        }
+      }
+
+      function DialAction ()
+      {
+      }
+
+
+
+
+//       function RotateKnob ()
+//       {
+//         try
+//         {
+//           let angle = 0;
+//           const i = setInterval (() =>
+//           {
+//             $("#knob").prop ('src', 'Images/ui_Dial_' + angle.toString() + '.png');
+//             angle += 30;
+//             if (angle > 350)
+//               clearInterval (i);
+//           }, 100);
+//         }
+//         catch (ex)
+//         {
+//           ShowException (ex);
+//         }
+//       }
+
+
+
+
+    </script>
+
+  </body>
+
+</html>

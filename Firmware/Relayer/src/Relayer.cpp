@@ -247,7 +247,7 @@ void Relayer::espnow_SendCommandString ()
 
 //--- espnow_ProcessDataString ----------------------------
 
-void espnow_ProcessDataString (const esp_now_recv_info_t *info, const uint8_t *dataString, int dataLength)
+IRAM_ATTR void espnow_ProcessDataString (const esp_now_recv_info_t *info, const uint8_t *dataString, int dataLength)
 {
   // A Data String has four fields separated with the '|' char:
   //

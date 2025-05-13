@@ -118,14 +118,14 @@ class SMAC_PanelButton extends HTMLElement
   get offImage  (     ) { return this.OffImage;   }
   set offImage  (value) { this.OffImage = value;  }
 
-  get size      (     ) { return this.Size;       }
-  set size      (value) { this.Size = value;      }
-
   get onAction  (     ) { return this.OnAction;   }
   set onAction  (value) { this.OnAction = value;  }
 
   get offAction (     ) { return this.OffAction;  }
   set offAction (value) { this.OffAction = value; }
+
+  get size      (     ) { return this.Size;       }
+  set size      (value) { this.Size = value;      }
 
   get pressed   (     ) { return this.Pressed;    }
 
@@ -139,18 +139,18 @@ class SMAC_PanelButton extends HTMLElement
       // this.shadow = this.attachShadow ({mode: 'open'});
 
       // Check for required attributes
-      if (!this.hasAttribute ('offImage')) throw '(smac-panelbutton): Missing offImage attribute';
-      this.OffImage = this.getAttribute ('offImage');
-
       if (!this.hasAttribute ('onImage' )) throw '(smac-panelbutton): Missing onImage attribute';
       this.OnImage = this.getAttribute ('onImage');
+
+      if (!this.hasAttribute ('offImage')) throw '(smac-panelbutton): Missing offImage attribute';
+      this.OffImage = this.getAttribute ('offImage');
 
       SetAsInlineBlock (this);
 
       // Set optional attributes
-      this.Size      = this.hasAttribute ('size'     ) ? this.getAttribute ('size')      : '1em';
       this.OnAction  = this.hasAttribute ('onAction' ) ? this.getAttribute ('onAction' ) : undefined;
       this.OffAction = this.hasAttribute ('offAction') ? this.getAttribute ('offAction') : undefined;
+      this.Size      = this.hasAttribute ('size'     ) ? this.getAttribute ('size')      : '1em';
 
       // Internal flag
       this.Pressed = false;
@@ -185,7 +185,7 @@ class SMAC_PanelButton extends HTMLElement
         thisPanelButton.img.src = thisPanelButton.OnImage;
 
         if (thisPanelButton.OnAction != undefined)
-          eval (thisPanelButton.OnAction);
+          window[thisPanelButton.OnAction]();
       }
     }
     catch (ex)
@@ -206,7 +206,7 @@ class SMAC_PanelButton extends HTMLElement
         thisPanelButton.img.src = thisPanelButton.OffImage;
 
         if (thisPanelButton.OffAction != undefined)
-          eval (thisPanelButton.OffAction);
+          window[thisPanelButton.OffAction]();
       }
     }
     catch (ex)
@@ -234,9 +234,6 @@ class SMAC_Switch extends HTMLElement
 
   //--- Attributes ----------------------------------------
 
-  get size      (     ) { return this.Size;                 }
-  set size      (value) { this.Size = value;                }
-
   get onImage   (     ) { return this.OnImage;              }
   set onImage   (value) { this.OnImage = value;             }
 
@@ -248,6 +245,9 @@ class SMAC_Switch extends HTMLElement
 
   get offAction (     ) { return this.OffAction;            }
   set offAction (value) { this.OffAction = value;           }
+
+  get size      (     ) { return this.Size;                 }
+  set size      (value) { this.Size = value;                }
 
   get on        (     ) { return this.On;                   }
   set on        (value) { this.On = (value ? true : false); }
@@ -269,9 +269,9 @@ class SMAC_Switch extends HTMLElement
       this.OffImage = this.getAttribute ('offImage');
 
       // Set optional attributes
-      this.Size      = this.hasAttribute ('size'     ) ?  this.getAttribute ('size'     )                 : '1em';
       this.OnAction  = this.hasAttribute ('onAction' ) ?  this.getAttribute ('onAction' )                 : undefined;
       this.OffAction = this.hasAttribute ('offAction') ?  this.getAttribute ('offAction')                 : undefined;
+      this.Size      = this.hasAttribute ('size'     ) ?  this.getAttribute ('size'     )                 : '1em';
       this.On        = this.hasAttribute ('on'       ) ? (this.getAttribute ('on'       ) ? true : false) : false;
 
       SetAsInlineBlock (this);
@@ -317,7 +317,7 @@ class SMAC_Switch extends HTMLElement
         }
 
         if (thisSwitch.OffAction != undefined)
-          eval (thisSwitch.OffAction);
+          window[thisSwitch.OffAction]();
       }
       else
       {
@@ -334,7 +334,7 @@ class SMAC_Switch extends HTMLElement
         }
 
         if (thisSwitch.OnAction != undefined)
-          eval (thisSwitch.OnAction);
+          window[thisSwitch.OnAction]();
       }
     }
     catch (ex)
@@ -612,7 +612,7 @@ class SMAC_Dial extends HTMLElement
 
       // Execute action, if any
       if (this.Action != undefined)
-        eval (this.Action);
+        window[this.Action]();
     }
     catch (ex)
     {
@@ -1476,7 +1476,7 @@ class SMAC_Display extends HTMLElement
           //       self.setAttribute ('title', 'Current rate: ' + Nodes[nodeID].devices[deviceID].rate.toString() + ' s/hour');
 
           // Update this widget
-          window.requestAnimationFrame.bind (self.updateWidget (timestamp, value));
+          window.requestAnimationFrame.bind (self.updateWidget (value));
         }
       });
     }
@@ -1488,7 +1488,7 @@ class SMAC_Display extends HTMLElement
 
   //--- updateWidget --------------------------------------
 
-  updateWidget = function (timestamp, value)
+  updateWidget = function (value)
   {
     try
     {

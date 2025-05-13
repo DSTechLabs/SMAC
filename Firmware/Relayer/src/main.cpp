@@ -66,7 +66,7 @@
 #define STATUS_LED_GOOD        (digitalWrite (STATUS_LED_PIN, HIGH))
 
 #elif (defined(USE_RGB_LED))
-#define STATUS_LED_PIN         38  // GPIO-48 for v1.0 boards, GPIO-38 for v1.1 boards
+#define STATUS_LED_PIN         48  // GPIO-48 for v1.0 boards, GPIO-38 for v1.1 boards
 #define STATUS_LED_BRIGHTNESS  20  // Not recommended above 64
 #define STATUS_LED_BAD         (rgbLedWrite (STATUS_LED_PIN, STATUS_LED_BRIGHTNESS, 0, 0))
 #define STATUS_LED_GOOD        (rgbLedWrite (STATUS_LED_PIN, 0, STATUS_LED_BRIGHTNESS, 0))

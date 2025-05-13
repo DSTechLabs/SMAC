@@ -57,7 +57,7 @@ Button::Button (const char *inName, int inButtonPin)
 
 //--- DoImmediate (override) ------------------------------
 
-ProcessStatus Button::DoImmediate ()
+IRAM_ATTR ProcessStatus Button::DoImmediate ()
 {
   // Store the latest reading in newState:
   // Not doing any software debouncing here for simplicity
