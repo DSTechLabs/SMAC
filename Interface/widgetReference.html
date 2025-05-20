@@ -22,7 +22,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>SMAC Demo</title>
+    <title>SMAC Widget Reference</title>
 
     <!-- Styles -->
     <link rel="stylesheet" href="dsStyles.css" />
@@ -555,102 +555,61 @@
     <br>
 
     <div class="dsBlock">
+      Dials consist of a "knob" image, a list of angles and optionally a list of labels for each angle.<br>
+      The knob image should be pointing straight up (0º). &nbsp;Angles are clockwise from 0º (straight up) to 360º.<br>
+      If labels are specified, they should coordinate with the number of angles specified.<br>
+      Clicking on the dial image will rotate the knob clockwise to the next angle and call the function specified by changeAction.<br>
+    </div><br>
+    <br>
+
+    <div class="dsBlock">
       <u>&nbsp;HTML Tag:&nbsp;</u> <span class="mono">&lt;smac-dial&gt;</span><br>
       <br>
 
       <u>&nbsp;Attributes: (* = required)&nbsp;</u><br>
       <table class="dsTable">
-        <tr><td class="mono">faceImage*   </td><td>image to use for the dial's face plate            </td></tr>
-        <tr><td class="mono">knobImage*   </td><td>image to use for the dial's knob                  </td></tr>
-        <tr><td class="mono">numSettings* </td><td>number of angle settings                          </td></tr>
-        <tr><td class="mono">changeAction </td><td>function to call when the dial setting is changed </td></tr>
-        <tr><td class="mono">size         </td><td>percentage of browser width                       </td></tr>
+        <tr><td class="mono">knobImage*   </td><td>image to use for the dial's knob                       </td></tr>
+        <tr><td class="mono">angles*      </td><td>angles in degrees for each dial stop (comma delimited) </td></tr>
+        <tr><td class="mono">labels       </td><td>labels that correspond to each angle (comma delimited) </td></tr>
+        <tr><td class="mono">changeAction </td><td>function to call when the dial setting is changed      </td></tr>
+        <tr><td class="mono">size         </td><td>percentage of browser width (default is 10)            </td></tr>
+        <tr><td class="mono">currentIndex </td><td>angle index to set knob (default is first angle)       </td></tr>
       </table>
     </div><br>
     <br>
 
+    <div class="dsCode codeMargin">
+&lt;smac-dial
+  knobImage    = "Images/ui_Dial1.png"
+  angles       = "0,30,60,90,120,150,180,210,240,270,300,330"
+  labels       = "0,30,60,90,120,150,180,210,240,270,300,330"
+  changeAction = "myDialChanged"&gt;
+&lt;/smac-dial&gt;
 
+&lt;smac-dial
+  knobImage    = "Images/ui_Dial1.png"
+  angles       = "45,90,135"
+  labels       = "Low,Med,High"
+  size         = "10"
+  changeAction = "myDialChanged"&gt;
+&lt;/smac-dial&gt;
+    </div>
 
-    <br>
-    <br>
-    <br>
-
-<!--
-
-    <smac-dial
-      device      = "0,0"
-      size        = "5"
-      angles      = "0,30,60,90,120,150,180,210,240,270,300,330"
-      labels      = "O,O,O,O,O,O,O,O,O,O,O,O"
-      labelClass  = "smac-dial"
-      position    = "0"
-      baseImage   = "dial_baseImage1.png"
-      handleImage = "dial_handleImage1.png"
-      action      = "DialAction()">
+    <smac-dial style="margin:2vw 0 0 3vw"
+      knobImage    = "Images/ui_Dial1.png"
+      angles       = "0,30,60,90,120,150,180,210,240,270,300,330"
+      labels       = "0,30,60,90,120,150,180,210,240,270,300,330"
+      size         = "5"
+      changeAction = "myDialChanged">
     </smac-dial>
 
-    <smac-dial style="margin-left:2vw"
-      device      = "0,0"
-      size        = "10"
-      angles      = "30,60,90"
-      labels      = "1,2,3"
-      labelClass  = "smac-dial"
-      position    = "0"
-      baseImage   = "dial_baseImage1.png"
-      handleImage = "dial_handleImage1.png"
-      action      = "DialAction()">
-    </smac-dial>
-
-    <smac-dial style="margin-left:2vw"
-      device      = "0,0"
-      size        = "10"
-      angles      = "0,90"
-      labels      = "OFF,ON"
-      labelClass  = "smac-dial"
-      position    = "0"
-      baseImage   = "dial_baseImage1.png"
-      handleImage = "dial_handleImage1.png"
-      action      = "DialAction()">
-    </smac-dial>
-
-    <smac-dial style="margin-left:8vw"
-      device      = "0,0"
-      size        = "10"
-      angles      = "0,60,90,120,240,270,300"
-      labels      = "OFF,     LOW,     MED,       HIGH,HIGH     ,MED     ,LOW     "
-      labelClass  = "smac-dial"
-      position    = "0"
-      baseImage   = "dial_baseImage1.png"
-      handleImage = "dial_handleImage1.png"
-      action      = "DialAction()">
-    </smac-dial>
-
-    <br>
-    <br>
-    <br>
-
-
-<!--
-    <smac-dial style="margin-left:2vw"
-      size       = "10"
-      angles     = "210,240,270,300"
-      labels     = "Off,Low,Medium,High"
-      labelClass = "smac-dial"
-      position   = "0"
-      action     = "DialAction()">
-    </smac-dial>
-
-    <smac-dial style="margin-left:2vw"
-      size       = "10"
-      angles     = "270,90"
-      labels     = "Low,High"
-      labelClass = "smac-dial"
-      position   = "0"
-      action     = "DialAction()">
+    <smac-dial style="margin:0 0 0 10vw"
+      knobImage    = "Images/ui_Dial1.png"
+      angles       = "45,90,135"
+      labels       = "Low,Med,High"
+      size         = "10"
+      changeAction = "myDialChanged">
     </smac-dial><br>
- -->
-
-
     <br>
     <br>
 
@@ -660,7 +619,7 @@
     <div class="sectionTitle">Spinners</div>
     <br>
 
-    ... coming soon ...<br>
+    <input type="number" class="dsInput" style="font-size:3vw" /><br>
     <br>
     <br>
 
@@ -668,6 +627,10 @@
     <div id="sliders"></div>
 
     <div class="sectionTitle">Sliders</div>
+    <br>
+    <br>
+
+    ... coming soon ...<br>
     <br>
     <br>
 
@@ -1206,6 +1169,7 @@
       function myPanelButtonOff () { PopupBar ('Panel Button Released', 200); }
       function mySwitchOn       () { PopupBar ('Switch On'            , 200); }
       function mySwitchOff      () { PopupBar ('Switch Off'           , 200); }
+      function myDialChanged    () { PopupBar ('Dial Changed'         , 200); }
 
       function LED_OnOff ()
       {

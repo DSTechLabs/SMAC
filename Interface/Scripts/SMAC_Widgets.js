@@ -10,7 +10,7 @@
 //               ────────────────
 //               √ smac-panelbutton
 //               √ smac-switch (including E-Stop)
-//               ∙ smac-dial
+//               √ smac-dial
 //               ∙ smac-spinner
 //               ∙ smac-slider     https://www.smashingmagazine.com/2021/12/create-custom-range-input-consistent-browsers/
 //               ∙ smac-dualslider
@@ -79,9 +79,9 @@ function SetAsInlineBlock (element)
     // Set element's style as display:inline-block and vertical-align:top
     let style = element.getAttribute ('style');
     if (style == undefined)
-      style = 'display:inline-block; vertical-align:top';
+      style = 'display:inline-block; position:relative; vertical-align:top';
     else
-      style = 'display:inline-block; vertical-align:top; ' + style;
+      style = 'display:inline-block; position:relative; vertical-align:top; ' + style;
     element.setAttribute ('style', style);
   }
   catch (ex)
@@ -373,36 +373,27 @@ class SMAC_Dial extends HTMLElement
   constructor ()
   {
     super ();
-
-    // Rebuild this widget on resize
-    $(document.body).on ('browserResized', () => { this.build (); });
   }
 
   //--- Attributes ----------------------------------------
 
-  get size        (     ) { return this.Size;         }
-  set size        (value) { this.Size = value;        }
+  get knobImage    (     ) { return this.KnobImage;     }
+  set knobImage    (value) { this.KbobImage = value;    }
 
-  get baseImage   (     ) { return this.BaseImage;    }
-  set baseImage   (value) { this.BaseImage = value;   }
+  get angles       (     ) { return this.Angles;        }
+  set angles       (value) { this.Angles = value;       }
 
-  get handleImage (     ) { return this.HandleImage;  }
-  set handleImage (value) { this.HandleImage = value; }
+  get labels       (     ) { return this.Labels;        }
+  set labels       (value) { this.Labels = value;       }
 
-  get angles      (     ) { return this.Angles;       }  // 0|30|60|90|120|150|180|210|240|270|300|330
-  set angles      (value) { this.Angles = value;      }
+  get changeAction (     ) { return this.ChangeAction;  }
+  set changeAction (value) { this.ChangeAction = value; }
 
-  get labels      (     ) { return this.Labels;       }  // text label for each angle
-  set labels      (value) { this.Labels = value;      }
+  get size         (     ) { return this.Size;          }
+  set size         (value) { this.Size = value;         }
 
-  get labelClass  (     ) { return this.LabelClass;   }
-  set labelClass  (value) { this.LabelClass = value;  }
-
-  get position    (     ) { return this.Position;     }
-  set position    (value) { this.Position = value;    }
-
-  get action      (     ) { return this.Action;       }
-  set action      (value) { this.Action = value;      }
+  get currentIndex (     ) { return this.CurrentIndex;  }
+  set currentIndex (value) { this.CurrentIndex = value; }
 
   //--- connectedCallback ---------------------------------
 
@@ -410,154 +401,85 @@ class SMAC_Dial extends HTMLElement
   {
     try
     {
-      // // Create shadow root
-      // this.shadow = this.attachShadow ({mode: 'open'});
-
       // Check for required attributes
-      if (!this.hasAttribute ('baseImage')) throw '(smac-dial): Missing baseImage attribute';
-      this.BaseImage = this.getAttribute ('baseImage');
+      if (!this.hasAttribute ('knobImage')) throw '(smac-dial): Missing knobImage attribute';
+      this.KnobImage = this.getAttribute ('knobImage');
 
-      if (!this.hasAttribute ('handleImage')) throw '(smac-dial): Missing handleImage attribute';
-      this.HandleImage = this.getAttribute ('handleImage');
+      if (!this.hasAttribute ('angles'   )) throw '(smac-dial): Missing angles attribute';
+      this.Angles = this.getAttribute ('angles');
 
       // Set optional attributes
-      this.Size       = this.hasAttribute ('size'      ) ?           this.getAttribute ('size'      )  : '5'  ;
-      this.Angles     = this.hasAttribute ('angles'    ) ?           this.getAttribute ('angles'    )  : '330,30';
-      this.Labels     = this.hasAttribute ('labels'    ) ?           this.getAttribute ('labels'    )  : 'Off,On';
-      this.LabelClass = this.hasAttribute ('labelClass') ?           this.getAttribute ('labelClass')  : undefined;
-      this.Position   = this.hasAttribute ('position'  ) ? parseInt (this.getAttribute ('position'  )) : 0;
-      this.Action     = this.hasAttribute ('action'    ) ?           this.getAttribute ('action'    )  : undefined;
+      this.Labels       = this.hasAttribute ('labels'      ) ?           this.getAttribute ('labels'      )  : undefined;
+      this.ChangeAction = this.hasAttribute ('changeAction') ?           this.getAttribute ('changeAction')  : undefined;
+      this.Size         = this.hasAttribute ('size'        ) ? Number   (this.getAttribute ('size'        )) : 10;
+      this.CurrentIndex = this.hasAttribute ('currentIndex') ? parseInt (this.getAttribute ('currentIndex')) : 0;
 
-      // Set number of stops from number of angles
-      this.angleArray   = this.Angles.split (',');
-      this.labelArray   = this.Labels.split (',');
-      this.numPositions = this.angleArray.length;
+      // Create angle and label arrays
+      this.angleArray = this.Angles.replaceAll (' ', '').split (',');
+      this.numAngles  = this.angleArray.length;
 
-      // Check settings
-      if (this.labelArray.length != this.numPositions)
-        throw '(smac-dial): Number of labels does not match number of angles';
+      if (this.Labels != undefined)
+        this.labelArray = this.Labels.replaceAll (' ', '').split (',');
 
+      // Check current index
+      if (this.CurrentIndex < 0 || this.CurrentIndex >= this.numAngles)
+        throw '(smac-dial): Invalid currentIndex attribute';
+
+      // Build the dial with a fixed drop shadow direction
       SetAsInlineBlock (this);
-      this.style.position = 'relative';
 
-      // Create dial images
-      this.imgBase = document.createElement ('img');
-      this.imgBase.setAttribute ('draggable', 'false');
-      this.imgBase.style = 'user-drag:none; width:' + this.Size + 'vw; filter:drop-shadow(' + this.Size/30 + 'vw ' + this.Size/20 + 'vw 0.4vw var(--dark)); cursor:pointer; vertical-align:top';
-      this.imgBase.src = this.BaseImage;
-      this.append (this.imgBase);
+      // Create a knob layer to hold the dial.
+      // This is necessary to apply a drop shadow in a fixed direction
+      // without the shadow rotating with the dial.
+      this.knobLayer = document.createElement ('div');
+      this.knobLayer.style = 'display:inline-block; position:relative; margin:0; padding:0; filter:drop-shadow(' + this.Size/30 + 'vw ' + this.Size/30 + 'vw 0.4vh var(--dark)); vertical-align:top';
 
-      this.imgHandle = document.createElement ('img');
-      this.imgHandle.setAttribute ('draggable', 'false');
-      this.imgHandle.style = 'user-drag:none; width:' + this.Size + 'vw; filter:drop-shadow(' + this.Size/30 + 'vw ' + this.Size/20 + 'vw 0.4vw var(--dark)); cursor:pointer; vertical-align:top';
-      this.imgHandle.src = this.BaseImage;
-      this.append (this.imgHandle);
+      // Create knob image
+      this.imgKnob = document.createElement ('img');
+      this.imgKnob.setAttribute ('draggable', 'false');
+      this.imgKnob.style = 'position:absolute; left:0; top:0; width:' + this.Size + 'vw; cursor:pointer; vertical-align:top; user-drag:none';
+      this.imgKnob.src = this.KnobImage;
 
-
-
-
-
-
-
-      // Position Handle centered on Base
-
-      this.dialImage.style.position = 'relative';
-      this.dialImage.style.left     = '0';
-      this.dialImage.style.top      = '0';
-      this.dialImage.style.cursor   = 'pointer';
-      this.append (this.dialImage);
-
-
-
-
-
-
-
-
-      // Create labels
-      this.labelElements = [];
-      for (let i=0; i<this.numPositions; i++)
+      $(this.imgKnob).on ('load', () =>
       {
-        this.labelElements[i] = document.createElement ('div');
-        this.labelElements[i].innerHTML = this.labelArray[i];
-        this.labelElements[i].classList.add ('smac-dialLabel');
-        if (this.LabelClass != undefined) this.labelElements[i].classList.add (this.LabelClass);
-        this.labelElements[i].style.fontSize = (Number(this.Size) / 5.0).toString() + 'vw';
-        this.labelElements[i].addEventListener ('pointerdown', (event) => { StopEvent(event); this.setDial(event); });
-        this.append (this.labelElements[i]);
-      }
+        // Add knob to knob layer
+        this.knobLayer.append (this.imgKnob);
 
-      // Draw dial
-      this.build ();
+        // Add knobLayer to this dial
+        this.append (this.knobLayer);
 
+        // Add labels to dial
+        if (this.Labels != undefined)
+        {
+          const centerX = $(this.imgKnob).width () / 2;
+          const centerY = $(this.imgKnob).height() / 2;
+          const radius  = centerY + 3*this.Size;  // Extra space for labels
 
+          for (let i=0; i<this.numAngles; i++)
+          {
+            const radAngle = (90 - Number(this.angleArray[i])) / 57.3;  // convert angle to radians
+            const left = centerX + radius * Math.cos (radAngle);
+            const top  = centerY - radius * Math.sin (radAngle);
 
+            const label = document.createElement ('label');
 
+            label.style = 'position:absolute; font-family:font_robotoRegular, sans-serif; font-size:' + this.Size/8 + 'em; font-weight:bold; text-shadow:1px 1px 1px var(--light); vertical-align:top';
 
-      // this.addEventListener ('pointerdown', (event) => { StopEvent(event); this.setDial(event); });
+            label.innerHTML = this.labelArray[i];
 
+            this.append (label);
 
+            label.style.left = (left - $(label).width ()/2) + 'px';
+            label.style.top  = (top  - $(label).height()/2) + 'px';
+          }
+        }
 
+        // Set currentIndex angle
+        this.imgKnob.style.rotate = this.angleArray[this.CurrentIndex] + 'deg';
 
-
-    }
-    catch (ex)
-    {
-      ShowException (ex);
-    }
-  }
-
-  //--- build ---------------------------------------------
-
-  build = function ()
-  {
-    try
-    {
-      // Set dial size and center
-      const dialWidth = Math.round (this.Size * GetBrowserWidth() / 100);
-      this.dialImage.style.width = dialWidth.toString() + 'px';
-
-
-
-      // const dialHeight = parseInt (window.getComputedStyle (this.dialImage).height);
-
-
-
-
-
-        // console.info (dialWidth.toString() + ' x ' + dialHeight.toString());
-
-
-
-
-
-      // const offsetLeft = dialWidth  / 2;
-      // const offsetTop  = dialHeight / 2;
-
-
-      const radius     = dialWidth / 2;  // Math.max (offsetLeft, offsetTop);
-
-      // Position labels
-      for (let p=0; p<this.numPositions; p++)
-      {
-        const radAngle = Number (this.angleArray[p]) * deg2rad - piOver2;
-
-        const labelStyle  = window.getComputedStyle (this.labelElements[p]);
-        const labelWidth  = parseInt (labelStyle.width );
-        const labelHeight = parseInt (labelStyle.height);
-
-        const left = Math.round (radius + (radius * Math.cos (radAngle)) - labelWidth /2);
-        const top  = Math.round (radius + (radius * Math.sin (radAngle)) - labelHeight/2);
-
-        this.labelElements[p].style.left = left.toString () + 'px';
-        this.labelElements[p].style.top  = top .toString () + 'px';
-      }
-
-
-
-
-
-
+        // Change angle setting when clicked
+        this.addEventListener ('pointerdown', (event) => { StopEvent(event); this.setDial(event); });
+      });
     }
     catch (ex)
     {
@@ -571,48 +493,18 @@ class SMAC_Dial extends HTMLElement
   {
     try
     {
-//       // Get relative mouse click position
-//       const clickSpecs = GetClickSpecs (event);
-//
-//       // Reduce position (counter-clockwise) if left side was clicked
-//       // Increase position (clockwise) if right side was clicked
-//       if ((clickSpecs.x > clickSpecs.boundingRect.width / 2) || (clickSpecs.y > clickSpecs.boundingRect.height / 2))
-//       {
-//         if (this.Position < this.numPositions - 1)
-//           ++this.Position;
-//       }
-//       else
-//       {
-//         if (this.Position > 0)
-//           --this.Position;
-//       }
-//
-//       // Draw dial at new position
-//       this.dialImage.src = 'Images/ui_Dial_' + this.angleArray[this.Position] + '.png';
+      // Advance to next angle
+      if (this.CurrentIndex < this.numAngles - 1)
+        ++this.CurrentIndex;
+      else
+        this.CurrentIndex = 0;
 
-
-
-
-
-
-
-      this.Position = 0;
-      const dialInt = setInterval (() =>
-      {
-        this.dialImage.style.transform = 'rotate(' + this.Position.toString() + 'deg)';
-        this.Position += 30;
-      }, 100);
-
-
-
-
-
-
-
+      // Rotate knob to new position
+      this.imgKnob.style.rotate = this.angleArray[this.CurrentIndex] + 'deg';
 
       // Execute action, if any
-      if (this.Action != undefined)
-        window[this.Action]();
+      if (this.ChangeAction != undefined)
+        window[this.ChangeAction]();
     }
     catch (ex)
     {
