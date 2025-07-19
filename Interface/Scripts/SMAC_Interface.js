@@ -14,7 +14,7 @@
 
 //--- Globals ---------------------------------------------
 
-const AppVersion = '── 2025.05.08 ──';
+const AppVersion = '── 2025.07.19 ──';
 const Debugging  = false;  // Set to false for production use
 
 let TotalPages  = 0;
@@ -395,7 +395,7 @@ async function ProcessRelayerMessage (dataString)
     {
       // Update all UI Widgets with device data
       // These events are handled by SMAC Widgets
-      $(document.body).trigger ('deviceData', [ nodeIndex, deviceIndex, timestamp, Number(value) ]);
+      $(document.body).trigger ('deviceData', [ nodeIndex, deviceIndex, timestamp, value ]);
       return;
     }
 

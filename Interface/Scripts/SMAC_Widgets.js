@@ -11,7 +11,7 @@
 //               √ smac-panelbutton
 //               √ smac-switch (including E-Stop)
 //               √ smac-dial
-//               ∙ smac-spinner
+//               √ smac-spinner
 //               ∙ smac-slider     https://www.smashingmagazine.com/2021/12/create-custom-range-input-consistent-browsers/
 //               ∙ smac-dualslider
 //               ∙ smac-joystick
@@ -22,14 +22,15 @@
 //               √ smac-panellight
 //               ∙ smac-flasher
 //               √ smac-digital
-//               √ smac-odometer
+//               ∙ smac-odometer
 //               √ smac-display
 //               √ smac-growbar
-//               ∙ smac-gauge
-//               √ smac-bargraph
+//               √ smac-gauge
+//               ∙ smac-bargraph
 //               √ smac-timegraph
-//               ∙ smac-devicegraph
-//               √ smac-polargraph
+//               √ smac-xygraph
+//               ∙ smac-xyzgraph
+//               ∙ smac-polargraph
 //               ∙ smac-piechart
 //               ∙ smac-donutchart
 //               ∙ smac-chartgraph
@@ -77,11 +78,12 @@ function SetAsInlineBlock (element)
   try
   {
     // Set element's style as display:inline-block and vertical-align:top
+    const inlineStyle = 'display:inline-block; position:relative; vertical-align:top';
     let style = element.getAttribute ('style');
     if (style == undefined)
-      style = 'display:inline-block; position:relative; vertical-align:top';
+      style = inlineStyle;
     else
-      style = 'display:inline-block; position:relative; vertical-align:top; ' + style;
+      style = inlineStyle + style;
     element.setAttribute ('style', style);
   }
   catch (ex)
@@ -440,7 +442,7 @@ class SMAC_Dial extends HTMLElement
       this.imgKnob.style = 'position:absolute; left:0; top:0; width:' + this.Size + 'vw; cursor:pointer; vertical-align:top; user-drag:none';
       this.imgKnob.src = this.KnobImage;
 
-      $(this.imgKnob).on ('load', () =>
+      this.imgKnob.onload = () =>
       {
         // Add knob to knob layer
         this.knobLayer.append (this.imgKnob);
@@ -479,7 +481,7 @@ class SMAC_Dial extends HTMLElement
 
         // Change angle setting when clicked
         this.addEventListener ('pointerdown', (event) => { StopEvent(event); this.setDial(event); });
-      });
+      };
     }
     catch (ex)
     {
@@ -516,26 +518,6 @@ class SMAC_Dial extends HTMLElement
 customElements.define ('smac-dial', SMAC_Dial);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //=============================================================================
 //  <smac-slider> element
 //=============================================================================
@@ -554,38 +536,38 @@ class SMAC_Slider extends HTMLElement
 
   //--- Attributes ----------------------------------------
 
-  get orientation    (     ) { return this.Orientation;     }
-  set orientation    (value) { this.Orientation = value;    }
+  get width          (     ) { return this.Width;            }
+  set width          (value) { this.Width = value;           }
 
-  get width          (     ) { return this.Width;           }
-  set width          (value) { this.Width = value;          }
+  get height         (     ) { return this.Height;           }
+  set height         (value) { this.Height = value;          }
 
-  get height         (     ) { return this.Height;          }
-  set height         (value) { this.Height = value;         }
+  get knobImage      (     ) { return this.KnobImage;        }
+  set knobImage      (value) { this.KnobImage = value;       }
 
-  get minValue       (     ) { return this.MinValue;        }
-  set minValue       (value) { this.MinValue = value;       }
+  get minValue       (     ) { return this.MinValue;         }
+  set minValue       (value) { this.MinValue = value;        }
 
-  get maxValue       (     ) { return this.MaxValue;        }
-  set maxValue       (value) { this.MaxValue = value;       }
+  get maxValue       (     ) { return this.MaxValue;         }
+  set maxValue       (value) { this.MaxValue = value;        }
 
-  get value          (     ) { return this.Value;           }
-  set value          (value) { this.Value = value;          }
+  get value          (     ) { return this.Value;            }
+  set value          (value) { this.Value = value;           }
 
-  get units          (     ) { return this.Units;           }
-  set units          (value) { this.Units = value;          }
+  get backColor      (     ) { return this.BackColor;        }
+  set backColor      (value) { this.BackColor = value;       }
 
-  get backColor      (     ) { return this.BackColor;       }
-  set backColor      (value) { this.BackColor = value;      }
-
-  get fillColor      (     ) { return this.FillColor;       }
-  set fillColor      (value) { this.FillColor = value;      }
+  get fillColor      (     ) { return this.FillColor;        }
+  set fillColor      (value) { this.FillColor = value;       }
 
   get scaleColor     (     ) { return this.ScaleColor;      }
   set scaleColor     (value) { this.ScaleColor = value;     }
 
   get scalePlacement (     ) { return this.ScalePlacement;  }
   set scalePlacement (value) { this.ScalePlacement = value; }
+
+  get units          (     ) { return this.Units;            }
+  set units          (value) { this.Units = value;           }
 
   //--- connectedCallback ---------------------------------
 
@@ -596,31 +578,47 @@ class SMAC_Slider extends HTMLElement
       // // Create shadow root
       // this.shadow = this.attachShadow ({mode: 'open'});
 
-      SetAsInlineBlock (this);
+      // Check for required attributes
+      if (!this.hasAttribute ('knobImage')) throw '(smac-slider): Missing knobImage attribute';
+      this.KnobImage = this.getAttribute ('knobImage');
 
       // Set optional attributes
-      this.Orientation    = this.hasAttribute ('orientation'   ) ?         this.getAttribute ('orientation'   )  : 'vertical';
       this.Width          = this.hasAttribute ('width'         ) ? Number (this.getAttribute ('width'         )) : 3;
       this.Height         = this.hasAttribute ('height'        ) ? Number (this.getAttribute ('height'        )) : 20;
       this.MinValue       = this.hasAttribute ('minValue'      ) ? Number (this.getAttribute ('minValue'      )) : 0;
       this.MaxValue       = this.hasAttribute ('maxValue'      ) ? Number (this.getAttribute ('maxValue'      )) : 4095;
       this.Value          = this.hasAttribute ('value'         ) ? Number (this.getAttribute ('value'         )) : this.MinValue;
-      this.Units          = this.hasAttribute ('units'         ) ?         this.getAttribute ('units'         )  : '';
       this.BackColor      = this.hasAttribute ('backColor'     ) ?         this.getAttribute ('backColor'     )  : '#303030';
       this.FillColor      = this.hasAttribute ('fillColor'     ) ?         this.getAttribute ('fillColor'     )  : '#A0A0A0';
       this.ScaleColor     = this.hasAttribute ('scaleColor'    ) ?         this.getAttribute ('scaleColor'    )  : undefined;
       this.ScalePlacement = this.hasAttribute ('scalePlacement') ?         this.getAttribute ('scalePlacement')  : 'left';
+      this.Units          = this.hasAttribute ('units'         ) ?         this.getAttribute ('units'         )  : '';
 
-      // Build this widget
-      this.build ();
+      SetAsInlineBlock (this);
 
-      //--- React to pointer dragging ---
+      // Default orientation is vertical with scale on left side
+      this.Horizontal = false;
 
+      // If bar width is greater than bar height, then orientation is horizontal with scale on top
+      if (this.Width > this.Height)
+      {
+        this.Horizontal = true;
 
+        if (this.ScalePlacement == 'left')
+          this.ScalePlacement = 'top';
+      }
 
+      // Get knob size
+      const knobImg = document.createElement ('img');
+      knobImg.onload = () =>
+      {
+        this.KnobWidth  = knobImg.width;
+        this.KnobHeight = knobImg.height;
 
+        this.build ();
+      };
 
-
+      knobImg.src = this.KnobImage;
     }
     catch (ex)
     {
@@ -628,34 +626,98 @@ class SMAC_Slider extends HTMLElement
     }
   }
 
+
+
+
+//   //--- imgLoaded -----------------------------------------
+//
+//   imgLoaded = function ()
+//   {
+//     try
+//     {
+//       // Check if both bar and slider images are loaded
+//       if (this.barImg.width == 0 || this.sliderImg.width == 0)
+//         return;
+//
+//
+//
+//       console.info ("Both bar and slider images are loaded.  barWidth=" + this.barImg.width + ", sliderWidth=" + this.sliderImg.width);
+//
+//
+//       // If bar width is greater than bar height, then orientation is horizontal
+//       this.Horizontal = (this.Width > this.Height);
+//
+//     }
+//     catch (ex)
+//     {
+//       ShowException (ex);
+//     }
+//   }
+
   //--- build ---------------------------------------------
 
   build = function ()
   {
     try
     {
-      // If this widget is horizontal, then its bar height is fixed.
-      // If this widget is vertical  , then its bar width  is fixed.
-      // This is to show the pointer nicely with no squeezing or stretching.
-      let cWidth  = 52;
-      let cHeight = 36;
-
       // Canvas dimensions are percentages of browser's size
-      if (this.Orientation == 'horizontal')
-        cWidth  = Math.max (Math.round (this.Width  * GetBrowserWidth () / 100), 52);
+      const cWidth  = Math.max (Math.round (this.Width  * GetBrowserWidth () / 100), this.KnobWidth );
+      const cHeight = Math.max (Math.round (this.Height * GetBrowserHeight() / 100), this.KnobHeight);
+
+
+
+
+
+
+      // How to scale the knobImage ???
+
+
+
+
+
+      // Create a 2D data visualization canvas (dvCanvas2D)
+      this.smacCanvas = new dvCanvas2D (cWidth, cHeight, 'transparent');
+
+      // Check if a canvas already exists from previous build
+      if (this.firstChild == undefined)
+        this.appendChild  (this.smacCanvas.canvas);
       else
-        cHeight = Math.max (Math.round (this.Height * GetBrowserHeight() / 100), 36);
+        this.replaceChild (this.smacCanvas.canvas, this.firstChild);  // Replace existing canvas
+
+
+
+
+
+
+
 
       // Set initial bar size
-      this.BarWidth  = cWidth;
-      this.BarHeight = cHeight;
-      this.OffsetX   = 0;
-      this.OffsetY   = 0;
+      if (this.Horizontal)
+      {
+        this.BarWidth  = cWidth - this.KnobWidth;
+        this.BarHeight = cHeight;
 
-      // In area and adjust offsets for scale, if specified
+        this.OffsetX  = this.KnobWidth  / 2;
+        this.OffsetY  = 0;
+      }
+      else
+      {
+        this.BarWidth  = cWidth;
+        this.BarHeight = cHeight - this.KnobHeight;
+
+        this.OffsetX  = 0;
+        this.OffsetY  = this.KnobHeight  / 2;
+      }
+
+
+
+
+
+
+      // Reduce bar area and adjust offsets for scale, if specified
       if (this.ScaleColor != undefined)
       {
-        if (this.Orientation == 'horizontal')
+        if (this.Horizontal)
         {
           this.BarWidth  -= 50;
           this.BarHeight -= 28;
@@ -675,17 +737,8 @@ class SMAC_Slider extends HTMLElement
         }
       }
 
-      // Create a 2D data visualization canvas (dvCanvas2D)
-      this.smacCanvas = new dvCanvas2D (cWidth, cHeight, 'transparent');
-
-      // Check if a canvas already exists from previous build
-      if (this.firstChild == undefined)
-        this.appendChild  (this.smacCanvas.canvas);
-      else
-        this.replaceChild (this.smacCanvas.canvas, this.firstChild);  // Replace existing canvas
-
       // Back and Fill Gradients
-      if (this.Orientation == 'horizontal')
+      if (this.Horizontal)
       {
         this.BackGrad = this.smacCanvas.cc.createLinearGradient (this.OffsetX, this.OffsetY, this.OffsetX+this.BarWidth, this.OffsetY);
         this.BackGrad.addColorStop (0.0, this.smacCanvas.adjustBrightness (this.BackColor, -30));  // darker
@@ -706,26 +759,16 @@ class SMAC_Slider extends HTMLElement
         this.FillGrad.addColorStop (1.0, this.smacCanvas.adjustBrightness (this.FillColor, -30));  // darker
       }
 
-      this.PointerFont = '16px sans-serif';
-
-
-
-
-
-      // // Clear bar area
-      // this.smacCanvas.drawRectangle (this.OffsetX, this.OffsetY, this.BarWidth, this.BarHeight, this.BackGrad, fill);
-
-
-
-
+      // Clear bar area
+      this.smacCanvas.drawRectangle (this.OffsetX, this.OffsetY, this.BarWidth, this.BarHeight, this.BackGrad, fill);
 
       // Manually calculate scale factor if scaleColor not specified
       if (this.ScaleColor == undefined)
-        this.ScaleFactor = (this.orientation == 'horizontal' ? this.BarWidth : this.BarHeight) / (this.MaxValue - this.MinValue);
+        this.ScaleFactor = (this.Horizontal ? this.BarWidth : this.BarHeight) / (this.MaxValue - this.MinValue);
       else
       {
-        // drawLinearScale returns the scale factor for you
-        if (this.Orientation == 'horizontal')
+        // drawLinearScale() returns the scale factor for you
+        if (this.Horizontal)
         {
           if (this.ScalePlacement == 'top')
             this.ScaleFactor = this.smacCanvas.drawLinearScale (this.OffsetX, this.OffsetY  , this.BarWidth, this.BarHeight, ScaleOrientation.HorizTop   , this.MinValue, this.MaxValue, this.Units, this.ScaleColor);
@@ -741,13 +784,19 @@ class SMAC_Slider extends HTMLElement
         }
       }
 
-      // Set clipping region
-      this.smacCanvas.setClipRectangle (this.OffsetX, this.OffsetY, this.BarWidth, this.BarHeight);
+
+
+
+
+      // // Set clipping region
+      // this.smacCanvas.setClipRectangle (this.OffsetX, this.OffsetY, this.BarWidth, this.BarHeight);
 
 
 
 
 
+
+      //--- React to pointer dragging ---
 
       this.updateWidget (200);
 
@@ -768,63 +817,15 @@ class SMAC_Slider extends HTMLElement
   {
     try
     {
-      // Convert drag position to real value
-      this.Value = dragPosition / this.ScaleFactor + this.MinValue;
-      const pointerText = this.Value.toPrecision (4);
-      const pointerTextSize = this.smacCanvas.getTextSize (pointerText, this.PointerFont);
+      let level = Math.round ((dragPosition - this.MinValue) * this.ScaleFactor);
+      if (level < 0) level = 0;
 
       this.smacCanvas.drawRectangle (this.OffsetX, this.OffsetY, this.BarWidth, this.BarHeight, this.BackGrad, fill);
 
-      if (this.Orientation == 'horizontal')
-      {
-        const gx = this.OffsetX + dragPosition;
-        const gy = this.OffsetY;
-
-        this.smacCanvas.drawRectangle (this.OffsetX, this.OffsetY, dragPosition, this.BarHeight, this.FillGrad, fill);
-
-        // Draw horizontal pointer
-        const vertexArray =
-        [
-          { x: gx     , y: gy +                  1 },
-          { x: gx + 23, y: gy +                  9 },
-          { x: gx + 23, y: gy + this.BarHeight - 9 },
-          { x: gx     , y: gy + this.BarHeight - 1 },
-          { x: gx - 23, y: gy + this.BarHeight - 9 },
-          { x: gx - 23, y: gy +                  9 }
-        ];
-        this.smacCanvas.drawPoly (vertexArray, '#F0F0F0', fill);
-        this.smacCanvas.drawPoly (vertexArray, '#202020',    1);
-
-        // Draw value inside pointer
-        const pointerTextX = dragPosition - pointerTextSize.width/2;
-        const pointerTextY = gy + this.BarHeight/2 - 7;
-        this.smacCanvas.drawText (pointerTextX, pointerTextY, pointerText, '#202020', this.PointerFont);
-      }
+      if (this.Horizontal)
+        this.smacCanvas.drawRectangle (this.OffsetX, this.OffsetY, level, this.BarHeight, this.FillGrad, fill);
       else
-      {
-        const gx = this.OffsetX;
-        const gy = this.OffsetY + this.BarHeight - dragPosition;
-
-        this.smacCanvas.drawRectangle (this.OffsetX, gy, this.BarWidth, dragPosition, this.FillGrad, fill);
-
-        // Draw vertical pointer
-        const vertexArray =
-        [
-          { x: gx +                 1, y: gy      },
-          { x: gx +                 9, y: gy - 10 },
-          { x: gx + this.BarWidth - 9, y: gy - 10 },
-          { x: gx + this.BarWidth - 1, y: gy      },
-          { x: gx + this.BarWidth - 9, y: gy + 10 },
-          { x: gx +                 9, y: gy + 10 }
-        ];
-        this.smacCanvas.drawPoly (vertexArray, '#F0F0F0', fill);
-        this.smacCanvas.drawPoly (vertexArray, '#202020',    1);
-
-        // Draw value inside pointer
-        const pointerTextX = gx + this.BarWidth/2 - pointerTextSize.width/2;
-        const pointerTextY = gy - 7;
-        this.smacCanvas.drawText (pointerTextX, pointerTextY, pointerText, '#202020', this.PointerFont);
-      }
+        this.smacCanvas.drawRectangle (this.OffsetX, this.OffsetY + this.BarHeight - level, this.BarWidth, level, this.FillGrad, fill);
     }
     catch (ex)
     {
@@ -837,6 +838,21 @@ customElements.define ('smac-slider', SMAC_Slider);
 
 
 
+
+
+
+
+//=============================================================================
+//  <smac-dualslider> element
+//=============================================================================
+
+
+
+
+
+//=============================================================================
+//  <smac-joystick> element
+//=============================================================================
 
 
 
@@ -919,7 +935,7 @@ class SMAC_LED extends HTMLElement
       else if (this.Color == 'white' ) this.onClass = 'smac-ledWhite' ;
 
       // Initial display
-      this.updateWidget (0, 0);
+      this.updateWidget ('0');
 
       //--- React to device data ---
       const self = this;
@@ -935,7 +951,7 @@ class SMAC_LED extends HTMLElement
           //       self.setAttribute ('title', 'Current rate: ' + Nodes[nodeID].devices[deviceID].rate.toString() + ' s/hour');
 
           // Update this widget
-          window.requestAnimationFrame.bind (self.updateWidget (timestamp, value));
+          window.requestAnimationFrame.bind (self.updateWidget (value));
         }
       });
     }
@@ -947,7 +963,7 @@ class SMAC_LED extends HTMLElement
 
   //--- updateWidget --------------------------------------
 
-  updateWidget = function (timestamp, value)
+  updateWidget = function (value)
   {
     try
     {
@@ -1036,7 +1052,7 @@ class SMAC_PanelLight extends HTMLElement
       else if (this.Color == 'white' ) this.onClass = 'smac-panellightWhite' ;
 
       // Initial display
-      this.updateWidget (0, 0);
+      this.updateWidget ('0');
 
       //--- React to device data ---
       const self = this;
@@ -1052,7 +1068,7 @@ class SMAC_PanelLight extends HTMLElement
           //       self.setAttribute ('title', 'Current rate: ' + Nodes[nodeID].devices[deviceID].rate.toString() + ' s/hour');
 
           // Update this widget
-          window.requestAnimationFrame.bind (self.updateWidget (timestamp, value));
+          window.requestAnimationFrame.bind (self.updateWidget (value));
         }
       });
     }
@@ -1064,12 +1080,12 @@ class SMAC_PanelLight extends HTMLElement
 
   //--- updateWidget --------------------------------------
 
-  updateWidget = function (timestamp, value)
+  updateWidget = function (value)
   {
     try
     {
-      // value = 0 : off
-      // value = 1 : on
+      // value = '0' : off
+      // value = '1' : on
 
       // Set state and display color
       if (value == '1')
@@ -1150,7 +1166,7 @@ class SMAC_RawValue extends HTMLElement
           //       self.setAttribute ('title', 'Current rate: ' + Nodes[nodeID].devices[deviceID].rate.toString() + ' s/hour');
 
           // Update this widget
-          window.requestAnimationFrame.bind (self.updateWidget (timestamp, value));
+          window.requestAnimationFrame.bind (self.updateWidget (value));
         }
       });
     }
@@ -1162,7 +1178,7 @@ class SMAC_RawValue extends HTMLElement
 
   //--- updateWidget --------------------------------------
 
-  updateWidget = function (timestamp, value)
+  updateWidget = function (value)
   {
     try
     {
@@ -1250,7 +1266,7 @@ class SMAC_Digital extends HTMLElement
           //       self.setAttribute ('title', 'Current rate: ' + Nodes[nodeID].devices[deviceID].rate.toString() + ' s/hour');
 
           // Update this widget
-          window.requestAnimationFrame.bind (self.updateWidget (timestamp, value));
+          window.requestAnimationFrame.bind (self.updateWidget (value));
         }
       });
     }
@@ -1262,7 +1278,7 @@ class SMAC_Digital extends HTMLElement
 
   //--- updateWidget --------------------------------------
 
-  updateWidget = function (timestamp, value)
+  updateWidget = function (value)
   {
     try
     {
@@ -1435,9 +1451,6 @@ class SMAC_Growbar extends HTMLElement
   get device         (     ) { return this.Device;          }
   set device         (value) { this.Device = value;         }
 
-  get orientation    (     ) { return this.Orientation;     }
-  set orientation    (value) { this.Orientation = value;    }
-
   get width          (     ) { return this.Width;           }
   set width          (value) { this.Width = value;          }
 
@@ -1449,9 +1462,6 @@ class SMAC_Growbar extends HTMLElement
 
   get maxValue       (     ) { return this.MaxValue;        }
   set maxValue       (value) { this.MaxValue = value;       }
-
-  get units          (     ) { return this.Units;           }
-  set units          (value) { this.Units = value;          }
 
   get alarmLow       (     ) { return this.AlarmLow;        }
   set alarmLow       (value) { this.AlarmLow = value;       }
@@ -1470,6 +1480,9 @@ class SMAC_Growbar extends HTMLElement
 
   get scalePlacement (     ) { return this.ScalePlacement;  }
   set scalePlacement (value) { this.ScalePlacement = value; }
+
+  get units          (     ) { return this.Units;           }
+  set units          (value) { this.Units = value;          }
 
   //--- connectedCallback ---------------------------------
 
@@ -1491,19 +1504,30 @@ class SMAC_Growbar extends HTMLElement
       SetAsInlineBlock (this);
 
       // Set optional attributes
-      this.Orientation    = this.hasAttribute ('orientation'   ) ?         this.getAttribute ('orientation'   )  : 'vertical';
       this.Width          = this.hasAttribute ('width'         ) ? Number (this.getAttribute ('width'         )) : 3;
       this.Height         = this.hasAttribute ('height'        ) ? Number (this.getAttribute ('height'        )) : 20;
       this.MinValue       = this.hasAttribute ('minValue'      ) ? Number (this.getAttribute ('minValue'      )) : 0;
       this.MaxValue       = this.hasAttribute ('maxValue'      ) ? Number (this.getAttribute ('maxValue'      )) : 4095;
-      this.Units          = this.hasAttribute ('units'         ) ?         this.getAttribute ('units'         )  : '';
       this.AlarmLow       = this.hasAttribute ('alarmLow'      ) ? Number (this.getAttribute ('alarmLow'      )) : undefined;
       this.AlarmHigh      = this.hasAttribute ('alarmHigh'     ) ? Number (this.getAttribute ('alarmHigh'     )) : undefined;
       this.BackColor      = this.hasAttribute ('backColor'     ) ?         this.getAttribute ('backColor'     )  : '#303030';
       this.FillColor      = this.hasAttribute ('fillColor'     ) ?         this.getAttribute ('fillColor'     )  : '#A0A0A0';
       this.ScaleColor     = this.hasAttribute ('scaleColor'    ) ?         this.getAttribute ('scaleColor'    )  : undefined;
       this.ScalePlacement = this.hasAttribute ('scalePlacement') ?         this.getAttribute ('scalePlacement')  : 'left';
+      this.Units          = this.hasAttribute ('units'         ) ?         this.getAttribute ('units'         )  : '';
       this.OrgBorder = this.style.border;  // To restore after alarm conditions
+
+      // Default orientation is vertical with scale on left side
+      this.Horizontal = false;
+
+      // If bar width is greater than bar height, then orientation is horizontal with scale on top
+      if (this.Width > this.Height)
+      {
+        this.Horizontal = true;
+
+        if (this.ScalePlacement == 'left')
+          this.ScalePlacement = 'top';
+      }
 
       // Build this widget
       this.build ();
@@ -1560,7 +1584,7 @@ class SMAC_Growbar extends HTMLElement
       // Reduce bar area and adjust offsets for scale, if specified
       if (this.ScaleColor != undefined)
       {
-        if (this.Orientation == 'horizontal')
+        if (this.Horizontal)
         {
           this.BarWidth  -= 50;
           this.BarHeight -= 28;
@@ -1581,7 +1605,7 @@ class SMAC_Growbar extends HTMLElement
       }
 
       // Back and Fill Gradients
-      if (this.Orientation == 'horizontal')
+      if (this.Horizontal)
       {
         this.BackGrad = this.smacCanvas.cc.createLinearGradient (this.OffsetX, this.OffsetY, this.OffsetX+this.BarWidth, this.OffsetY);
         this.BackGrad.addColorStop (0.0, this.smacCanvas.adjustBrightness (this.BackColor, -30));  // darker
@@ -1607,11 +1631,11 @@ class SMAC_Growbar extends HTMLElement
 
       // Manually calculate scale factor if scaleColor not specified
       if (this.ScaleColor == undefined)
-        this.ScaleFactor = (this.orientation == 'horizontal' ? this.BarWidth : this.BarHeight) / (this.MaxValue - this.MinValue);
+        this.ScaleFactor = (this.Horizontal ? this.BarWidth : this.BarHeight) / (this.MaxValue - this.MinValue);
       else
       {
-        // drawLinearScale returns the scale factor for you
-        if (this.Orientation == 'horizontal')
+        // drawLinearScale() returns the scale factor for you
+        if (this.Horizontal)
         {
           if (this.ScalePlacement == 'top')
             this.ScaleFactor = this.smacCanvas.drawLinearScale (this.OffsetX, this.OffsetY  , this.BarWidth, this.BarHeight, ScaleOrientation.HorizTop   , this.MinValue, this.MaxValue, this.Units, this.ScaleColor);
@@ -1647,7 +1671,7 @@ class SMAC_Growbar extends HTMLElement
 
       this.smacCanvas.drawRectangle (this.OffsetX, this.OffsetY, this.BarWidth, this.BarHeight, this.BackGrad, fill);
 
-      if (this.Orientation == 'horizontal')
+      if (this.Horizontal)
         this.smacCanvas.drawRectangle (this.OffsetX, this.OffsetY, level, this.BarHeight, this.FillGrad, fill);
       else
         this.smacCanvas.drawRectangle (this.OffsetX, this.OffsetY + this.BarHeight - level, this.BarWidth, level, this.FillGrad, fill);
@@ -1713,9 +1737,6 @@ class SMAC_Gauge extends HTMLElement
   get maxValue    (     ) { return this.MaxValue;     }
   set maxValue    (value) { this.MaxValue = value;    }
 
-  get units       (     ) { return this.Units;        }
-  set units       (value) { this.Units = value;       }
-
   get alarmLow    (     ) { return this.AlarmLow;     }
   set alarmLow    (value) { this.AlarmLow = value;    }
 
@@ -1730,6 +1751,9 @@ class SMAC_Gauge extends HTMLElement
 
   get scaleColor  (     ) { return this.ScaleColor;   }
   set scaleColor  (value) { this.ScaleColor = value;  }
+
+  get units       (     ) { return this.Units;        }
+  set units       (value) { this.Units = value;       }
 
   //--- connectedCallback ---------------------------------
 
@@ -1756,12 +1780,12 @@ class SMAC_Gauge extends HTMLElement
       this.StopAngle   = this.hasAttribute ('stopAngle'  ) ? Number (this.getAttribute ('stopAngle' )) : 150;
       this.MinValue    = this.hasAttribute ('minValue'   ) ? Number (this.getAttribute ('minValue'  )) : 0;
       this.MaxValue    = this.hasAttribute ('maxValue'   ) ? Number (this.getAttribute ('maxValue'  )) : 4095;
-      this.Units       = this.hasAttribute ('units'      ) ?         this.getAttribute ('units'     )  : undefined;
       this.AlarmLow    = this.hasAttribute ('alarmLow'   ) ? Number (this.getAttribute ('alarmLow'  )) : undefined;
       this.AlarmHigh   = this.hasAttribute ('alarmHigh'  ) ? Number (this.getAttribute ('alarmHigh' )) : undefined;
       this.BackColor   = this.hasAttribute ('backColor'  ) ?         this.getAttribute ('backColor'  ) : '#303030';
       this.NeedleColor = this.hasAttribute ('needleColor') ?         this.getAttribute ('needleColor') : '#C0C0C0';
       this.ScaleColor  = this.hasAttribute ('scaleColor' ) ?         this.getAttribute ('scaleColor' ) : undefined;
+      this.Units       = this.hasAttribute ('units'      ) ?         this.getAttribute ('units'     )  : undefined;
       this.Fill        = this.hasAttribute ('fill'       );
       this.OrgBorder = this.style.border;  // To restore after alarm conditions
 
@@ -2459,4 +2483,309 @@ class SMAC_TimeGraph extends HTMLElement
 };
 
 customElements.define ('smac-timegraph', SMAC_TimeGraph);
+
+
+//=============================================================================
+//  <smac-xygraph> element
+//=============================================================================
+
+class SMAC_XYGraph extends HTMLElement
+{
+  //--- Constructor ---------------------------------------
+
+  constructor ()
+  {
+    super ();
+
+    // Rebuild this widget on resize
+    $(document.body).on ('browserResized', () => { this.build (); });
+
+    // Right-click context menu
+    this.addEventListener ('contextmenu', function (event)
+    {
+      StopEvent (event);
+
+      // ...
+    });
+  }
+
+  //--- Attributes ----------------------------------------
+
+  get device         (     ) { return this.Device;          }
+  set device         (value) { this.Device = value;         }
+
+  get width          (     ) { return this.Width;           }
+  set width          (value) { this.Width = value;          }
+
+  get height         (     ) { return this.Height;          }
+  set height         (value) { this.Height = value;         }
+
+  get xMin           (     ) { return this.XMin;            }
+  set xMin           (value) { this.XMin = value;           }
+
+  get xMax           (     ) { return this.XMax;            }
+  set xMax           (value) { this.XMax = value;           }
+
+  get yMin           (     ) { return this.YMin;            }
+  set yMin           (value) { this.YMin = value;           }
+
+  get yMax           (     ) { return this.YMax;            }
+  set yMax           (value) { this.YMax = value;           }
+
+  get xUnit          (     ) { return this.XUnit;           }
+  set xUnit          (value) { this.XUnit = value;          }
+
+  get yUnit          (     ) { return this.YUnit;           }
+  set yUnit          (value) { this.YUnit = value;          }
+
+  get foreColor      (     ) { return this.ForeColor;       }
+  set foreColor      (value) { this.ForeColor = value;      }
+
+  get backColor      (     ) { return this.BackColor;       }
+  set backColor      (value) { this.BackColor = value;      }
+
+  get gridColor      (     ) { return this.GridColor;       }
+  set gridColor      (value) { this.GridColor = value;      }
+
+  get scaleColor     (     ) { return this.ScaleColor;      }
+  set scaleColor     (value) { this.ScaleColor = value;     }
+
+  get scalePlacement (     ) { return this.ScalePlacement;  }
+  set scalePlacement (value) { this.ScalePlacement = value; }
+
+  //--- connectedCallback ---------------------------------
+
+  connectedCallback ()
+  {
+    try
+    {
+      // // Create shadow root
+      // this.shadow = this.attachShadow ({mode: 'open'});
+
+      // Check for required attributes
+      if (!this.hasAttribute ('device'))
+        throw '(smac-xygraph): Missing device attribute';
+
+      const deviceInfo = this.getAttribute ('device').replaceAll (' ', '').split (',');
+      this.NodeID   = parseInt (deviceInfo[0]);
+      this.DeviceID = parseInt (deviceInfo[1]);
+
+      SetAsInlineBlock (this);
+
+      // Set optional attributes
+      this.Width          = this.hasAttribute ('width'         ) ? Number (this.getAttribute ('width'        )) : 30;
+      this.Height         = this.hasAttribute ('height'        ) ? Number (this.getAttribute ('height'       )) : 20;
+      this.XMin           = this.hasAttribute ('xMin'          ) ? Number (this.getAttribute ('xMin'         )) : 0;
+      this.XMax           = this.hasAttribute ('xMax'          ) ? Number (this.getAttribute ('xMax'         )) : 4095;
+      this.YMin           = this.hasAttribute ('yMin'          ) ? Number (this.getAttribute ('yMin'         )) : 0;
+      this.YMax           = this.hasAttribute ('yMax'          ) ? Number (this.getAttribute ('yMax'         )) : 4095;
+      this.XUnit          = this.hasAttribute ('xUnit'         ) ?         this.getAttribute ('xUnit'         ) : '';
+      this.YUnit          = this.hasAttribute ('yUnit'         ) ?         this.getAttribute ('yUnit'         ) : '';
+      this.ForeColor      = this.hasAttribute ('foreColor'     ) ?         this.getAttribute ('foreColor'     ) : '#F0F0F0';
+      this.BackColor      = this.hasAttribute ('backColor'     ) ?         this.getAttribute ('backColor'     ) : '#303030';
+      this.GridColor      = this.hasAttribute ('gridColor'     ) ?         this.getAttribute ('gridColor'     ) : undefined;
+      this.ScaleColor     = this.hasAttribute ('scaleColor'    ) ?         this.getAttribute ('scaleColor'    ) : undefined;
+      this.ScalePlacement = this.hasAttribute ('scalePlacement') ?         this.getAttribute ('scalePlacement') : 'leftBottom';
+
+      // Tracing
+      this.Trace        = this.hasAttribute ('trace');  // trace path (true or false)
+      this.TraceStarted = false;
+      this.TraceX = this.TraceY = 0;
+
+      // Build this widget
+      this.build ();
+
+      //--- React to device data ---
+      const self = this;
+      $(document.body).on ('deviceData', function (event, nodeID, deviceID, timestamp, value)
+      {
+        // Match this UI widget to its Node and device
+        if (nodeID == self.NodeID && deviceID == self.DeviceID)
+        {
+          // // Show current sampling rate on hover
+          // if (!self.hasAttribute ('title'))
+          //   if (Nodes[nodeID] != undefined)
+          //     if (Nodes[nodeID].devices[deviceID] != undefined)
+          //       self.setAttribute ('title', 'Current rate: ' + Nodes[nodeID].devices[deviceID].rate.toString() + ' s/hour');
+
+          // Update this widget
+          window.requestAnimationFrame.bind (self.updateWidget (value));
+        }
+      });
+    }
+    catch (ex)
+    {
+      ShowException (ex);
+    }
+  }
+
+  //--- build ---------------------------------------------
+
+  build = function ()
+  {
+    try
+    {
+      // Canvas dimensions are percentages of Browser's size
+      const cWidth  = Math.max (Math.round (this.Width  * GetBrowserWidth () / 100), 90);
+      const cHeight = Math.max (Math.round (this.Height * GetBrowserHeight() / 100), 45);
+
+      // Create a 2D data visualization canvas (dvCanvas2D)
+      this.smacCanvas = new dvCanvas2D (cWidth, cHeight, 'transparent');
+
+      // Check if a canvas already exists from a previous build
+      if (this.firstChild == undefined)
+        this.appendChild  (this.smacCanvas.canvas);
+      else
+        this.replaceChild (this.smacCanvas.canvas, this.firstChild);  // Replace existing canvas
+
+      // Set initial size of graph area
+      this.GraphWidth  = cWidth;
+      this.GraphHeight = cHeight;
+      this.OffsetX     = 0;
+      this.OffsetY     = 0;
+
+      // Reduce graph area and adjust offsets for scale, if specified
+      if (this.ScaleColor != undefined)
+      {
+        this.GraphWidth  -= 80;
+        this.GraphHeight -= 35;
+
+             if (this.ScalePlacement == 'leftTop'    ) { this.OffsetX = 60; this.OffsetY = 30; }
+        else if (this.ScalePlacement == 'leftBottom' ) { this.OffsetX = 60; this.OffsetY =  7; }
+        else if (this.ScalePlacement == 'rightTop'   ) { this.OffsetX = 20; this.OffsetY = 30; }
+        else if (this.ScalePlacement == 'rightBottom') { this.OffsetX = 20; this.OffsetY =  7; }
+      }
+
+      // Background gradient
+      this.BackGrad = this.smacCanvas.cc.createLinearGradient (this.OffsetX, this.OffsetY, this.OffsetX, this.OffsetY+this.GraphHeight);
+      this.BackGrad.addColorStop (0.0, this.BackColor);
+      this.BackGrad.addColorStop (1.0, this.smacCanvas.adjustBrightness (this.BackColor, -20));  // darker
+
+      // Clear grid
+      this.clear ();
+
+      // Manually set scale factors if scale and grid not defined
+      if (this.ScaleColor == undefined && this.gridColor == undefined)
+      {
+        // Set scale factors
+        if (this.XMax <= this.XMin)
+          this.ScaleFactorX = 1.0;
+        else
+          this.ScaleFactorX = this.GraphWidth / (this.XMax - this.XMin);
+
+        if (this.YMax <= this.YMin)
+          this.ScaleFactorY = 1.0;
+        else
+          this.ScaleFactorY = this.GraphHeight / (this.YMax - this.YMin);
+      }
+      else
+      {
+        // x-Axis Scale
+        if (this.ScalePlacement.endsWith ('Top'))
+          this.ScaleFactorX = this.smacCanvas.drawLinearScale (this.OffsetX, this.OffsetY                 , this.GraphWidth, this.GraphHeight, ScaleOrientation.HorizTop   , this.XMin, this.XMax, this.XUnit, this.ScaleColor, this.GridColor);  // X-Axis
+        else
+          this.ScaleFactorX = this.smacCanvas.drawLinearScale (this.OffsetX, this.OffsetY+this.GraphHeight, this.GraphWidth, this.GraphHeight, ScaleOrientation.HorizBottom, this.XMin, this.XMax, this.XUnit, this.ScaleColor, this.GridColor);  // X-Axis
+
+        // Y-Axis Scale
+        if (this.ScalePlacement.startsWith ('right'))
+          this.ScaleFactorY = this.smacCanvas.drawLinearScale (this.OffsetX+this.GraphWidth, this.OffsetY+this.GraphHeight, this.GraphWidth, this.GraphHeight, ScaleOrientation.VertRight, this.YMin, this.YMax, this.YUnit, this.ScaleColor, this.GridColor);  // Y-Axis
+        else
+          this.ScaleFactorY = this.smacCanvas.drawLinearScale (this.OffsetX                , this.OffsetY+this.GraphHeight, this.GraphWidth, this.GraphHeight, ScaleOrientation.VertLeft , this.YMin, this.YMax, this.YUnit, this.ScaleColor, this.GridColor);  // Y-Axis
+      }
+
+      // Set clipping region
+      this.smacCanvas.setClipRectangle (this.OffsetX, this.OffsetY, this.GraphWidth, this.GraphHeight);
+
+      // // Initial drawing
+      // this.updateWidget ('2048,2048');
+    }
+    catch (ex)
+    {
+      ShowException (ex);
+    }
+  }
+
+  //--- updateWidget --------------------------------------
+
+  updateWidget = function (value)
+  {
+    try
+    {
+      // value is a string that has both x and y values separated with a comma
+      const values = value.split (',');
+      if (values.length < 2) return;
+
+      const xValue = Number (values[0]);
+      const yValue = Number (values[1]);
+
+      // Calculate next graphic position
+      const cx = this.OffsetX                    + Math.round ((xValue - this.XMin) * this.ScaleFactorX);
+      const cy = this.OffsetY + this.GraphHeight - Math.round ((yValue - this.YMin) * this.ScaleFactorY);
+
+      if (this.Trace)
+      {
+        // Draw traced path
+        if (this.TraceStarted)
+          this.smacCanvas.drawLine (this.TraceX, this.TraceY, cx, cy, this.ForeColor, 1);
+        else
+          this.TraceStarted = true;
+
+        // Save new point
+        this.TraceX = cx;
+        this.TraceY = cy;
+      }
+      else
+      {
+        // Draw floating "Orb"
+
+        // Clear grid
+        this.clear ();
+
+        // Draw grid if defined
+        // No need to redraw scales, so scale color is undefined in the drawLinearScale() method
+        if (this.gridColor != undefined)
+        {
+          // x-Axis Scale
+          if (this.ScalePlacement.endsWith ('Top'))
+            this.ScaleFactorX = this.smacCanvas.drawLinearScale (this.OffsetX, this.OffsetY                 , this.GraphWidth, this.GraphHeight, ScaleOrientation.HorizTop   , this.XMin, this.XMax, this.XUnit, undefined, this.GridColor);  // X-Axis
+          else
+            this.ScaleFactorX = this.smacCanvas.drawLinearScale (this.OffsetX, this.OffsetY+this.GraphHeight, this.GraphWidth, this.GraphHeight, ScaleOrientation.HorizBottom, this.XMin, this.XMax, this.XUnit, undefined, this.GridColor);  // X-Axis
+
+          // Y-Axis Scale
+          if (this.ScalePlacement.startsWith ('right'))
+            this.ScaleFactorY = this.smacCanvas.drawLinearScale (this.OffsetX+this.GraphWidth, this.OffsetY+this.GraphHeight, this.GraphWidth, this.GraphHeight, ScaleOrientation.VertRight, this.YMin, this.YMax, this.YUnit, undefined, this.GridColor);  // Y-Axis
+          else
+            this.ScaleFactorY = this.smacCanvas.drawLinearScale (this.OffsetX                , this.OffsetY+this.GraphHeight, this.GraphWidth, this.GraphHeight, ScaleOrientation.VertLeft , this.YMin, this.YMax, this.YUnit, undefined, this.GridColor);  // Y-Axis
+        }
+
+        // Draw "orb" indicator
+        this.smacCanvas.drawLine    (cx   , cy-15, cx   , cy+15, this.ForeColor, 1);
+        this.smacCanvas.drawLine    (cx-15, cy   , cx+15, cy   , this.ForeColor, 1);
+        this.smacCanvas.drawEllipse (cx   , cy   , 5    , 5    , this.ForeColor, fill);
+      }
+    }
+    catch (ex)
+    {
+      ShowException (ex);
+    }
+  }
+
+  //--- clear ---------------------------------------------
+
+  clear = function ()
+  {
+    try
+    {
+      // Clear grid
+      this.smacCanvas.drawRectangle (this.OffsetX, this.OffsetY, this.GraphWidth, this.GraphHeight, this.BackGrad, fill);
+      this.TraceStarted = false;
+    }
+    catch (ex)
+    {
+      ShowException (ex);
+    }
+  }
+};
+
+customElements.define ('smac-xygraph', SMAC_XYGraph);
 

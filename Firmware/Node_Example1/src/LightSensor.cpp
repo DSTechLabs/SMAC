@@ -36,6 +36,9 @@ LightSensor::LightSensor (const char *inName, int inSensorPin)
   sensorPin = inSensorPin;
   pinMode (sensorPin, INPUT);
 
+  // No need for Immediate Processing
+  immediateEnabled = false;
+
   // Default to 10 samples per second
   SetRate (10 * 3600);
 }

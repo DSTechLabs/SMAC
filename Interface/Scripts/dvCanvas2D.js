@@ -16,7 +16,7 @@
 //             ∙ Compositing : https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation
 //
 //   AUTHOR  : Bill Daniels
-//             Copyright 2020-2025, D+S Tech Labs, Inc.
+//             Copyright 2020-2024, D+S Tech Labs, Inc.
 //             All Rights Reserved
 //
 //=============================================================================
@@ -117,7 +117,7 @@ class dvCanvas2D
 
       // Clear canvas and shadow
       this.clear ();
-      this.unsetShadow ();
+      this.setShadow (0, 0, 'transparent', 0);
     }
     catch (ex)
     {
@@ -208,22 +208,6 @@ class dvCanvas2D
       if (yOffset      != undefined) this.cc.shadowOffsetY = yOffset;
       if (color        != undefined) this.cc.shadowColor   = color;
       if (blurDistance != undefined) this.cc.shadowBlur    = blurDistance;
-    }
-    catch (ex)
-    {
-      ShowException (ex);
-    }
-  }
-
-  //--- unsetShadow ---------------------------------------
-  unsetShadow ()
-  {
-    try
-    {
-      this.cc.shadowOffsetX = 0;
-      this.cc.shadowOffsetY = 0;
-      this.cc.shadowColor   = 'transparent';
-      this.cc.shadowBlur    = 0;
     }
     catch (ex)
     {
@@ -606,7 +590,7 @@ class dvCanvas2D
   }
 
   //--- drawDraggable -------------------------------------
-  drawDraggable (x, y, url, allowH = true, allowV = true)  // allow both horizontal and vertical motion by default
+  drawDraggable (x, y, url, dragCallback, doneCallback, allowH=true, allowV=true)  // allow both horizontal and vertical motion by default
   {
     try
     {
@@ -638,13 +622,24 @@ class dvCanvas2D
           {
             // Remove move listener on mouse up and mouse going off canvas
             this.canvas.onpointerup  = // () => { this.canvas.onpointermove = null; }
-            this.canvas.onpointerout = () => { this.canvas.onpointermove = null; }
+            this.canvas.onpointerout = () =>
+            {
+              this.canvas.onpointermove = null;
+              document.body.style.cursor = 'default';
+
+              // Call callback function, if any
+              if (doneCallback != undefined)
+                doneCallback (this.dragX, this.dragY);
+            }
 
             // Limit motion to within canvas (0..max)
             const maxX = this.canvasRect.width  - this.dragImage.width;
             const maxY = this.canvasRect.height - this.dragImage.height;
 
             let newX, newY;
+
+            // Hide cursor
+            document.body.style.cursor = 'none';
 
             // Begin dragging
             this.moveListener = this.canvas.onpointermove = (event) =>
@@ -663,6 +658,10 @@ class dvCanvas2D
 
               // Replace background
               this.cc.drawImage (this.backImage, -1, -1);  // the whole canvas seems to shift +1 pixel both horiz and vert !!!
+
+              // Call callback function, if any
+              if (dragCallback != undefined)
+                dragCallback (newX, newY);
 
               // Draw draggable at new location
               this.cc.drawImage (this.dragImage, newX, newY);

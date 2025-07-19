@@ -83,13 +83,13 @@ class Node
     int  deviceIndex = 0;
 
   protected:
-    char           nodeID[ID_SIZE+1];                   // This unique ID (00-19) is assigned at construction
-    char           name[MAX_NAME_LENGTH+1] = "Node";    // A display name to show in the SMAC Interface
-    char           version[MAX_VERSION_LENGTH+1] = "";  // A version number for this Node's firmware (yyyy.mm.dd<a-z>)
-    char           macAddressString[18] = "Not set";    // MAC address as a Hex string (xx:xx:xx:xx:xx:xx)
-    Device         *devices[MAX_DEVICES];               // Holds the array of Devices for this Node
-    int            numDevices = 0;                      // Number of added Devices
-    char           *commandString;                      // Command string from buffer
+    char           nodeID[ID_SIZE+1];                 // This unique ID (00-19) is assigned at construction
+    char           name[MAX_NAME_LENGTH+1] = "Node";  // A display name to show in the SMAC Interface
+    char           version[MAX_VERSION_LENGTH] = "";  // A version number for this Node's firmware (yyyy.mm.dd<a-z>)
+    char           macAddressString[18] = "Not set";  // MAC address as a Hex string (xx:xx:xx:xx:xx:xx)
+    Device         *devices[MAX_DEVICES];             // Holds the array of Devices for this Node
+    int            numDevices = 0;                    // Number of added Devices
+    char           *commandString;                    // Command string from buffer
     ProcessStatus  pStatus;
 
   public:

@@ -36,6 +36,10 @@ const Diagnostics =
           ++nodeCount;
           this.AddNode (i);
           this.UpdateDevices (i);
+
+          // Set current node index to first Node found
+          if (nodeCount == 1)
+            this.CurrentNodeIndex = i;
         }
       }
 
@@ -125,8 +129,8 @@ const Diagnostics =
       // Add a tab content with a monitor box
       const newTabContent = $('<div class="dsTabContent" style="padding:0"></div>');
 
-      const cols       = Math.floor (GetBrowserWidth () / 16).toString ();
-      const rows       = Math.floor (GetBrowserHeight() / 27).toString ();
+      // const cols       = Math.floor (GetBrowserWidth () / 16).toString ();
+      // const rows       = Math.floor (GetBrowserHeight() / 27).toString ();
       // const newMonitor = $('<textarea class="monitorBox dsScrollable" cols="' + cols + '" rows="' + rows + '" readonly></textarea>');
       const newMonitor = $('<textarea class="monitorBox dsScrollable" readonly></textarea>');
 

@@ -46,7 +46,7 @@
 //--- Common Stuff ---
 #define SERIAL_BAUDRATE      115200
 #define SERIAL_MAX_LENGTH        80
-#define MAX_VERSION_LENGTH       22
+#define MAX_VERSION_LENGTH       12  // Suggested format: yyyy.mm.dd(a-z)
 #define MAX_NODES                20  // Maximum number of ESP-NOW peers
 #define MAX_DEVICES             100  // Maximum number of Devices that can connect to a Node
 #define ID_SIZE                   2  // Size of nodeID and deviceID

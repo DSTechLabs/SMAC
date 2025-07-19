@@ -109,6 +109,7 @@ class Device
   protected:
     char           deviceID[ID_SIZE+1];                 // Assigned by the parent Node when "added" using addDevice()
     char           name[MAX_NAME_LENGTH+1] = "Device";  // Display name for the SMAC Interface
+    char           version[MAX_VERSION_LENGTH] = "";    // A version number for this Node's firmware (yyyy.mm.dd<a-z>)
     bool           immediateEnabled = true;             // true to have DoImmediate called continuously (as fast as possible)
     bool           periodicEnabled  = true;             // true to have DoPeriodic called at the process period
     unsigned long  processPeriod    = 1000L;            // milliseconds; default is 1 process per second

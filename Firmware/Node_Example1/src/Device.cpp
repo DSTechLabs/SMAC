@@ -27,6 +27,9 @@ Device::Device (const char *inName)
   // Set the UI name for this device
   strncpy (name, inName, MAX_NAME_LENGTH-1);
   name[MAX_NAME_LENGTH-1] = 0;
+
+  // Set version
+  strcpy (version, "2025.07.19a");  // no more than 11 chars
 }
 
 //--- SetID -----------------------------------------------

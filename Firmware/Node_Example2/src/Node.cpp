@@ -57,13 +57,13 @@ Node::Node (const char *inName, int inNodeID)
     return;
   }
 
-  // Set the UI name, ID and version number (compile timestamp)
+  // Set the UI name, ID and version number
   strncpy (name, inName, MAX_NAME_LENGTH-1);
   name[MAX_NAME_LENGTH-1] = 0;
 
   sprintf (nodeID, "%02d", inNodeID);
 
-  strcpy (version, __DATE__ " " __TIME__);
+  strcpy (version, "2025.07.19a");  // no more than 11 chars
 
 
   //================================================
