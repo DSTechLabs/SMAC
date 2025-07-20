@@ -78,6 +78,7 @@
 //                DOPP = Do Periodic Process          : Perform the periodic process one time, returns true or false
 //                GRAT = Get Rate                     : Get the current periodic process rate for this device in calls per hour:
 //                SRAT = Set Rate                     : Set the periodic process rate for this device in procs per hour
+//                GVER = Get Version                  : Get the current version of this Device's firmware
 //
 //              ∙ Your child Device class can override ExecuteCommand() to handle custom commands,
 //                for example, CALI for a calibrate function.

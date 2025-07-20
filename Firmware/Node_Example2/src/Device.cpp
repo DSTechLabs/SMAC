@@ -29,7 +29,7 @@ Device::Device (const char *inName)
   name[MAX_NAME_LENGTH-1] = 0;
 
   // Set version
-  strcpy (version, "2025.07.19a");  // no more than 11 chars
+  strcpy (version, "2025.07.20a");  // no more than 11 chars
 }
 
 //--- SetID -----------------------------------------------
@@ -256,6 +256,13 @@ ProcessStatus Device::ExecuteCommand ()
     ltoa (GetRate(), DataPacket.value + 5, 10);
 
     nextPeriodicTime = millis();  // start new rate now
+    pStatus = SUCCESS_DATA;
+  }
+
+  //--- Get Version (GVER) ----------------------
+  else if (strcmp (CommandPacket.command, "GVER") == 0)
+  {
+    strcpy (DataPacket.value, version);
     pStatus = SUCCESS_DATA;
   }
 
