@@ -63,7 +63,7 @@ Node::Node (const char *inName, int inNodeID)
 
   sprintf (nodeID, "%02d", inNodeID);
 
-  strcpy (version, "2025.07.19a");  // no more than 11 chars
+  strcpy (version, "2025.07.21b");  // no more than 11 chars
 
 
   //================================================
@@ -205,7 +205,7 @@ IRAM_ATTR void Node::SendDataPacket ()
 //  Run:
 //
 //  This method is called continuously in the loop function
-//  of the .ino file.
+//  of the main.cpp file.
 //
 //  It calls the Run() method for all Devices
 //  and processes any Relayer/Interface commands.
@@ -214,7 +214,7 @@ IRAM_ATTR void Node::SendDataPacket ()
 void Node::Run ()
 {
   //===================================
-  //   Run all Devices
+  //  Run all Devices
   //===================================
   for (deviceIndex=0; deviceIndex<numDevices; deviceIndex++)
   {
@@ -250,7 +250,7 @@ void Node::Run ()
   }
 
   //===================================
-  //   Check for any commands
+  //  Check for any commands
   //===================================
   if (CommandBuffer->GetNumElements() < 1)
     return;
@@ -328,6 +328,13 @@ void Node::Run ()
   }
 }
 
+//--- GetVersion ------------------------------------------
+
+const char * Node::GetVersion ()
+{
+  return version;
+}
+
 //=========================================================
 //  ExecuteCommand:
 //
@@ -376,7 +383,7 @@ ProcessStatus Node::ExecuteCommand ()
     {
       sprintf (DataPacket.deviceID, "%02d", i);
       DataPacket.timestamp = millis ();
-      sprintf (DataPacket.value, "DEINFO=%s|%c|%c|%lu|", devices[i]->GetName(), devices[i]->IsIPEnabled() ? 'Y':'N', devices[i]->IsPPEnabled() ? 'Y':'N', devices[i]->GetRate());
+      sprintf (DataPacket.value, "DEINFO=%s|%s|%c|%c|%lu|", devices[i]->GetName(), devices[i]->GetVersion(), devices[i]->IsIPEnabled() ? 'Y':'N', devices[i]->IsPPEnabled() ? 'Y':'N', devices[i]->GetRate());
       SendDataPacket ();
     }
 
@@ -407,6 +414,13 @@ ProcessStatus Node::ExecuteCommand ()
     }
 
     pStatus = SUCCESS_NODATA;
+  }
+
+  //--- Get Version (GNVR) --------------------------------
+  else if (strncmp (CommandPacket.command, "GNVR", COMMAND_SIZE) == 0)
+  {
+    sprintf (DataPacket.value, "NVER=%s", version);
+    pStatus = SUCCESS_DATA;
   }
 
   //--- Reset (RSET) --------------------------------------

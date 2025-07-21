@@ -39,13 +39,14 @@
 //                  char command[..]  : 4-char command (usually capital letters)
 //                  char params[..]   : variable length parameter string
 //
-//              ∙ This Node base class handles the following built-in Node commands:
+//              ∙ This Node base class handles the following built-in (reserved) Node commands:
 //
 //                SNNA = Set Node Name
 //                GNOI = Get Node Info   : <DataPacket> value = name|version|macAddress|numDevices
-//                GDEI = Get Device Info : <DataPacket> value = name1|rate1|name2|rate2|...
+//                GDEI = Get Device Info : <DataPacket> value = name|version|ipEnabled|ppEnabled|rate
 //                PING = Check if still alive and connected; responds with "PONG"
 //                BLIN = Quickly blink the Node's status LED to indicate communication or location
+//                GNVR = Get Node Firmware Version
 //                RSET = Reset this Node's processor using esp_restart()
 //
 //            █ A child Node class can override ExecuteCommand() to handle custom commands.
@@ -95,9 +96,10 @@ class Node
   public:
     Node (const char *inName, int inNodeID);
 
-    void  AddDevice (Device *device);  // Call this method to add Devices
-    void  SendDataPacket ();           // Send the global <DataPacket> structure to the Relayer Module
-    void  Run ();                      // Run this Node; called from the loop() method of main.cpp
+    void          AddDevice (Device *device);  // Call this method to add Devices
+    void          SendDataPacket ();           // Send the global <DataPacket> structure to the Relayer Module
+    void          Run ();                      // Run this Node; called from the loop() method of main.cpp
+    const char *  GetVersion ();               // Return the current version of this Node
 
     virtual ProcessStatus  ExecuteCommand ();  // Override this method in a child Node class
 };

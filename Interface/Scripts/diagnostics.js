@@ -166,10 +166,12 @@ const Diagnostics =
         const sph            = deviceArray[devIndex].rate;
         const sps            = Math.round (sph/360) / 10;
 
-        $('#deviceInfo' + nodeIndexString).append ('<div>▐══ ' + (devIndex > 9 ? '':'0') + devIndexString + ': ' + deviceArray[devIndex].name + '   </div>');
+        $('#deviceInfo' + nodeIndexString).append ('<div>▐══ ' + (devIndex > 9 ? '':'0') + devIndexString + ': ' + deviceArray[devIndex].name + ' </div>');
         $('#deviceInfo' + nodeIndexString).append ('<div>ip:<input type="checkbox" class="dsSwitch" title="Turn On/Off Immediate Processing" ' + (deviceArray[devIndex].ipEnabled=='Y' ? 'checked':'') + ' onchange="Diagnostics.ToggleImmediate(this, ' + nodeIndexString + ', ' + devIndexString + ')" />   ' +
                                                         'pp:<input type="checkbox" class="dsSwitch" title="Turn On/Off Periodic Processing" '  + (deviceArray[devIndex].ppEnabled=='Y' ? 'checked':'') + ' onchange="Diagnostics.TogglePeriodic (this, ' + nodeIndexString + ', ' + devIndexString + ')" />   ' +
-                                                   '<input type="range" class="dsInput" style="width:6vw; font-size:0.6vw" min="1" max="72000" step="1" value="' + sph.toString() + '" title="Set rate of Periodic Processing\nRate = ' + sph + ' samples per hour\n        ~' + sps.toString() + ' samples per sec" onpointerup="Diagnostics.SetPPRate (this, ' + nodeIndexString + ', ' + devIndexString + ')" /></div>');
+                                                   '<input type="range" class="dsInput" style="width:6vw; font-size:0.6vw" min="1" max="72000" step="1" value="' + sph.toString() + '" title="Set rate of Periodic Processing\nRate = ' + sph + ' samples per hour\n        ~' + sps.toString() +
+                                                   ' samples per sec" onpointerup="Diagnostics.SetPPRate (this, ' + nodeIndexString + ', ' + devIndexString + ')" /> &nbsp;' + deviceArray[devIndex].version + '</div>');
+
 
 
 //         //  Buttons for [DoImmediate] and [DoPeriodic]

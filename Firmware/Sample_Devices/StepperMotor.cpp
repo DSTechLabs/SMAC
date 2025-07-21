@@ -68,6 +68,9 @@ StepperMotor::StepperMotor (const char *inName, int enablePin, int directionPin,
   TargetOrSteps     = 0;
   TotalSteps        = 0;
   StepCount         = 0;
+
+  // Set version
+  strcpy (version, "2025.07.15b");  // no more than 11 chars
 }
 
 //--- Run -------------------------------------------------
@@ -608,8 +611,6 @@ ProcessStatus StepperMotor::ExecuteCommand ()
         sprintf (DataPacket.value, "LL%d", GetLowerLimit());
       else if (strcmp (CommandPacket.command, "GUPP") == 0)
         sprintf (DataPacket.value, "UL%d", GetUpperLimit());
-      else if (strcmp (CommandPacket.command, "GVER") == 0)
-        strcpy (DataPacket.value, Version);
 
       //--- Unknown command ---
       else

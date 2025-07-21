@@ -14,7 +14,7 @@
 
 //--- Globals ---------------------------------------------
 
-const AppVersion = '── 2025.07.19 ──';
+const AppVersion = '── 2025.07.21b ──';
 const Debugging  = false;  // Set to false for production use
 
 let TotalPages  = 0;
@@ -44,12 +44,12 @@ let   Nodes = [MaxNodes];  // Holds Node objects:
                            // {                                        ┌─
                            //   name,                                  │  {
                            //   version,                               │    name,
-                           //   macAddress,                            │    ipEnabled,
-                           //   numDevices,                            │    ppEnabled,
-                           //   devices[],  - array of Device objects ─┤    rate
-                           //   monitor,                               │  }
-                           //   lastMessageTime                        └─
-                           // }
+                           //   macAddress,                            │    version,
+                           //   numDevices,                            │    ipEnabled,
+                           //   devices[],  - array of Device objects ─┤    ppEnabled,
+                           //   monitor,                               │    rate
+                           //   lastMessageTime                        │  }
+                           // }                                        └─
                            // The index is the nodeID
 
 //--- Startup ---------------------------------------------
@@ -339,7 +339,7 @@ async function ProcessRelayerMessage (dataString)
         // Request Node Info: nn|00|timestamp|NOINFO|name|version|macAddress|numDevices
         await Send_UItoRelayer (nodeIndex, 0, 'GNOI');
 
-        // Request Device Info: nn|dd|timestamp|DEINFO|name0|ipEn0|ppEn0|rate0|name1|ipEn1|ppEn1|rate1|...
+        // Request Device Info: nn|dd|timestamp|DEINFO|name|version|ipEn(Y/N)|ppEn(Y/N)|rate (for each Device)
         await Send_UItoRelayer (nodeIndex, 0, 'GDEI');
       }
 
@@ -411,6 +411,7 @@ async function ProcessRelayerMessage (dataString)
     //   IP Performed
     //   PP Enabled
     //   PP Disabled
+    //   VER=
     //   FILES=
     //   FILE=
     //   ERROR=
@@ -427,7 +428,7 @@ async function ProcessRelayerMessage (dataString)
                           version    : 'not set',
                           macAddress : 'not set',
                           numDevices : 0,
-                          devices    : [],          // Device objects { name, rate }
+                          devices    : [],          // Device objects { name, version, ipEnabled, ppEnabled, rate }
                           monitor    : undefined
                         };
 
@@ -459,11 +460,11 @@ async function ProcessRelayerMessage (dataString)
       if (Nodes[nodeIndex] != undefined)
       {
         // One Device per 'DEINFO=...' message
-        // Fill four Device fields: name, ipEnabled, ppEnabled, rate
+        // Fill five Device fields: name, version, ipEnabled, ppEnabled, rate
 
         const deviceArray  = Nodes[nodeIndex].devices;
         const deviceFields = value.substring(7).split ('|');
-        deviceArray[deviceIndex] = { name:deviceFields[0], ipEnabled:deviceFields[1], ppEnabled:deviceFields[2], rate:deviceFields[3] };
+        deviceArray[deviceIndex] = { name:deviceFields[0], version:deviceFields[1], ipEnabled:deviceFields[2], ppEnabled:deviceFields[3], rate:deviceFields[4] };
 
         Diagnostics.UpdateDevices (nodeIndex);  // Update the UI Device fields of the Node Block in Diagnostics
 
@@ -518,6 +519,18 @@ async function ProcessRelayerMessage (dataString)
     else if (value == 'PP Disabled')
     {
       Nodes[nodeIndex].devices[deviceIndex].ppEnabled = 'N';
+      Diagnostics.UpdateDevices (nodeIndex);
+    }
+
+    else if (value == 'NVER=')
+    {
+      Nodes[nodeIndex].version = value.substring(5);
+      Diagnostics.BuildSystem ();
+    }
+
+    else if (value == 'DVER=')
+    {
+      Nodes[nodeIndex].devices[deviceIndex].version = value.substring(5);
       Diagnostics.UpdateDevices (nodeIndex);
     }
 

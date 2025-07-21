@@ -133,7 +133,6 @@
 //    GREL              = GET RELATIVE position - Returns the motor's current step position relative to its last targeted position
 //    GLOW              = GET LOWER LIMIT       - Returns the motor's Absolute LOWER LIMIT position
 //    GUPP              = GET UPPER LIMIT       - Returns the motor's Absolute UPPER LIMIT position
-//    GVER              = GET VERSION           - Returns this class's current version
 //
 //=============================================================================
 
