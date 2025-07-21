@@ -69,8 +69,8 @@ StepperMotor::StepperMotor (const char *inName, int enablePin, int directionPin,
   TotalSteps        = 0;
   StepCount         = 0;
 
-  // Set version
-  strcpy (version, "2025.07.15b");  // no more than 11 chars
+  // Set Version for this Device
+  strcpy (version, "2025.07.21a");  // no more than 11 chars
 }
 
 //--- Run -------------------------------------------------

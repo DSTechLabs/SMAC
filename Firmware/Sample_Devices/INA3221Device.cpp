@@ -4,32 +4,33 @@
  * @brief SMAC driver for INA3221 tripple Power monitoring device
  * @version 1.0
  * @date 2025-07-07
- * 
+ *
  * Written by Doug Fajardo Jully, 2025
  *              This code was developed as part of the SMAC project by Bill Daniels,
  *              and all rights and copyrights are hereby conveyed to that project.
- * 
+ *
  *              The SMAC project is Copyright 2021-2025, D+S Tech Labs, Inc.
  *              All Rights Reserved
- * 
+ *
  *  See INA3221Device.h for implementation and usage notes
  */
 #include "INA3221Device.h"
 
         /** - - - - - - - - - - - - - - - - - - - - -
          * @brief Construct a new INA3221 object
-         * 
-         * @param _node 
-         * @param InName 
+         *
+         * @param _node
+         * @param InName
          */
         INA3221Device::INA3221Device( const char * inName): Device(inName)
         {
-
+            // Set Version for this Device
+            strcpy (version, "2025.07.21a");  // no more than 11 chars
         }
 
         /**  - - - - - - - - - - - - - - - - - - - -
          * @brief Destroy the INA3221 object
-         * 
+         *
          */
         INA3221Device::~INA3221Device()
         {
@@ -38,7 +39,7 @@
 
         /** - - - - - - - - - - - - - - - - - - - - -
          * @brief setup Set up the driver, initialize I2C
-         * 
+         *
          * @param I2CAddr  - the I2C address for this device. Default 0x40, alternative 0x41
          * @return true    - normal startup okay
          * @return false   - error was detected
@@ -48,10 +49,10 @@
             i2cAddr = _Pwr_i2CAddr;
             periodicEnabled = true;  // Enable reporting for this module.
             SetRate(60);             // default report rate - 60 timers/hour is once per minute
-            immediateEnabled = false; // Nothing to do 
-            
+            immediateEnabled = false; // Nothing to do
+
             // Init communications with I2C
-            if (! Adafruit_INA3221::begin(i2cAddr, theWire) ) 
+            if (! Adafruit_INA3221::begin(i2cAddr, theWire) )
             {
                 Serial.println("Failed to find INA3221 chip");
                 return(false);
@@ -108,4 +109,3 @@
         }
 
 
-        

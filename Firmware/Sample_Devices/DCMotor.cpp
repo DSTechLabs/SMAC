@@ -47,6 +47,9 @@ DCMotor::DCMotor (const char *inName, int PWMPin1, int PWMPin2, int LLSwitchPin,
 
   // Default ramping
   SetRamp (4);
+
+  // Set Version for this Device
+  strcpy (version, "2025.07.21a");  // no more than 11 chars
 }
 
 //--- Run -------------------------------------------------

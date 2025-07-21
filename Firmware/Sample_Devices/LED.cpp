@@ -26,6 +26,9 @@ LED::LED (const char *inName, int inLEDPin)
 
   // No need for Immediate or Periodic processing
   immediateEnabled = periodicEnabled = false;
+
+  // Set Version for this Device
+  strcpy (version, "2025.07.21a");  // no more than 11 chars
 }
 
 //--- ExecuteCommand (override) ---------------------------

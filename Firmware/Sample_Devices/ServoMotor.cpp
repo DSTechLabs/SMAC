@@ -61,6 +61,9 @@ ServoMotor::ServoMotor (Adafruit_PWMServoDriver *inServoDriver,
 
   // Current state is IDLE;
   state = IDLE;
+
+  // Set Version for this Device
+  strcpy (version, "2025.07.21a");  // no more than 11 chars
 }
 
 //---------------------------------------------------------

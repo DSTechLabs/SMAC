@@ -41,6 +41,9 @@ LightSensor::LightSensor (const char *inName, int inSensorPin)
 
   // Default to 10 samples per second
   SetRate (10 * 3600);
+
+  // Set Version for this Device
+  strcpy (version, "2025.07.21a");  // no more than 11 chars
 }
 
 //--- DoPeriodic (override) -------------------------------

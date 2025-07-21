@@ -40,6 +40,9 @@ Gyro::Gyro (const char *inName)
 
   // No need for Immediate processing
   immediateEnabled = false;
+
+  // Set Version for this Device
+  strcpy (version, "2025.07.21a");  // no more than 11 chars
 }
 
 //--- DoPeriodic (override) -------------------------------
