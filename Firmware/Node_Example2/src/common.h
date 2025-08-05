@@ -46,7 +46,7 @@
 //--- Common Stuff ---
 #define SERIAL_BAUDRATE      115200
 #define SERIAL_MAX_LENGTH        80
-#define MAX_VERSION_LENGTH       12  // Suggested format: yyyy.mm.dd(a-z)
+#define MAX_VERSION_LENGTH       10  // Suggested format: MM.mm.pp (Major.minor.patch)
 #define MAX_NODES                20  // Maximum number of ESP-NOW peers
 #define MAX_DEVICES             100  // Maximum number of Devices that can connect to a Node
 #define ID_SIZE                   2  // Size of nodeID and deviceID
@@ -57,6 +57,7 @@
 #define MAX_PARAMS_LENGTH       240
 #define MIN_COMMAND_LENGTH        7  // Minimum Input Command String: dd|cccc
 #define COMMAND_SIZE              4
+#define MAX_SILENT_DURATION   30000  // Maximum millis of silence
 
 //--- Types -----------------------------------------------
 

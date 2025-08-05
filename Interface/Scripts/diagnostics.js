@@ -60,7 +60,7 @@ const Diagnostics =
       }
 
       // Update status bar Node count
-      $("#statusBar_Nodes").html (nodeCount.toString());
+      StatusBar.SetNumNodes (nodeCount);
     }
     catch (ex)
     {
@@ -166,7 +166,7 @@ const Diagnostics =
         const sph            = deviceArray[devIndex].rate;
         const sps            = Math.round (sph/360) / 10;
 
-        $('#deviceInfo' + nodeIndexString).append ('<div>▐══ ' + (devIndex > 9 ? '':'0') + devIndexString + ': ' + deviceArray[devIndex].name + ' </div>');
+        $('#deviceInfo' + nodeIndexString).append ('<div>▐══ ' + (devIndex > 9 ? '':'0') + devIndexString + ': ' + deviceArray[devIndex].name + ' &nbsp; </div>');
         $('#deviceInfo' + nodeIndexString).append ('<div>ip:<input type="checkbox" class="dsSwitch" title="Turn On/Off Immediate Processing" ' + (deviceArray[devIndex].ipEnabled=='Y' ? 'checked':'') + ' onchange="Diagnostics.ToggleImmediate(this, ' + nodeIndexString + ', ' + devIndexString + ')" />   ' +
                                                         'pp:<input type="checkbox" class="dsSwitch" title="Turn On/Off Periodic Processing" '  + (deviceArray[devIndex].ppEnabled=='Y' ? 'checked':'') + ' onchange="Diagnostics.TogglePeriodic (this, ' + nodeIndexString + ', ' + devIndexString + ')" />   ' +
                                                    '<input type="range" class="dsInput" style="width:6vw; font-size:0.6vw" min="1" max="72000" step="1" value="' + sph.toString() + '" title="Set rate of Periodic Processing\nRate = ' + sph + ' samples per hour\n        ~' + sps.toString() +
@@ -281,18 +281,19 @@ const Diagnostics =
     {
       if (clearAll)
       {
-        Nodes.forEach ((node) =>
+        for (let i=0; i<MaxNodes; i++)
         {
-          if (node.monitor != undefined)
-            // node.monitor.empty ();
-            node.monitor.val ('');
-        });
+          if (Nodes[i] != undefined)
+          {
+            if (Nodes[i].monitor != undefined)
+              Nodes[i].monitor.val ('');
+          }
+        }
       }
       else
       {
         const node = Nodes[this.CurrentNodeIndex];
         if (node != undefined)
-          // node.monitor.empty ();
           node.monitor.val ('');
       }
     }

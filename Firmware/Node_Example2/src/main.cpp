@@ -98,8 +98,6 @@ void setup()
 
   Serial.println ("Starting the Node ...");
 
-
-
   //=======================================================
   // Create an instance of a Node here.
   // The 1st param is a name for your Node (to show in the SMAC Interface).
@@ -109,6 +107,14 @@ void setup()
   //=======================================================
   ThisNode = new Node ("My First Node", 0);
 
+
+  //=======================================================
+  // Create or Start/Begin any infrastructure your Devices
+  // may need. Then, if necessary, pass those references
+  // to your Devices' constructors.
+  //=======================================================
+
+
   //=======================================================
   // Add all Devices to the Node
   //=======================================================
@@ -117,11 +123,9 @@ void setup()
   ThisNode->AddDevice (new LED         ("Yellow LED"   , 4));  // Gets assigned Device ID 02
 
 
-
-
   // PING the Relayer once per second until it responds with PONG
   Serial.println ("PINGing Relayer ...");
-  strcpy (DataPacket.deviceID, "00");
+  strcpy (DataPacket.deviceID, "--");
   strcpy (DataPacket.value, "PING");
   unsigned long  nowSec, lastSec = 0L;
   WaitingForRelayer = true;

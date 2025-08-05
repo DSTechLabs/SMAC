@@ -3,10 +3,6 @@
 //     FILE : Device.h
 //
 //  PROJECT : SMAC Framework
-//              │
-//              └── Firmware
-//                    │
-//                    └── Node
 //
 //    NOTES : Device base class:
 //            Derive custom Devices from this class.

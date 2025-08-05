@@ -3,12 +3,6 @@
 //     FILE : Node.cpp
 //
 //  PROJECT : SMAC Framework
-//              │
-//              └── Publish
-//                    │
-//                    └── Firmware
-//                          │
-//                          └── Node
 //
 //    NOTES : Node base class:
 //            Derive your custom Node from this class.
@@ -63,7 +57,7 @@ Node::Node (const char *inName, int inNodeID)
 
   sprintf (nodeID, "%02d", inNodeID);
 
-  strcpy (version, "2025.07.21b");  // no more than 11 chars
+  strcpy (version, "2.0.0");  // no more than 9 chars
 
 
   //================================================
@@ -189,9 +183,12 @@ IRAM_ATTR void Node::SendDataPacket ()
   ESPNOW_Result = esp_now_send (RelayerMAC, (const uint8_t *) DataString, strlen(DataString) + 1);
   if (ESPNOW_Result != ESP_OK)
   {
-    Serial.print   ("ERROR: Unable to send Data String: ");
+    Serial.print   ("ERROR: esp_now_send() returned ");
     Serial.println (ESPNOW_Result);
   }
+
+  // Save last send packet timestamp (time of silence)
+  lastPacketTime = DataPacket.timestamp;
 
   if (Debugging)
   {
@@ -252,79 +249,96 @@ void Node::Run ()
   //===================================
   //  Check for any commands
   //===================================
-  if (CommandBuffer->GetNumElements() < 1)
-    return;
-
-  //--- Process next command ---
-  commandString = CommandBuffer->PopString ();  // Remember to free() this "popped" string
-
-  if (commandString != NULL)
+  if (CommandBuffer->GetNumElements() >= 1)
   {
-    if (Debugging)
+    //--- Process next command ---
+    commandString = CommandBuffer->PopString ();  // Remember to free() this "popped" string
+
+    if (commandString != NULL)
     {
-      Serial.print   ("commandString=");
-      Serial.println (commandString);
-    }
-
-    int cLength = strlen (commandString);
-
-    // Check length
-    if (cLength < MIN_COMMAND_LENGTH)
-      Serial.println ("ERROR: Invalid command");
-    else
-    {
-      // Populate the global <CommandPacket>
-      CommandPacket.deviceIndex = deviceIndex = 10*((int)(commandString[0])-48) + ((int)(commandString[1])-48);
-
-      memcpy (CommandPacket.command, commandString + 3, COMMAND_SIZE);
-      CommandPacket.command[COMMAND_SIZE] = 0;
-
-      if (cLength > MIN_COMMAND_LENGTH + 1)
-        strcpy (CommandPacket.params, commandString + 8);
-      else
-        CommandPacket.params[0] = 0;
-
-      // Execute the command
-      pStatus = ExecuteCommand ();
-
-      // Check if command is still not handled
-      if (pStatus == NOT_HANDLED)
+      if (Debugging)
       {
-        //=================================================
-        // Not a Node command, so pass to Device to handle
-        //=================================================
+        Serial.print   ("commandString=");
+        Serial.println (commandString);
+      }
 
-        // Check deviceIndex range
-        if (deviceIndex >= numDevices)
+      int cLength = strlen (commandString);
+
+      // Check length
+      if (cLength < MIN_COMMAND_LENGTH)
+        Serial.println ("ERROR: Invalid command");
+      else
+      {
+        // Populate the global <CommandPacket>
+        CommandPacket.deviceIndex = deviceIndex = 10*((int)(commandString[0])-48) + ((int)(commandString[1])-48);
+
+        memcpy (CommandPacket.command, commandString + 3, COMMAND_SIZE);
+        CommandPacket.command[COMMAND_SIZE] = 0;
+
+        if (cLength > MIN_COMMAND_LENGTH + 1)
+          strcpy (CommandPacket.params, commandString + 8);
+        else
+          CommandPacket.params[0] = 0;
+
+        // Execute the command
+        pStatus = ExecuteCommand ();
+
+        // Check if command is still not handled
+        if (pStatus == NOT_HANDLED)
         {
-          if (Debugging)
-          {
-            Serial.print ("Command targeted for unknown device: ");
-            Serial.print ("deviceIndex="); Serial.print (deviceIndex);
-            Serial.print (", numDevices="); Serial.println (numDevices);
-          }
+          //=================================================
+          // Not a Node command, so pass to Device to handle
+          //=================================================
 
-          strcpy (DataPacket.value, "ERROR: Command targeted for unknown device");
+          // Check deviceIndex range
+          if (deviceIndex >= numDevices)
+          {
+            if (Debugging)
+            {
+              Serial.print ("Command targeted for unknown device: ");
+              Serial.print ("deviceIndex="); Serial.print (deviceIndex);
+              Serial.print (", numDevices="); Serial.println (numDevices);
+            }
+
+            sprintf (DataPacket.value, "ERROR: Command targeted for unknown device '%02d'", deviceIndex);
+            pStatus = FAIL_DATA;
+          }
+          else
+            pStatus = devices[deviceIndex]->ExecuteCommand ();
+        }
+
+        // Check if still not handled
+        if (pStatus == NOT_HANDLED)
+        {
+          sprintf (DataPacket.value, "ERROR: Unkown command '%s'", CommandPacket.command);
           pStatus = FAIL_DATA;
         }
-        else
-          pStatus = devices[deviceIndex]->ExecuteCommand ();
+
+        // Any data to send?
+        if (pStatus == SUCCESS_DATA || pStatus == FAIL_DATA)
+        {
+          // Populate deviceID
+          memcpy (DataPacket.deviceID, commandString, ID_SIZE);
+
+          SendDataPacket ();
+        }
       }
 
-      // Any data to send?
-      if (pStatus == SUCCESS_DATA || pStatus == FAIL_DATA)
-      {
-        // Populate deviceID
-        memcpy (DataPacket.deviceID, commandString, ID_SIZE);
-
-        SendDataPacket ();
-      }
+      //====================================
+      // Free the Popped string from buffer
+      //====================================
+      free (commandString);
     }
+  }
 
-    //====================================
-    // Free the Popped string from buffer
-    //====================================
-    free (commandString);
+  // Check if this Node has been silent for some time.
+  // If so, send a PONG to let Interface know it is alive.
+  DataPacket.timestamp = millis();
+  if (DataPacket.timestamp - lastPacketTime > MAX_SILENT_DURATION)
+  {
+    strcpy (DataPacket.deviceID, "--");
+    strcpy (DataPacket.value, "PONG");
+    SendDataPacket ();
   }
 }
 
@@ -343,8 +357,8 @@ const char * Node::GetVersion ()
 //  child Node class to handle custom Node commands.
 //  Your method should first call this base class method,
 //  then handle custom commands.
-//  If the command is not handled by the Node, then pass
-//  it to the Device's ExecuteCommand() method.
+//  If the command is not handled by the Node, it will
+//  get passed to the Device's ExecuteCommand() method.
 //=========================================================
 
 ProcessStatus Node::ExecuteCommand ()

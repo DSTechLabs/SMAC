@@ -3,10 +3,6 @@
 //     FILE : Device.cpp
 //
 //  PROJECT : SMAC Framework
-//              │
-//              └── Firmware
-//                    │
-//                    └── Node
 //
 //    NOTES : Device base class:
 //            Derive custom Devices from this class.
@@ -29,7 +25,7 @@ Device::Device (const char *inName)
   name[MAX_NAME_LENGTH-1] = 0;
 
   // Set version
-  strcpy (version, "2025.07.21b");  // no more than 11 chars
+  strcpy (version, "2.0.0");  // no more than 9 chars
 }
 
 //--- SetID -----------------------------------------------

@@ -14,7 +14,7 @@
 
 //--- Globals ---------------------------------------------
 
-const AppVersion = '── 2025.07.21b ──';
+const AppVersion = '── 2025.07.28b ──';
 const Debugging  = false;  // Set to false for production use
 
 let TotalPages  = 0;
@@ -48,9 +48,89 @@ let   Nodes = [MaxNodes];  // Holds Node objects:
                            //   numDevices,                            │    ipEnabled,
                            //   devices[],  - array of Device objects ─┤    ppEnabled,
                            //   monitor,                               │    rate
-                           //   lastMessageTime                        │  }
+                           //   lastMsgTime                            │  }
                            // }                                        └─
                            // The index is the nodeID
+
+//--- Status Bar ------------------------------------------
+
+const StatusBar =
+{
+  //--- SetState ---
+  SetState : function (value)
+  {
+    try
+    {
+      $("#statusBar_State").html (value);
+    }
+    catch (ex)
+    {
+      ShowException (ex);
+    }
+  },
+
+  //--- SetMessage ---
+  SetMessage : function (message, color)
+  {
+    try
+    {
+      $("#statusBar_Message").html (message);
+      if (color == undefined)
+        $("#statusBar_Message").css ('color', "var(--light)");
+      else
+        $("#statusBar_Message").css ('color', color);
+    }
+    catch (ex)
+    {
+      ShowException (ex);
+    }
+  },
+
+  //--- SetNumNodes ---
+  SetNumNodes : function (numNodes)
+  {
+    try
+    {
+      $("#statusBar_Nodes").html (numNodes.toString());
+    }
+    catch (ex)
+    {
+      ShowException (ex);
+    }
+  },
+
+  //--- SetNumDevices ---
+  SetNumDevices : function (numDevices)
+  {
+    try
+    {
+      $("#statusBar_Devices").html (numDevices.toString());
+    }
+    catch (ex)
+    {
+      ShowException (ex);
+    }
+  },
+
+  //--- SetDateTime ---
+  SetDateTime : function ()
+  {
+    try
+    {
+      const now = new Date ();
+
+      let value = now.toDateString();
+      $("#statusBar_Date").html (value);
+
+      value = now.toTimeString().substring(0, 5);
+      $("#statusBar_Time").html (value);
+    }
+    catch (ex)
+    {
+      ShowException (ex);
+    }
+  }
+};
 
 //--- Startup ---------------------------------------------
 
@@ -62,7 +142,7 @@ try
 
   // Check if this browser supports serial communication
   if (!('serial' in navigator) || navigator.serial == undefined)
-    $('#smacPageArea').html ('<h1 style="color:#C00000; text-shadow:1px 1px 1px #000000; text-align:center">' +
+    $('#smacPageArea').html ('<h1 style="color:#F00000; text-shadow:1px 1px 1px #000000; text-align:center">' +
                              'This browser does not support serial communications.<br>Please use the Chrome or Edge browser.</h1>');
   else
   {
@@ -175,16 +255,22 @@ async function ConnectToRelayer ()
         // This is so custom SMAC Widgets can listen for it and resize themselves.
         window.addEventListener ('resize', (event) => { $(document.body).trigger ('browserResized'); });
 
-        // Show nav buttons, diagnostics button and status bar
+        //=================================================
+        //  Bring Up Interface Screen
+        //  Show nav buttons, diagnostics button and status bar
+        //=================================================
         $('#navButtons'   ).css ('display', 'inline-block');
         $('#diagAndCBox'  ).css ('display', 'inline-block');
         $('#smacStatusBar').css ('display', 'flex'        );
 
+        // Still booting up
+        StatusBar.SetState ("Booting");
+
         UpdateConnectionBox ();
 
         // Update current date/time once per minute
-        SetDateTime ();
-        DTInterval = setInterval (SetDateTime, 60000);
+        StatusBar.SetDateTime ();
+        DTInterval = setInterval (StatusBar.SetDateTime, 60000);
 
         // Click on the first nav button
         $('.navButton').first().trigger ('pointerdown');
@@ -197,6 +283,10 @@ async function ConnectToRelayer ()
 
           // Run 'UserStartup()' (defined by User at bottom of index.html)
           UserStartup ();
+
+          // Running
+          StatusBar.SetState   ("Running");
+          StatusBar.SetMessage ("No Issues", "var(--light)");
         }, 1000);
       });
     }
@@ -265,39 +355,6 @@ function RelayerDisconnected ()
   }
 }
 
-//--- SetDateTime -----------------------------------------
-
-function SetDateTime ()
-{
-  try
-  {
-    const now = new Date ();
-
-    let value = now.toDateString();
-    $("#statusBar_Date").html (value);
-
-    value = now.toTimeString().substring(0, 5);
-    $("#statusBar_Time").html (value);
-
-
-
-
-
-
-    // Also check if all Nodes are still alive
-    // ...
-
-
-
-
-
-  }
-  catch (ex)
-  {
-    ShowException (ex);
-  }
-}
-
 //--- ProcessRelayerMessage -------------------------------
 
 async function ProcessRelayerMessage (dataString)
@@ -318,7 +375,7 @@ async function ProcessRelayerMessage (dataString)
     // There are two special messages from the Relayer:
     //
     //   NODE|...     Indicates that a new Node has attached to the system
-    //   ERROR:...    Indicates a Relayer error
+    //   ERROR:...    Indicates an error from Relayer or Node
 
     if (Debugging)
       console.info ('--> ' + dataString);
@@ -346,12 +403,11 @@ async function ProcessRelayerMessage (dataString)
       return;
     }
 
-    // Error messages from the Relayer have no Node or Device associated with them.
-    // Their message starts with 'ERROR:' ...
-    // Show any Relayer Errors
+    // Show any Errors
     if (dataString.startsWith ('ERROR:'))
     {
-      PopupMessage ('SMAC Relayer/Node Error', dataString.substring (6));
+      // PopupMessage ('Relayer/Node Error', dataString.substring (6));
+      StatusBar.SetMessage ("Relayer/Node Error: " + dataString.substring (6), "#F00000");
       return;
     }
 
@@ -374,20 +430,9 @@ async function ProcessRelayerMessage (dataString)
     if (Diagnostics.DataLogging)
       Diagnostics.LogToMonitor (nodeIndex, '──▶ ' + dataString);
 
-
-
-
-
-
-
-    // // Mark last time since we heard from Node
-    // Node[nodeIndex].lastMessageTime = timestamp;
-
-
-
-
-
-
+    // Set last message time
+    if (Nodes[nodeIndex] != undefined)
+      Nodes[nodeIndex].lastMsgTime = timestamp;
 
     // First, update Widgets with actual device data values
     // They start with a dash or a digit
@@ -414,7 +459,7 @@ async function ProcessRelayerMessage (dataString)
     //   VER=
     //   FILES=
     //   FILE=
-    //   ERROR=
+    //   ERROR:
     //   PONG
     //=====================================================================
 
@@ -424,12 +469,13 @@ async function ProcessRelayerMessage (dataString)
       if (Nodes[nodeIndex] == undefined)
       {
         const newNode = {
-                          name       : 'not set',
-                          version    : 'not set',
-                          macAddress : 'not set',
-                          numDevices : 0,
-                          devices    : [],          // Device objects { name, version, ipEnabled, ppEnabled, rate }
-                          monitor    : undefined
+                          name        : 'not set',
+                          version     : 'not set',
+                          macAddress  : 'not set',
+                          numDevices  : 0,
+                          devices     : [],          // Device objects { name, version, ipEnabled, ppEnabled, rate }
+                          monitor     : undefined,
+                          lastMsgTime : timestamp
                         };
 
         Nodes[nodeIndex] = newNode;
@@ -476,7 +522,7 @@ async function ProcessRelayerMessage (dataString)
             totalDevices += node.numDevices;
         });
 
-        $("#statusBar_Devices").html (totalDevices.toString());
+        StatusBar.SetNumDevices (totalDevices);
       }
     }
 
@@ -544,14 +590,16 @@ async function ProcessRelayerMessage (dataString)
       // TODO: File contents
     }
 
-    else if (value.startsWith ('ERROR='))
+    else if (value.startsWith ('ERROR:'))
     {
-      // Error messages from a Node or Device post their error in the value field.
-      // The message has the format:
-      //   nodeID|deviceID|timestamp|ERROR=...
+      // Error messages from a Node or Device post their error message in the value field.
+      // The value field should start with ERROR:
+
+      const errorMsg = Nodes[nodeIndex].devices[deviceIndex].name + " Device Error: " + value.substring(6);
+      StatusBar.SetMessage (errorMsg, "#F00000");
 
       // Log Node/Device Error message
-      Diagnostics.LogToMonitor (nodeIndex, value.substring(6));
+      Diagnostics.LogToMonitor (nodeIndex, errorMsg);
     }
 
     else if (value.startsWith ('PONG'))
@@ -565,6 +613,51 @@ async function ProcessRelayerMessage (dataString)
     ShowException (ex);
   }
 }
+
+
+
+
+
+
+
+//--- CheckNodes ------------------------------------------
+
+function CheckNodes ()
+{
+  try
+  {
+    // Check if all Nodes are still alive
+    for (let i=0; i<MaxNodes; i++)
+    {
+      if (Nodes[i] != undefined)
+      {
+        if (BigInt(now) - Nodes[i].lastMsgTime > BigInt(31000))
+        {
+
+
+          // // Gray out Node box in Diagnostics
+          // $('#diagSystemGroup....')
+
+
+
+          StatusBar.SetMessage ("Node " + i.toString() + " not responding", "#F00000");
+        }
+        else
+          StatusBar.SetMessage ("No issues");
+      }
+    }
+  }
+  catch (ex)
+  {
+    ShowException (ex);
+  }
+}
+
+
+
+
+
+
 
 //--- Send_UItoRelayer ------------------------------------
 

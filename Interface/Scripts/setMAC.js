@@ -49,7 +49,7 @@ try
 
   // Check if this browser supports serial communication
   if (!('serial' in navigator) || navigator.serial == undefined)
-    $('#smacPageArea').html ('<h1 style="color:#C00000; text-shadow:1px 1px 1px #000000; text-align:center">' +
+    $('#smacPageArea').html ('<h1 style="color:#F00000; text-shadow:1px 1px 1px #000000; text-align:center">' +
                              'This browser does not support serial communications.<br>Please use the Chrome or Edge browser.</h1>');
   else
   {

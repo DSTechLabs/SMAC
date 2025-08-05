@@ -3,12 +3,6 @@
 //     FILE : Node.h
 //
 //  PROJECT : SMAC Framework
-//              │
-//              └── Publish
-//                    │
-//                    └── Firmware
-//                          │
-//                          └── Node
 //
 //    NOTES : Node class:
 //
@@ -91,6 +85,7 @@ class Node
     Device         *devices[MAX_DEVICES];             // Holds the array of Devices for this Node
     int            numDevices = 0;                    // Number of added Devices
     char           *commandString;                    // Command string from buffer
+    unsigned long  lastPacketTime;                    // Holds last DataPacket.timestamp, used for keep alive
     ProcessStatus  pStatus;
 
   public:

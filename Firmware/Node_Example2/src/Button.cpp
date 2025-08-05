@@ -55,7 +55,7 @@ Button::Button (const char *inName, int inButtonPin)
   periodicEnabled = false;
 
   // Set Version for this Device
-  strcpy (version, "2025.05.12a");  // no more than 11 chars
+  strcpy (version, "1.0.0");  // no more than 9 chars
 }
 
 //--- DoImmediate (override) ------------------------------
