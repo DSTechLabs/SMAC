@@ -15,6 +15,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <esp_now.h>
+#include <esp_wifi.h>
 #include "Relayer.h"
 
 //--- Globals ---------------------------------------------
@@ -24,6 +25,7 @@ esp_now_peer_info_t  PeerInfo = {};                  // Required to set new ESP-
 uint8_t              NodeMACs[MAX_NODES][MAC_SIZE];  // Each node MAC address is 6 bytes (xx:xx:xx:xx:xx:xx)
 bool                 ProcessingData = false;         // Used to block from reentering espnow_ProcessDataString()
 int                  NodeIndex;                      // Global for performance
+int                  valueIndex, barCount;
 
 //--- Declarations ----------------------------------------
 
@@ -42,10 +44,6 @@ Relayer::Relayer ()
   for (NodeIndex=0; NodeIndex<MAX_NODES; NodeIndex++)
     NodeMACs[NodeIndex][0] = 0xFF;
 
-  // Init peer info structure for adding new peers
-  PeerInfo.channel = 0;
-  PeerInfo.encrypt = false;
-
   // Init ESP-NOW comms with remote Nodes
   // Set this device as a Wi-Fi Station
   if (!WiFi.mode (WIFI_STA))
@@ -54,6 +52,11 @@ Relayer::Relayer ()
     return;
   }
   delay (100);
+
+  // Init peer info structure for adding new peers
+  Serial.print ("WiFi Channel is "); Serial.println (WiFi.channel());
+  PeerInfo.channel = 0;  // 0 = Auto-select channel
+  PeerInfo.encrypt = false;
 
 
 
@@ -243,7 +246,7 @@ void Relayer::espnow_SendCommandString ()
 
 IRAM_ATTR void espnow_ProcessDataString (const esp_now_recv_info_t *info, const uint8_t *dataString, int dataLength)
 {
-  // A Data String has four fields separated with the '|' char:
+  // A normal Data String has four fields separated with the '|' char:
   //
   //   ┌──────────────────── 2-char nodeID (00-19)
   //   │  ┌───────────────── 2-char deviceID (00-99)
@@ -254,6 +257,12 @@ IRAM_ATTR void espnow_ProcessDataString (const esp_now_recv_info_t *info, const 
   //   nn|dd|timestamp|value
   //
   // Data Strings must be NULL terminated!
+  //
+  // Special-Case Data String Values:
+  // --------------------------------
+  //   PING    - A new Node just started and is waiting for a PONG from the Relayer
+  //   WFCH=n  - A Node has requested every ESP-NOW peer to change their WiFi Channel to n (0-14)
+  //             This Data String is broadcasted to all peers including this Relayer
 
   // Check if being called again before finishing.
   // If you see this message then reduce the periodic
@@ -270,7 +279,7 @@ IRAM_ATTR void espnow_ProcessDataString (const esp_now_recv_info_t *info, const 
 
   // Check data length
   if (dataLength < MIN_DATA_LENGTH)
-    Serial.println ("ERROR: Invalid Node/Device data string.");
+    Serial.println ("ERROR: Invalid Node/Device Data String.");
   else
   {
     // Check if this came from an unregistered Node
@@ -294,8 +303,31 @@ IRAM_ATTR void espnow_ProcessDataString (const esp_now_recv_info_t *info, const 
         return;
       }
     }
-    else if (strcmp ((const char *) dataString + dataLength-5, "PING") == 0)
+
+    // Get index of value field
+    barCount = 0;
+    for (valueIndex=0; valueIndex<dataLength; valueIndex++)
+      if (dataString[valueIndex] == '|')
+        if (++barCount == 3) break;
+    ++valueIndex;
+
+    // Check for valid Data String
+    if (barCount < 3)
+    {
+      Serial.println ("ERROR: Invalid Node/Device Data String.");
+      return;
+    }
+
+    // Handle "Special Case" Data Strings
+    if (strncmp ((const char *) dataString + valueIndex, "PING", 4) == 0)
       newNode = true;
+    else if (strncmp ((const char *) dataString + valueIndex, "WFCH", 4) == 0)
+    {
+      // Change WiFi Channel
+      uint8_t newChannel = (uint8_t) atoi ((const char *) dataString + valueIndex + 5);
+      Serial.print ("New WiFi Channel rquested; Changing to channel "); Serial.println (newChannel);
+      esp_wifi_set_channel (newChannel, WIFI_SECOND_CHAN_NONE);
+    }
 
     if (newNode)
     {

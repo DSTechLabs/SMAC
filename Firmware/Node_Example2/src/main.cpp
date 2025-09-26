@@ -63,7 +63,8 @@ DPacket      DataPacket;
 CPacket      CommandPacket;
 char         DataString[MAX_MESSAGE_LENGTH];
 
-Node         *ThisNode;  // The Node for this example
+Node         *ThisNode;   // The Node for this example
+const int    NodeID = 0;  // NodeID (0-19)
 
 //--- Declarations ----------------------------------------
 
@@ -105,7 +106,7 @@ void setup()
   // Node ID's cannot be duplicated in your SMAC System.
   // --- Do not use the same ID for other Nodes ---
   //=======================================================
-  ThisNode = new Node ("My First Node", 0);
+  ThisNode = new Node ("My First Node", NodeID);
 
 
   //=======================================================

@@ -850,9 +850,267 @@ customElements.define ('smac-slider', SMAC_Slider);
 
 
 
+
 //=============================================================================
 //  <smac-joystick> element
 //=============================================================================
+
+class SMAC_Joystick extends HTMLElement
+{
+  //--- Constructor ---------------------------------------
+
+  constructor ()
+  {
+    super ();
+
+    // Rebuild this widget on resize
+    $(document.body).on ('browserResized', () => { this.build (); });
+
+    // Right-click context menu
+    this.addEventListener ('contextmenu', function (event)
+    {
+      StopEvent (event);
+
+      // ...
+    });
+  }
+
+  //--- Attributes ----------------------------------------
+
+//   get width        (     ) { return this.Width;         }
+//   set width        (value) { this.Width = value;        }
+//
+//   get height       (     ) { return this.Height;        }
+//   set height       (value) { this.Height = value;       }
+
+  get knobImage    (     ) { return this.KnobImage;     }
+  set knobImage    (value) { this.KnobImage = value;    }
+
+  get backImage    (     ) { return this.BackImage;     }
+  set backImage    (value) { this.BackImage = value;    }
+
+  get size         (     ) { return this.Size;          }
+  set size         (value) { this.Size = value;         }
+
+  get moveAction   (     ) { return this.MoveAction;    }
+  set moveAction   (value) { this.MoveAction = value;   }
+
+  get doneAction   (     ) { return this.DoneAction;    }
+  set doneAction   (value) { this.DoneAction = value;   }
+
+  get snapToCenter (     ) { return this.SnapToCenter;  }
+  set snapToCenter (value) { this.SnapToCenter = value; }
+
+  //--- connectedCallback ---------------------------------
+
+  connectedCallback ()
+  {
+    try
+    {
+      // // Create shadow root
+      // this.shadow = this.attachShadow ({mode: 'open'});
+
+      SetAsInlineBlock (this);
+
+      // Set optional attributes
+      // this.Width        = this.hasAttribute ('width'       ) ? Number (this.getAttribute ('width'       )) : 8;
+      // this.Height       = this.hasAttribute ('height'      ) ? Number (this.getAttribute ('height'      )) : 15;
+      this.KnobImage    = this.hasAttribute ('knobImage'   ) ?         this.getAttribute ('knobImage'    ) : 'Images/ui_JoystickKnob1.png';
+      this.BackImage    = this.hasAttribute ('backImage'   ) ?         this.getAttribute ('backImage'    ) : 'Images/ui_JoystickBack1.png';
+      this.Size         = this.hasAttribute ('size'        ) ? Number (this.getAttribute ('size'        )) : 10;
+      this.MoveAction   = this.hasAttribute ('moveAction'  ) ?         this.getAttribute ('moveAction'   ) : undefined;
+      this.DoneAction   = this.hasAttribute ('doneAction'  ) ?         this.getAttribute ('doneAction'   ) : undefined;
+      this.SnapToCenter = this.hasAttribute ('snapToCenter');
+
+      // Build this widget
+      this.build ();
+    }
+    catch (ex)
+    {
+      ShowException (ex);
+    }
+  }
+
+  //--- build ---------------------------------------------
+
+  build = function ()
+  {
+    try
+    {
+      // Canvas dimensions are percentages of Browser's size
+      const cWidth  = Math.max (Math.round (this.Size * GetBrowserWidth () / 100), 90);
+      const cHeight = Math.round (cWidth / 1.2);
+
+      // Create a 2D data visualization canvas (dvCanvas2D)
+      this.smacCanvas = new dvCanvas2D (cWidth, cHeight, 'black');
+
+      // Check if a canvas already exists from a previous build
+      if (this.firstChild == undefined)
+        this.appendChild  (this.smacCanvas.canvas);
+      else
+        this.replaceChild (this.smacCanvas.canvas, this.firstChild);  // Replace existing canvas
+
+      // Draw background image
+      this.smacCanvas.drawImage (0, 0, this.BackImage, () =>
+      {
+
+
+
+
+
+this.smacCanvas.drawRectangle (0, 0, cWidth, cHeight, '#F00000');
+
+
+
+
+
+        // Draw Joystick "Knob" (draggable)
+        this.smacCanvas.drawDraggable (this.GraphWidth/2, this.GraphHeight/2, this.KnobImage, this.MoveAction, this.doneAction);
+      });
+
+
+
+
+
+
+
+
+
+//       // Set initial size of graph area
+//       this.GraphWidth  = cWidth;
+//       this.GraphHeight = cHeight;
+//
+//       this.OffsetX     = 0;
+//       this.OffsetY     = 0;
+//
+//       // Reduce graph area and adjust offsets for scale, if specified
+//       if (this.ScaleColor != undefined)
+//       {
+//         this.GraphWidth  -= 80;
+//         this.GraphHeight -= 35;
+//
+//              if (this.ScalePlacement == 'leftTop'    ) { this.OffsetX = 60; this.OffsetY = 30; }
+//         else if (this.ScalePlacement == 'leftBottom' ) { this.OffsetX = 60; this.OffsetY =  7; }
+//         else if (this.ScalePlacement == 'rightTop'   ) { this.OffsetX = 20; this.OffsetY = 30; }
+//         else if (this.ScalePlacement == 'rightBottom') { this.OffsetX = 20; this.OffsetY =  7; }
+//       }
+//
+//       // Background gradient
+//       this.BackGrad = this.smacCanvas.cc.createLinearGradient (this.OffsetX, this.OffsetY, this.OffsetX, this.OffsetY+this.GraphHeight);
+//       this.BackGrad.addColorStop (0.0, this.BackColor);
+//       this.BackGrad.addColorStop (1.0, this.smacCanvas.adjustBrightness (this.BackColor, -20));  // darker
+//
+//       // Manually set scale factors if scale and grid not defined
+//       if (this.ScaleColor == undefined && this.gridColor == undefined)
+//       {
+//         // Set scale factors
+//         if (this.XMax <= this.XMin)
+//           this.ScaleFactorX = 1.0;
+//         else
+//           this.ScaleFactorX = this.GraphWidth / (this.XMax - this.XMin);
+//
+//         if (this.YMax <= this.YMin)
+//           this.ScaleFactorY = 1.0;
+//         else
+//           this.ScaleFactorY = this.GraphHeight / (this.YMax - this.YMin);
+//       }
+//       else
+//       {
+//         // x-Axis Scale
+//         if (this.ScalePlacement.endsWith ('Top'))
+//           this.ScaleFactorX = this.smacCanvas.drawLinearScale (this.OffsetX, this.OffsetY                 , this.GraphWidth, this.GraphHeight, ScaleOrientation.HorizTop   , this.XMin, this.XMax, this.XUnit, this.ScaleColor, this.GridColor);  // X-Axis
+//         else
+//           this.ScaleFactorX = this.smacCanvas.drawLinearScale (this.OffsetX, this.OffsetY+this.GraphHeight, this.GraphWidth, this.GraphHeight, ScaleOrientation.HorizBottom, this.XMin, this.XMax, this.XUnit, this.ScaleColor, this.GridColor);  // X-Axis
+//
+//         // Y-Axis Scale
+//         if (this.ScalePlacement.startsWith ('right'))
+//           this.ScaleFactorY = this.smacCanvas.drawLinearScale (this.OffsetX+this.GraphWidth, this.OffsetY+this.GraphHeight, this.GraphWidth, this.GraphHeight, ScaleOrientation.VertRight, this.YMin, this.YMax, this.YUnit, this.ScaleColor, this.GridColor);  // Y-Axis
+//         else
+//           this.ScaleFactorY = this.smacCanvas.drawLinearScale (this.OffsetX                , this.OffsetY+this.GraphHeight, this.GraphWidth, this.GraphHeight, ScaleOrientation.VertLeft , this.YMin, this.YMax, this.YUnit, this.ScaleColor, this.GridColor);  // Y-Axis
+//       }
+//
+//       // Set clipping region
+//       this.smacCanvas.setClipRectangle (this.OffsetX, this.OffsetY, this.GraphWidth, this.GraphHeight);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+    catch (ex)
+    {
+      ShowException (ex);
+    }
+  }
+
+
+
+
+//   //--- updateWidget --------------------------------------
+//
+//   updateWidget = function (value)
+//   {
+//     try
+//     {
+//       // value is a string that has both x and y values separated with a comma
+//       const values = value.split (',');
+//       if (values.length < 2) return;
+//
+//       const xValue = Number (values[0]);
+//       const yValue = Number (values[1]);
+//
+//       // Calculate next graphic position
+//       const cx = this.OffsetX                    + Math.round ((xValue - this.XMin) * this.ScaleFactorX);
+//       const cy = this.OffsetY + this.GraphHeight - Math.round ((yValue - this.YMin) * this.ScaleFactorY);
+//
+//       // Draw Joystick "Handle"
+//
+//       // Draw grid if defined
+//       // No need to redraw scales, so scale color is undefined in the drawLinearScale() method
+//       if (this.gridColor != undefined)
+//       {
+//         // x-Axis Scale
+//         if (this.ScalePlacement.endsWith ('Top'))
+//           this.ScaleFactorX = this.smacCanvas.drawLinearScale (this.OffsetX, this.OffsetY                 , this.GraphWidth, this.GraphHeight, ScaleOrientation.HorizTop   , this.XMin, this.XMax, this.XUnit, undefined, this.GridColor);  // X-Axis
+//         else
+//           this.ScaleFactorX = this.smacCanvas.drawLinearScale (this.OffsetX, this.OffsetY+this.GraphHeight, this.GraphWidth, this.GraphHeight, ScaleOrientation.HorizBottom, this.XMin, this.XMax, this.XUnit, undefined, this.GridColor);  // X-Axis
+//
+//         // Y-Axis Scale
+//         if (this.ScalePlacement.startsWith ('right'))
+//           this.ScaleFactorY = this.smacCanvas.drawLinearScale (this.OffsetX+this.GraphWidth, this.OffsetY+this.GraphHeight, this.GraphWidth, this.GraphHeight, ScaleOrientation.VertRight, this.YMin, this.YMax, this.YUnit, undefined, this.GridColor);  // Y-Axis
+//         else
+//           this.ScaleFactorY = this.smacCanvas.drawLinearScale (this.OffsetX                , this.OffsetY+this.GraphHeight, this.GraphWidth, this.GraphHeight, ScaleOrientation.VertLeft , this.YMin, this.YMax, this.YUnit, undefined, this.GridColor);  // Y-Axis
+//       }
+//
+//       // Draw "orb" indicator
+//       this.smacCanvas.drawLine    (cx   , cy-15, cx   , cy+15, this.ForeColor, 1);
+//       this.smacCanvas.drawLine    (cx-15, cy   , cx+15, cy   , this.ForeColor, 1);
+//       this.smacCanvas.drawEllipse (cx   , cy   , 5    , 5    , this.ForeColor, fill);
+//     }
+//     catch (ex)
+//     {
+//       ShowException (ex);
+//     }
+//   }
+
+
+
+
+};
+
+customElements.define ('smac-joystick', SMAC_Joystick);
 
 
 

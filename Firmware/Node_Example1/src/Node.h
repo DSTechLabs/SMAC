@@ -39,6 +39,7 @@
 //                GNOI = Get Node Info   : <DataPacket> value = name|version|macAddress|numDevices
 //                GDEI = Get Device Info : <DataPacket> value = name|version|ipEnabled|ppEnabled|rate
 //                PING = Check if still alive and connected; responds with "PONG"
+//                WFCH = Set New ESP-NOW WiFi Channel
 //                BLIN = Quickly blink the Node's status LED to indicate communication or location
 //                GNVR = Get Node Firmware Version
 //                RSET = Reset this Node's processor using esp_restart()
@@ -91,12 +92,12 @@ class Node
   public:
     Node (const char *inName, int inNodeID);
 
-    void          AddDevice (Device *device);  // Call this method to add Devices
-    void          SendDataPacket ();           // Send the global <DataPacket> structure to the Relayer Module
-    void          Run ();                      // Run this Node; called from the loop() method of main.cpp
-    const char *  GetVersion ();               // Return the current version of this Node
+    void          AddDevice      (Device *device);        // Call this method to add Devices
+    void          SendDataPacket (bool broadcast=false);  // Send the global <DataPacket> structure to the Relayer Module, or broadcast to all peers
+    void          Run            ();                      // Run this Node; called from the loop() method of main.cpp
+    const char *  GetVersion     ();                      // Return the current version of this Node
 
-    virtual ProcessStatus  ExecuteCommand ();  // Override this method in a child Node class
+    virtual ProcessStatus  ExecuteCommand ();             // Override this method in a child Node class
 };
 
 #endif

@@ -16,7 +16,7 @@
 //             ∙ Compositing : https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation
 //
 //   AUTHOR  : Bill Daniels
-//             Copyright 2020-2024, D+S Tech Labs, Inc.
+//             Copyright 2020-2025, D+S Tech Labs, Inc.
 //             All Rights Reserved
 //
 //=============================================================================
@@ -595,79 +595,89 @@ class dvCanvas2D
     try
     {
       // Capture entire canvas as background image
-      this.backImage = new Image ();
-      this.backImage.src = this.canvas.toDataURL ();
-
-      // Draw draggable image
-      this.drawImage (x, y, url, (img) =>
+      this.canvas.toBlob ((blob) =>
       {
-        // Save returned image as draggable
-        this.dragImage = img;
-        this.dragX = x;
-        this.dragY = y;
+        // Save background
+        this.backImage = new Image ();
+        this.backImage.src = URL.createObjectURL (blob);
 
-        // Check for mouse down
-        this.downListener = this.canvas.onpointerdown = (event) =>
+        // Draw draggable image
+        this.drawImage (x, y, url, (img) =>
         {
-          // Get location of canvas (in case browser scrolled)
-          this.canvasRect = this.canvas.getBoundingClientRect ();
+          // Save returned image as draggable
+          this.dragImage = img;
+          // this.dragImage.style.cursor = 'move';
+          this.dragX = x;
+          this.dragY = y;
 
-          // Get location of cursor when clicked (relative to canvas)
-          const cX = event.clientX - this.canvasRect.x;
-          const cY = event.clientY - this.canvasRect.y;
-
-          // Check if on draggable image
-          if (cX >= this.dragX && cX < this.dragX + this.dragImage.width &&
-              cY >= this.dragY && cY < this.dragY + this.dragImage.height)
+          // Check for mouse down
+          this.downListener = this.canvas.onpointerdown = async (event) =>
           {
-            // Remove move listener on mouse up and mouse going off canvas
-            this.canvas.onpointerup  = // () => { this.canvas.onpointermove = null; }
-            this.canvas.onpointerout = () =>
+            // Get location of canvas (in case browser scrolled)
+            this.canvasRect = this.canvas.getBoundingClientRect ();
+
+            // Get location of cursor when clicked (relative to canvas)
+            const cX = event.clientX - this.canvasRect.x;
+            const cY = event.clientY - this.canvasRect.y;
+
+            // Check if on draggable image
+            if (cX >= this.dragX && cX < this.dragX + this.dragImage.width &&
+                cY >= this.dragY && cY < this.dragY + this.dragImage.height)
             {
-              this.canvas.onpointermove = null;
-              document.body.style.cursor = 'default';
+              // Remove move listener on mouse up
+              this.canvas.onpointerup = () =>
+              {
+                this.canvas.onpointermove = null;
 
-              // Call callback function, if any
-              if (doneCallback != undefined)
-                doneCallback (this.dragX, this.dragY);
+                // Release cursor lock
+                document.exitPointerLock ();
+
+                // Call callback function, if any
+                if (doneCallback != undefined)
+                  doneCallback (this.dragX, this.dragY);
+              }
+
+              // Limit motion to within canvas (0..max)
+              const maxX = this.canvasRect.width  - this.dragImage.width;
+              const maxY = this.canvasRect.height - this.dragImage.height;
+
+              let newX, newY;
+
+              // Trap cursor in canvas area
+              await this.canvas.requestPointerLock ();
+
+              // Begin dragging
+              this.moveListener = this.canvas.onpointermove = (event) =>
+              {
+                // Get new location of image
+                newX = allowH ? this.dragX + event.movementX : x;
+                newY = allowV ? this.dragY + event.movementY : y;
+
+                // Check bounds
+                if (newX < 0) newX = 0; else if (newX > maxX) newX = maxX;
+                if (newY < 0) newY = 0; else if (newY > maxY) newY = maxY;
+
+                // Check if new position really moved
+                if (newX != this.dragX || newY != this.dragY)
+                {
+                  // Set new location of draggable
+                  this.dragX = newX;
+                  this.dragY = newY;
+
+                  // Replace background
+                  this.cc.drawImage (this.backImage, -1, -1);  // the whole canvas seems to shift +1 pixel both horiz and vert !!!
+
+                  // Draw draggable at new location
+                  this.cc.drawImage (this.dragImage, newX-1, newY-1);
+
+                  // Call "drag" callback function if position changed
+                  if (dragCallback != undefined)
+                    dragCallback (newX, newY);
+                }
+              }
             }
-
-            // Limit motion to within canvas (0..max)
-            const maxX = this.canvasRect.width  - this.dragImage.width;
-            const maxY = this.canvasRect.height - this.dragImage.height;
-
-            let newX, newY;
-
-            // Hide cursor
-            document.body.style.cursor = 'none';
-
-            // Begin dragging
-            this.moveListener = this.canvas.onpointermove = (event) =>
-            {
-              // Get new location of image
-              newX = allowH ? this.dragX + event.movementX : x;
-              newY = allowV ? this.dragY + event.movementY : y;
-
-              // Check bounds
-              if (newX < 0) newX = 0; else if (newX > maxX) newX = maxX;
-              if (newY < 0) newY = 0; else if (newY > maxY) newY = maxY;
-
-              // Set new location of draggable
-              this.dragX = newX;
-              this.dragY = newY;
-
-              // Replace background
-              this.cc.drawImage (this.backImage, -1, -1);  // the whole canvas seems to shift +1 pixel both horiz and vert !!!
-
-              // Call callback function, if any
-              if (dragCallback != undefined)
-                dragCallback (newX, newY);
-
-              // Draw draggable at new location
-              this.cc.drawImage (this.dragImage, newX, newY);
-            }
-          }
-        };
+          };
+        });
       });
     }
     catch (ex)

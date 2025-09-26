@@ -3,12 +3,6 @@
 //     FILE : Relayer.h
 //
 //  PROJECT : SMAC Framework
-//              │
-//              └── Publish
-//                    │
-//                    └── Firmware
-//                          │
-//                          └── Relayer
 //
 //   AUTHOR : Bill Daniels
 //            Copyright 2021-2025, D+S Tech Labs, Inc.

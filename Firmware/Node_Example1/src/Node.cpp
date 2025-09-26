@@ -18,6 +18,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <esp_now.h>
+#include <esp_wifi.h>
 #include "Node.h"
 
 //--- Declarations ----------------------------------------
@@ -57,7 +58,7 @@ Node::Node (const char *inName, int inNodeID)
 
   sprintf (nodeID, "%02d", inNodeID);
 
-  strcpy (version, "2.0.0");  // no more than 9 chars
+  strcpy (version, "2.1.0");  // no more than 9 chars
 
 
   //================================================
@@ -66,27 +67,18 @@ Node::Node (const char *inName, int inNodeID)
 
   Serial.println ("Starting ESP-NOW communication ...");
 
-  // Set this device as a Wi-Fi Station
-  if (!WiFi.mode (WIFI_STA))
+
+  // Set this device as both an Access Point and a Wi-Fi Station
+  if (!WiFi.mode (WIFI_AP_STA))
   {
     Serial.println ("ERROR: Unable to set WiFi mode");
     return;
   }
   delay (100);
 
-  // Load this Node's MAC address
+  Serial.print ("WiFi Channel is "); Serial.println (WiFi.channel());
 
-  // // ESP-NOW v1 (deprecated)
-  // uint8_t  macAddress[MAC_SIZE+2];
-  // for (int i=0; i<MAC_SIZE+2; i++) macAddress[i] = 0;  // Clear result first
-  // esp_efuse_mac_get_default (macAddress);  // System-programmed by Espressif, 6 bytes
-  //
-  // // Set this Node's MAC Address string (for the Interface to show)
-  // sprintf (macAddressString, "%02X:%02X:%02X:%02X:%02X:%02X", macAddress[0], macAddress[1], macAddress[2], macAddress[3], macAddress[4], macAddress[5]);
-  // Serial.print   ("Node MAC = ");
-  // Serial.println (macAddressString);
-
-  // ESP-NOW v2
+  // Load this Node's MAC address (ESP-NOW v2)
   WiFi.macAddress().toCharArray (macAddressString, sizeof(macAddressString));
 
 
@@ -110,14 +102,14 @@ Node::Node (const char *inName, int inNodeID)
   // <RelayerMAC> was loaded from non-volatile memory and set in <main.cpp>
   esp_now_peer_info_t  peerInfo = {};
   memcpy (peerInfo.peer_addr, RelayerMAC, MAC_SIZE);
-  peerInfo.channel = 0;
+  peerInfo.channel = 0;  // 0 = Auto-select channel
   peerInfo.encrypt = false;
 
   Serial.println ("Adding Node as ESP-NOW Peer ...");
   ESPNOW_Result = esp_now_add_peer (&peerInfo);
   if (ESPNOW_Result != ESP_OK)
   {
-    Serial.print   ("ERROR: Unable to add Relayer as ESP-NOW peer: ");
+    Serial.print   ("ERROR: Unable to add this Node as ESP-NOW peer: ");
     Serial.println (ESPNOW_Result);
     return;
   }
@@ -152,7 +144,7 @@ void Node::AddDevice (Device *device)
 
 //--- SendDataPacket --------------------------------------
 
-IRAM_ATTR void Node::SendDataPacket ()
+IRAM_ATTR void Node::SendDataPacket (bool broadcast)
 {
   // Convert the <DataPacket> to a Data string.
   // The <DataPacket> structure must be populated with deviceID, timestamp and value fields.
@@ -179,8 +171,11 @@ IRAM_ATTR void Node::SendDataPacket ()
 
   //=============================
   // Send Data String to Relayer
-  //=============================                                                              ┌─ include string terminator
-  ESPNOW_Result = esp_now_send (RelayerMAC, (const uint8_t *) DataString, strlen(DataString) + 1);
+  //=============================
+  if (broadcast)                                                                             //  ┌─ include string terminator
+    ESPNOW_Result = esp_now_send (NULL      , (const uint8_t *) DataString, strlen(DataString) + 1);
+  else
+    ESPNOW_Result = esp_now_send (RelayerMAC, (const uint8_t *) DataString, strlen(DataString) + 1);
   if (ESPNOW_Result != ESP_OK)
   {
     Serial.print   ("ERROR: esp_now_send() returned ");
@@ -412,6 +407,34 @@ ProcessStatus Node::ExecuteCommand ()
     strcpy (DataPacket.value, "PONG");
 
     pStatus = SUCCESS_DATA;
+  }
+
+  //--- Change WiFi Channel (WFCH) ------------------------
+  else if (strncmp (CommandPacket.command, "WFCH", COMMAND_SIZE) == 0)
+  {
+    if (strlen (CommandPacket.params) > 0)
+    {
+      // Get new channel
+      uint8_t newChannel = (uint8_t) atoi (CommandPacket.params);
+
+      if (newChannel >= 0 && newChannel <= 14)
+      {
+        // Acknowledge change
+        sprintf (DataPacket.value, "New WiFi Channel rquested; Changing to channel %d", newChannel);
+
+        // Change ESP-NOW WiFi Channel to new channel
+        esp_wifi_set_channel (newChannel, WIFI_SECOND_CHAN_NONE);
+
+        pStatus = SUCCESS_DATA;
+      }
+    }
+
+    // Check for invalid channel
+    if (pStatus == NOT_HANDLED)
+    {
+      strcpy (DataPacket.value, "ERROR: Invalid WiFi Channel");
+      pStatus = FAIL_DATA;
+    }
   }
 
   //--- Blink (BLIN) --------------------------------------
