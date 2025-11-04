@@ -2,13 +2,7 @@
 //
 //     FILE : LED.cpp
 //
-//  PROJECT : SMAC Framework
-//              │
-//              └── Publish
-//                    │
-//                    └── Firmware
-//                          │
-//                          └── Node
+//  PROJECT : SMAC Framework - Example 2
 //
 //   AUTHOR : Bill Daniels
 //            Copyright 2021-2025, D+S Tech Labs, Inc.
@@ -39,22 +33,22 @@ LED::LED (const char *inName, int inLEDPin)
 
 //--- ExecuteCommand (override) ---------------------------
 
-ProcessStatus LED::ExecuteCommand ()
+ProcessStatus LED::ExecuteCommand (char *command, char *params)
 {
   // Command info is held in the global <CommandPacket> structure.
   // This method is only called for commands targeted for this device.
 
   // First call the base class ExecuteCommand method
-  pStatus = Device::ExecuteCommand ();
+  pStatus = Device::ExecuteCommand (command, params);
 
-  // Check if command was handled by the base class
+  // Check if command was handled by the Base class
   if (pStatus == NOT_HANDLED)
   {
-    // The command was NOT handled by the base class,
+    // The command was NOT handled by the Base class,
     // so handle custom commands:
 
     //--- Turn On ---
-    if (strcmp (CommandPacket.command, "LEON") == 0)
+    if (strcmp (command, "LEON") == 0)
     {
       // Turn on the LED pin
       digitalWrite (ledPin, HIGH);
@@ -64,7 +58,7 @@ ProcessStatus LED::ExecuteCommand ()
     }
 
     //--- Turn Off ---
-    else if (strcmp (CommandPacket.command, "LEOF") == 0)
+    else if (strcmp (command, "LEOF") == 0)
     {
       // Turn off the LED pin
       digitalWrite (ledPin, LOW);

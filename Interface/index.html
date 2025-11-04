@@ -54,7 +54,7 @@
     <div id="smacConsole">
 
       <!-- Title Bar with Nav Buttons -->
-      <div id="smacTitleBar" class="themeColors">
+      <div id="smacTitleBar">
 
         <div style="display:inline-block">
 
@@ -74,7 +74,8 @@
           <!--    of the corresponding content page below          -->
           <!--=====================================================-->
           <div id="navButtons">
-            <button class="navButton" onpointerdown="ShowPage ('example', this)"> Example </button>
+            <!-- <button class="navButton" onpointerdown="ShowPage ('example1', this)"> Example 1 </button> -->
+            <button class="navButton" onpointerdown="ShowPage ('example2', this)"> Example 2 </button>
           </div>
 
 
@@ -94,7 +95,7 @@
 
         </div>
 
-      </div>  <!-- Title Bar -->
+      </div>  <!-- End Title Bar -->
 
 
       <!-- Tabbed Display Page Area -->
@@ -108,11 +109,10 @@
           <div id="dsSplashVersion"></div>
           <br>
 
-          <img src="Images/image_ConnectToRelayer.png" style="width:50%" /><br>
+          <img src="Images/image_ConnectToRelayer.png" style="width:40vw" /><br>
           <br>
 
-          <!-- <h1 style="line-height:1.1; text-shadow:1px 1px 1px #000000"> -->
-          <div class="dsLabelM">
+          <div class="dsLabelM" style="line-height:1.1; text-shadow:1px 1px 1px #000000">
             This interface requires a USB connection to the SMAC Relayer Module.<br>
             Please connect the Relayer Module to this computer<br>
             and click the button below.
@@ -134,7 +134,8 @@
         <!--    into the div with id="myPage"                 -->
         <!--  They must have the class 'contentPage'.         -->
         <!--==================================================-->
-        <div id="example" class="contentPage"></div>
+        <!-- <div id="example1" class="contentPage"></div> -->
+        <div id="example2" class="contentPage"></div>
 
 
 
@@ -210,6 +211,8 @@
       {
         try
         {
+          // Place optional User startup code here
+          // ...
         }
         catch (ex)
         {

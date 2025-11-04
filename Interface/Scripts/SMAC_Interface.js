@@ -14,7 +14,7 @@
 
 //--- Globals ---------------------------------------------
 
-const AppVersion = '── 2025.07.28b ──';
+const AppVersion = '── 2025.11.04 ──';
 const Debugging  = false;  // Set to false for production use
 
 let TotalPages  = 0;
@@ -30,13 +30,8 @@ const SerialPortSettings =
   flowControl : 'none'
 };
 
-const EOL = '\r\n';
-
-// SerialPort object (to be created if supported)
-let SMACPort = undefined;
-
-let DTInterval = undefined;
-let DataString = '';
+let SMACPort         = undefined;  // SerialPort object (to be created if supported)
+let DateTimeInterval = undefined;  // Used to update the Status Bar Date/Time
 
 //--- Node Array: ---
 const MaxNodes = 20;  // Limited to 20 due to ESP-NOW peer limit
@@ -52,7 +47,7 @@ let   Nodes = [MaxNodes];  // Holds Node objects:
                            // }                                        └─
                            // The index is the nodeID
 
-//--- Status Bar ------------------------------------------
+//--- Status Bar (object) ---------------------------------
 
 const StatusBar =
 {
@@ -182,8 +177,8 @@ async function Unload ()
 {
   try
   {
-    if (DTInterval != undefined)
-      clearInterval (DTInterval);
+    if (DateTimeInterval != undefined)
+      clearInterval (DateTimeInterval);
 
     await CloseDataLog ();
 
@@ -240,7 +235,10 @@ async function ConnectToRelayer ()
 
 
 
-      // GoFullscreen ();
+      //===============================
+      //  Go Fullscreen
+      //===============================
+      GoFullscreen ();
 
 
 
@@ -270,7 +268,7 @@ async function ConnectToRelayer ()
 
         // Update current date/time once per minute
         StatusBar.SetDateTime ();
-        DTInterval = setInterval (StatusBar.SetDateTime, 60000);
+        DateTimeInterval = setInterval (StatusBar.SetDateTime, 60000);
 
         // Click on the first nav button
         $('.navButton').first().trigger ('pointerdown');
@@ -357,34 +355,224 @@ function RelayerDisconnected ()
 
 //--- ProcessRelayerMessage -------------------------------
 
-async function ProcessRelayerMessage (dataString)
+async function ProcessRelayerMessage (smacString)
 {
   try
   {
-    // Normal incoming Data Strings from the Relayer have the
-    // following format: (fields are separated with the '|' char)
-    //
-    //   ┌─────────────────── 2-char nodeID (00-19)
-    //   │  ┌──────────────── 2-char deviceID (00-99)
-    //   │  │     ┌────────── Variable length timestamp - usually millis()
-    //   │  │     │       ┌── Variable length value string
-    //   │  │     │       │   (this can be a numerical value or a text/error message)
-    //   │  │     │       │
-    //   nn|dd|timestamp|value
-    //
-    // There are two special messages from the Relayer:
-    //
-    //   NODE|...     Indicates that a new Node has attached to the system
-    //   ERROR:...    Indicates an error from Relayer or Node
-
-    if (Debugging)
-      console.info ('--> ' + dataString);
-
-    // Check if new Node connected: NODE|nodeID
-    if (dataString.startsWith ('NODE|'))
+    //=======================================================================
+    // Handle Data Strings first (for fast Widget updates)
+    //=======================================================================
+    if (smacString[0] == 'D' && smacString[1] == '|')
     {
-      const nodeID    = dataString.substring (5, 7);
-      const nodeIndex = parseInt (nodeID);
+      // Data strings have five fields separated with the '|' char:
+      //
+      //   ┌───────────────────── 1-char packet type ('D' for Data)
+      //   │ ┌─────────────────── 2-char source nodeID (00-19)
+      //   │ │  ┌──────────────── 2-char source deviceID (00-99)
+      //   │ │  │    ┌─────────── variable length string of values (multiple values are comma delimited)
+      //   │ │  │    │       ┌─── timestamp (ms) 1-10 chars
+      //   │ │  │    │       │
+      //   D|nn|dd|values|timestamp
+
+      // Get Data String fields
+      const fields = smacString.split ('|');
+      if (fields.length < 5)
+        throw "ProcessRelayerMessage(): Invalid Data String from Node/Device";
+
+      const nodeIndex   = Number (fields[1]);
+      const deviceIndex = Number (fields[2]);
+      const values      = fields[3];           // values should NOT have the '|' char in it !!!
+      const timestamp   = BigInt (fields[4]);
+
+      // Set last message time
+      if (Nodes[nodeIndex] != undefined)
+        Nodes[nodeIndex].lastMsgTime = Date.now();
+
+       // Log incoming message
+      if (Diagnostics.DataLogging)
+        Diagnostics.LogToMonitor (nodeIndex, '──▶ ' + smacString);
+
+      // First, update Widgets with numeric device data values
+      // They start with a dash or a digit
+      if (values[0] == '-' || (values[0] >= '0' && values[0] <= '9'))
+      {
+        // Update all UI Widgets with device data
+        // These events are handled by SMAC Widgets
+        $(document.body).trigger ('deviceData', [ nodeIndex, deviceIndex, values, timestamp ]);
+        return;
+      }
+
+      //=====================================================================
+      // Handle non-numeric Data values:
+      //   NOINFO=
+      //   DEINFO=
+      //   NONAME=
+      //   DENAME=
+      //   RATE=
+      //   IP Enabled
+      //   IP Disabled
+      //   IP Performed
+      //   PP Enabled
+      //   PP Disabled
+      //   VER=
+      //   FILES=
+      //   FILE=
+      //   ERROR:
+      //   PONG
+      //=====================================================================
+
+      if (values.startsWith ('NOINFO='))
+      {
+        // Add new Node if it does NOT exist already
+        if (Nodes[nodeIndex] == undefined)
+        {
+          // NOINFO=name,version,macAddress,numDevices
+          // Update Node info fields: name, version, macAddress, numDevices
+          const niFields   = values.split (',');
+          Nodes[nodeIndex] = {
+                              name        : niFields[0].substring(7),
+                              version     : niFields[1],
+                              macAddress  : niFields[2],
+                              numDevices  : Number (niFields[3]),
+                              devices     : [],          // Device objects { name, version, ipEnabled, ppEnabled, rate }
+                              monitor     : undefined,
+                              lastMsgTime : timestamp
+                            };
+
+          // Update the Diagnostics UI
+          Diagnostics.BuildSystem ();
+          Diagnostics.LogToMonitor (nodeIndex, 'Node ' + nodeIndex.toString() + ' connected.');
+
+
+
+          // // Trigger an event to inform anyone that a new Node was added
+          // $(document.body).trigger ('newNode', [ nodeIndex ]);
+
+
+        }
+      }
+
+      else if (values.startsWith ('DEINFO='))
+      {
+        // Make sure Node exists in Diagnostics
+        if (Nodes[nodeIndex] != undefined)
+        {
+          // One Device per 'DEINFO=...' message
+          // DEINFO=name,version,ipEnabled,ppEnabled,rate
+          const diFields = values.split (',');
+
+          const deviceArray = Nodes[nodeIndex].devices;
+          deviceArray[deviceIndex] = { name:diFields[0].substring(7), version:diFields[1], ipEnabled:diFields[2], ppEnabled:diFields[3], rate:diFields[4] };
+
+          Diagnostics.UpdateDevices (nodeIndex);  // Update the UI Device fields of the Node Block in Diagnostics
+
+          // Update status bar Device count
+          let totalDevices = 0;
+          Nodes.forEach ((node) =>
+          {
+            if (node != undefined)
+              totalDevices += node.numDevices;
+          });
+
+          StatusBar.SetNumDevices (totalDevices);
+        }
+      }
+
+      else if (values.startsWith ('NONAME='))
+      {
+        Nodes[nodeIndex].name = values.substring(7);
+        $("#nodeField_name" + nodeIndex.toString()).html (Nodes[nodeIndex].name);
+        $("#nmTab"          + nodeIndex.toString()).html (Nodes[nodeIndex].name);
+      }
+
+      else if (values.startsWith ('DENAME='))
+      {
+        Nodes[nodeIndex].devices[deviceIndex].name = values.substring(7);
+        Diagnostics.UpdateDevices (nodeIndex);
+      }
+
+      else if (values.startsWith ('RATE='))
+      {
+        Nodes[nodeIndex].devices[deviceIndex].rate = values.substring(5);
+        Diagnostics.UpdateDevices (nodeIndex);
+      }
+
+      else if (values == 'IP Enabled')
+      {
+        Nodes[nodeIndex].devices[deviceIndex].ipEnabled = 'Y';
+        Diagnostics.UpdateDevices (nodeIndex);
+      }
+
+      else if (values == 'IP Disabled')
+      {
+        Nodes[nodeIndex].devices[deviceIndex].ipEnabled = 'N';
+        Diagnostics.UpdateDevices (nodeIndex);
+      }
+
+      else if (values == 'PP Enabled')
+      {
+        Nodes[nodeIndex].devices[deviceIndex].ppEnabled = 'Y';
+        Diagnostics.UpdateDevices (nodeIndex);
+      }
+
+      else if (values == 'PP Disabled')
+      {
+        Nodes[nodeIndex].devices[deviceIndex].ppEnabled = 'N';
+        Diagnostics.UpdateDevices (nodeIndex);
+      }
+
+      else if (values == 'NVER=')
+      {
+        Nodes[nodeIndex].version = values.substring(5);
+        Diagnostics.BuildSystem ();
+      }
+
+      else if (values == 'DVER=')
+      {
+        Nodes[nodeIndex].devices[deviceIndex].version = values.substring(5);
+        Diagnostics.UpdateDevices (nodeIndex);
+      }
+
+      else if (values.startsWith ('FILES='))
+      {
+        // TODO: List of files
+      }
+
+      else if (values.startsWith ('FILE='))
+      {
+        // TODO: File contents
+      }
+
+      else if (values.startsWith ('ERROR:'))
+      {
+        // Error messages from a Node or Device post their error message in the value field.
+        // The value field should start with ERROR:
+
+        const dev = Nodes[nodeIndex].devices[deviceIndex];
+        if (dev != undefined)
+        {
+          // Log Node/Device Error message
+          const errorMsg = dev.name + " Device Error: " + values.substring(6);
+          Diagnostics.LogToMonitor (nodeIndex, errorMsg);
+        }
+      }
+
+      else if (values.startsWith ('PONG'))
+      {
+        // Log PONG received
+        Diagnostics.LogToMonitor (nodeIndex, 'PONG Received');
+      }
+    }
+
+
+    //=======================================================================
+    // Handle Special Messages
+    //=======================================================================
+    else if (smacString.startsWith ('NODE|'))
+    {
+      // New Node connected: NODE|nn
+      const nodeID    = smacString.substring (5, 7);
+      const nodeIndex = Number (nodeID);
 
       if (nodeIndex < MaxNodes)
       {
@@ -393,220 +581,21 @@ async function ProcessRelayerMessage (dataString)
         if (Debugging)
           console.info ('((( Node ' + nodeID + ' connected )))');
 
-        // Request Node Info: nn|00|timestamp|NOINFO|name|version|macAddress|numDevices
+        // Request Node Info: D|nn|--|NOINFO=name,version,macAddress,numDevices|timestamp
         await Send_UItoRelayer (nodeIndex, 0, 'GNOI');
 
-        // Request Device Info: nn|dd|timestamp|DEINFO|name|version|ipEn(Y/N)|ppEn(Y/N)|rate (for each Device)
+        // Request Device Info: D|nn|dd|DEINFO=name,version,ipEn(Y/N),ppEn(Y/N),rate|timestamp (for each Device)
         await Send_UItoRelayer (nodeIndex, 0, 'GDEI');
       }
-
-      return;
     }
 
-    // Show any Errors
-    if (dataString.startsWith ('ERROR:'))
+    // Show any Relayer/Node Error
+    else if (smacString.startsWith ('ERROR:'))
     {
-      // PopupMessage ('Relayer/Node Error', dataString.substring (6));
-      StatusBar.SetMessage ("Relayer/Node Error: " + dataString.substring (6), "#F00000");
-      return;
+      // PopupMessage ('Relayer/Node Error', smacString.substring(6));
+      StatusBar.SetMessage ("Relayer/Node Error: " + smacString.substring(6), "#F00000");
     }
 
-    // All other messages should be a Node/Device Data String: nodeID|deviceID|timestamp|value
-    //   nodeID    = 2-digits 00-19
-    //   deviceID  = 2-digits 00-99
-    //   timestamp = n digits
-    //   value     = Device data or message
-
-    const fields = dataString.split ('|');
-    if (fields.length < 4)
-      return;
-
-    // Parse Data String
-    const nodeIndex   = parseInt (fields[0]);
-    const deviceIndex = parseInt (fields[1]);
-    const timestamp   = BigInt   (fields[2]);
-    const value       = dataString.substring (fields[2].length + 7);  // Because value may also have '|' characters and fields.
-                                                                      // We need the whole value string including '|'s and fields.
-    if (Diagnostics.DataLogging)
-      Diagnostics.LogToMonitor (nodeIndex, '──▶ ' + dataString);
-
-    // Set last message time
-    if (Nodes[nodeIndex] != undefined)
-      Nodes[nodeIndex].lastMsgTime = timestamp;
-
-    // First, update Widgets with actual device data values
-    // They start with a dash or a digit
-    if (value[0] == '-' || (value[0] >= '0' && value[0] <= '9'))
-    {
-      // Update all UI Widgets with device data
-      // These events are handled by SMAC Widgets
-      $(document.body).trigger ('deviceData', [ nodeIndex, deviceIndex, timestamp, value ]);
-      return;
-    }
-
-    //=====================================================================
-    // Handle non-numeric (message) values:
-    //   NOINFO=
-    //   DEINFO=
-    //   NONAME=
-    //   DENAME=
-    //   RATE=
-    //   IP Enabled
-    //   IP Disabled
-    //   IP Performed
-    //   PP Enabled
-    //   PP Disabled
-    //   VER=
-    //   FILES=
-    //   FILE=
-    //   ERROR:
-    //   PONG
-    //=====================================================================
-
-    if (value.startsWith ('NOINFO='))
-    {
-      // Add new Node if it does NOT exist already
-      if (Nodes[nodeIndex] == undefined)
-      {
-        const newNode = {
-                          name        : 'not set',
-                          version     : 'not set',
-                          macAddress  : 'not set',
-                          numDevices  : 0,
-                          devices     : [],          // Device objects { name, version, ipEnabled, ppEnabled, rate }
-                          monitor     : undefined,
-                          lastMsgTime : timestamp
-                        };
-
-        Nodes[nodeIndex] = newNode;
-      }
-
-      // Update Node info fields: name, version, macAddress, numDevices
-      Nodes[nodeIndex].name       = fields[3].substring(7);
-      Nodes[nodeIndex].version    = fields[4];
-      Nodes[nodeIndex].macAddress = fields[5];
-      Nodes[nodeIndex].numDevices = parseInt (fields[6]);
-
-      // Update the Diagnostics UI
-      Diagnostics.BuildSystem ();
-      Diagnostics.LogToMonitor (nodeIndex, 'Node ' + nodeIndex.toString() + ' connected.');
-
-
-
-      // // Trigger an event to inform anyone that a new Node was added
-      // $(document.body).trigger ('newNode', [ nodeIndex ]);
-
-
-
-    }
-
-    else if (value.startsWith ('DEINFO='))
-    {
-      // Make sure Node exists in Diagnostics
-      if (Nodes[nodeIndex] != undefined)
-      {
-        // One Device per 'DEINFO=...' message
-        // Fill five Device fields: name, version, ipEnabled, ppEnabled, rate
-
-        const deviceArray  = Nodes[nodeIndex].devices;
-        const deviceFields = value.substring(7).split ('|');
-        deviceArray[deviceIndex] = { name:deviceFields[0], version:deviceFields[1], ipEnabled:deviceFields[2], ppEnabled:deviceFields[3], rate:deviceFields[4] };
-
-        Diagnostics.UpdateDevices (nodeIndex);  // Update the UI Device fields of the Node Block in Diagnostics
-
-        // Update status bar Device count
-        let totalDevices = 0;
-        Nodes.forEach ((node) =>
-        {
-          if (node != undefined)
-            totalDevices += node.numDevices;
-        });
-
-        StatusBar.SetNumDevices (totalDevices);
-      }
-    }
-
-    else if (value.startsWith ('NONAME='))
-    {
-      Nodes[nodeIndex].name = value.substring(7);
-      Diagnostics.UpdateNodeBlock (nodeIndex);
-    }
-
-    else if (value.startsWith ('DENAME='))
-    {
-      Nodes[nodeIndex].devices[deviceIndex].name = value.substring(7);
-      Diagnostics.UpdateDevices (nodeIndex);
-    }
-
-    else if (value.startsWith ('RATE='))
-    {
-      Nodes[nodeIndex].devices[deviceIndex].rate = value.substring(5);
-      Diagnostics.UpdateDevices (nodeIndex);
-    }
-
-    else if (value == 'IP Enabled')
-    {
-      Nodes[nodeIndex].devices[deviceIndex].ipEnabled = 'Y';
-      Diagnostics.UpdateDevices (nodeIndex);
-    }
-
-    else if (value == 'IP Disabled')
-    {
-      Nodes[nodeIndex].devices[deviceIndex].ipEnabled = 'N';
-      Diagnostics.UpdateDevices (nodeIndex);
-    }
-
-    else if (value == 'PP Enabled')
-    {
-      Nodes[nodeIndex].devices[deviceIndex].ppEnabled = 'Y';
-      Diagnostics.UpdateDevices (nodeIndex);
-    }
-
-    else if (value == 'PP Disabled')
-    {
-      Nodes[nodeIndex].devices[deviceIndex].ppEnabled = 'N';
-      Diagnostics.UpdateDevices (nodeIndex);
-    }
-
-    else if (value == 'NVER=')
-    {
-      Nodes[nodeIndex].version = value.substring(5);
-      Diagnostics.BuildSystem ();
-    }
-
-    else if (value == 'DVER=')
-    {
-      Nodes[nodeIndex].devices[deviceIndex].version = value.substring(5);
-      Diagnostics.UpdateDevices (nodeIndex);
-    }
-
-    else if (value.startsWith ('FILES='))
-    {
-      // TODO: List of files
-    }
-
-    else if (value.startsWith ('FILE='))
-    {
-      // TODO: File contents
-    }
-
-    else if (value.startsWith ('ERROR:'))
-    {
-      // Error messages from a Node or Device post their error message in the value field.
-      // The value field should start with ERROR:
-
-      const errorMsg = Nodes[nodeIndex].devices[deviceIndex].name + " Device Error: " + value.substring(6);
-      StatusBar.SetMessage (errorMsg, "#F00000");
-
-      // Log Node/Device Error message
-      Diagnostics.LogToMonitor (nodeIndex, errorMsg);
-    }
-
-    else if (value.startsWith ('PONG'))
-    {
-      // Log PONG received
-      Diagnostics.LogToMonitor (nodeIndex, 'PONG Received');
-    }
   }
   catch (ex)
   {
@@ -614,24 +603,20 @@ async function ProcessRelayerMessage (dataString)
   }
 }
 
-
-
-
-
-
-
 //--- CheckNodes ------------------------------------------
 
 function CheckNodes ()
 {
   try
   {
+    const now = Date.now ();
+
     // Check if all Nodes are still alive
     for (let i=0; i<MaxNodes; i++)
     {
       if (Nodes[i] != undefined)
       {
-        if (BigInt(now) - Nodes[i].lastMsgTime > BigInt(31000))
+        if (now - Nodes[i].lastMsgTime > BigInt(31000))
         {
 
 
@@ -654,30 +639,29 @@ function CheckNodes ()
 }
 
 
-
-
-
-
-
 //--- Send_UItoRelayer ------------------------------------
 
 async function Send_UItoRelayer (nodeIndex, deviceIndex, commandString, paramString)
 {
   try
   {
-    // Command Format: nodeID|deviceID|command|params
+    // Command Format: C|nodeID|deviceID|command|params
     // where:
+    //   type     = 'C' for Command
     //   nodeID   = 2-digits 00-19
     //   deviceID = 2-digits 00-99
     //   command  = 4-chars (usually caps)
     //   params   = optional parameters (null terminated string)
+
+    if (nodeIndex == undefined || deviceIndex == undefined || commandString == undefined)
+      return;
 
     const nodeID   = nodeIndex  .toString().padLeft ('0', 2);
     const deviceID = deviceIndex.toString().padLeft ('0', 2);
     const command  = commandString.substring (0, 4).padRight (' ', 4);
     const params   = (paramString == undefined || paramString == '') ? '' : '|' + paramString;
 
-    const fullUIMessage = nodeID + '|' + deviceID + '|' + command + params;
+    const fullUIMessage = "C|" + nodeID + '|' + deviceID + '|' + command + params;
 
     try
     {

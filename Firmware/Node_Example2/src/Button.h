@@ -2,13 +2,7 @@
 //
 //     FILE : Button.h
 //
-//  PROJECT : SMAC Framework
-//              │
-//              └── Publish
-//                    │
-//                    └── Firmware
-//                          │
-//                          └── Node
+//  PROJECT : SMAC Framework - Example 2
 //
 //    NOTES : Button using the MCU's built-in 10k pull-down resistor.
 //

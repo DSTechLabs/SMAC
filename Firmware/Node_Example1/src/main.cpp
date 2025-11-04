@@ -44,23 +44,28 @@
 
 //--- Globals ---------------------------------------------
 
-bool         Debugging = false;  // ((( Set to false for production builds )))
-char         Serial_Message[SERIAL_MAX_LENGTH];
-char         Serial_NextChar;
-int          Serial_Length = 0;
-esp_err_t    ESPNOW_Result;
-Preferences  MCUPreferences;  // Non-volatile memory
-uint8_t      RelayerMAC[MAC_SIZE];  // MAC Address of the Relayer Module stored in non-volatile memory.
-                                    // This is set using the <SetMAC.html> tool in the SMAC_Interface folder.
-                                    // { 0x7C, 0xDF, 0xA1, 0xE0, 0x92, 0x98 }
-bool         WaitingForRelayer = true;
-RingBuffer   *CommandBuffer;
-DPacket      DataPacket;
-CPacket      CommandPacket;
-char         DataString[MAX_MESSAGE_LENGTH];
+bool            Debugging = false;  // ((( Set to false for production builds )))
+char            Serial_Message[SERIAL_MAX_LENGTH];
+char            Serial_NextChar;
+int             Serial_Length = 0;
+esp_err_t       ESPNOW_Result;
+Preferences     MCUPreferences;  // Non-volatile memory
+uint8_t         RelayerMAC[MAC_SIZE];  // MAC Address of the Relayer Module stored in non-volatile memory.
+                                       // This is set using the <SetMAC.html> tool in the SMAC_Interface folder.
+                                       // e.g. { 0x7C, 0xDF, 0xA1, 0xE0, 0x92, 0x98 }
+bool            WaitingForRelayer = true;
+RingBuffer      *CommandBuffer;
+const int       CommandOffset = MIN_COMMAND_LENGTH - COMMAND_SIZE;
+const int       ParamsOffset  = MIN_COMMAND_LENGTH + 1;
+SMACDataPacket  SMACData;
+char            ESPNOW_String[MAX_ESPNOW_LENGTH];
+Node            *ThisNode;   // The global Node object
 
-Node         *ThisNode;   // The Node for this example
-const int    NodeID = 0;  // NodeID (0-19)
+// SMAC Systems can have up to 20 Nodes.
+// Set the NodeID for this ESP32 module (0-19)
+// The NodeID's for a SMAC Systems with multiple Nodes
+// must be unique and cannot be duplicated.
+int  ThisNodeID = 0;  // NodeID (0-19)
 
 //--- Declarations ----------------------------------------
 
@@ -102,7 +107,7 @@ void setup()
   // Node ID's cannot be duplicated in your SMAC System.
   // --- Do not use the same ID for other Nodes ---
   //=======================================================
-  ThisNode = new Node ("My First Node", NodeID);
+  ThisNode = new Node ("My First Node", ThisNodeID);
 
 
   //=======================================================
@@ -110,29 +115,27 @@ void setup()
   // may need. Then, if necessary, pass those references
   // to your Devices' constructors.
   //=======================================================
+  // ...
 
 
   //=======================================================
-  // Add all Devices to the Node
+  // Add all Devices to this Node
   //=======================================================
   ThisNode->AddDevice (new LightSensor ("Light Sensor", 6));  // Gets assigned Device ID 00
 
 
   // PING the Relayer once per second until it responds with PONG
   Serial.println ("PINGing Relayer ...");
-  strcpy (DataPacket.deviceID, "--");
-  strcpy (DataPacket.value, "PING");
-  unsigned long  nowSec, lastSec = 0L;
+  strcpy (SMACData.values, "PING");
+  unsigned long  nowMillis, lastMillis = 0L;
   WaitingForRelayer = true;
   while (WaitingForRelayer)
   {
-    DataPacket.timestamp = millis ();
-    nowSec = DataPacket.timestamp / 1000L;
-
-    if (nowSec > lastSec)
+    nowMillis = millis ();
+    if (nowMillis - lastMillis > 1000L)
     {
-      ThisNode->SendDataPacket ();
-      lastSec = nowSec;
+      lastMillis = nowMillis;
+      ThisNode->SendData ("--");
     }
 
     // Check for Set MAC Tool
@@ -213,8 +216,8 @@ void Serial_ProcessMessage ()
   if (strcmp (Serial_Message, "SetRelayerMAC") == 0)
   {
     // Send current setting
-    sprintf (DataString, "CurrentMAC=%02x:%02x:%02x:%02x:%02x:%02x", RelayerMAC[0], RelayerMAC[1], RelayerMAC[2], RelayerMAC[3], RelayerMAC[4], RelayerMAC[5]);
-    Serial.println (DataString);
+    sprintf (ESPNOW_String, "CurrentMAC=%02x:%02x:%02x:%02x:%02x:%02x", RelayerMAC[0], RelayerMAC[1], RelayerMAC[2], RelayerMAC[3], RelayerMAC[4], RelayerMAC[5]);
+    Serial.println (ESPNOW_String);
   }
   else if (strncmp (Serial_Message, "NewMAC=", 7) == 0)
   {
@@ -228,8 +231,8 @@ void Serial_ProcessMessage ()
       // Parse and set new MAC Address (xx:xx:xx:xx:xx:xx)
       for (int i=7, j=0; j<sizeof(RelayerMAC); i+=3, j++)
       {
-        strncpy (DataString, Serial_Message+i, 2);  DataString[2] = 0;
-        sscanf  (DataString, "%02x", RelayerMAC+j);
+        strncpy (ESPNOW_String, Serial_Message+i, 2);  ESPNOW_String[2] = 0;
+        sscanf  (ESPNOW_String, "%02x", RelayerMAC+j);
       }
 
       // Store new network credentials in non-volatile <preferences.h>

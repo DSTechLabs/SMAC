@@ -2,13 +2,7 @@
 //
 //     FILE : LED.h
 //
-//  PROJECT : SMAC Framework
-//              │
-//              └── Publish
-//                    │
-//                    └── Firmware
-//                          │
-//                          └── Node
+//  PROJECT : SMAC Framework - Example 2
 //
 //   AUTHOR : Bill Daniels
 //            Copyright 2021-2025, D+S Tech Labs, Inc.
@@ -36,7 +30,7 @@ class LED : public Device
   public:
     LED (const char *inName, int inLEDPin);
 
-    ProcessStatus  ExecuteCommand ();  // override
+    ProcessStatus  ExecuteCommand (char *command, char *params=NULL);  // override
 };
 
 #endif

@@ -162,7 +162,7 @@
 @font-face { font-family : font_beamweapon         ; src : url('Fonts/beamweapon.ttf'         ); }
 @font-face { font-family : font_beamweaponCondensed; src : url('Fonts/beamweaponCondensed.ttf'); }
 @font-face { font-family : font_calligraphy        ; src : url('Fonts/calligraphy.ttf'        ); }
-@font-face { font-family : font_code               ; src : url('Fonts/code.otf'	             ); }
+@font-face { font-family : font_code               ; src : url('Fonts/code.otf'	              ); }
 @font-face { font-family : font_ethnocentric       ; src : url('Fonts/ethnocentric.ttf'       ); }
 @font-face { font-family : font_Imaki              ; src : url('Fonts/Imaki.ttf'              ); }
 @font-face { font-family : font_monospaceTypewriter; src : url('Fonts/monospaceTypewriter.ttf'); }
@@ -795,7 +795,7 @@
   box-shadow : 0 0 .1em  .02em rgba(0, 0, 0, .5) inset,
                0 0 .02em .02em rgba(0, 0, 0, .5);
 
-  vertical-align : middle;
+  vertical-align : top;
 }
 
 .dsSwitch:checked

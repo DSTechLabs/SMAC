@@ -20,7 +20,7 @@
 
 //--- Globals ---------------------------------------------
 
-const AppVersion = '─── Version 2025.05.05 ───';
+const AppVersion = '─── Version 2025.11.03 ───';
 
 const SerialPortSettings =
 {
@@ -90,7 +90,7 @@ async function ConnectToRelayer ()
       console.info ('Sending GMAC Request ...');
 
       // Send a request for the MAC address
-      await SMACPort.Send ('--|--|GMAC' + EOL);
+      await SMACPort.Send ('C|--|--|GMAC' + EOL);
     }, 2000);
   }
   catch (ex)

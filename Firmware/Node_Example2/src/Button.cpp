@@ -2,13 +2,7 @@
 //
 //     FILE : Button.cpp
 //
-//  PROJECT : SMAC Framework
-//              │
-//              └── Publish
-//                    │
-//                    └── Firmware
-//                          │
-//                          └── Node
+//  PROJECT : SMAC Framework - Example 2
 //
 //    NOTES : Button using the MCU's built-in 10k pull-down resistor.
 //
@@ -70,9 +64,8 @@ IRAM_ATTR ProcessStatus Button::DoImmediate ()
   // Send DataPacket if button has changed state
   if (newState != currentState)
   {
-    // Send DataPacket
-    DataPacket.timestamp = millis ();
-    strcpy (DataPacket.value, (newState==0 ? "0" : "1"));
+    // Send Data
+    strcpy (SMACData.values, (newState==0 ? "0" : "1"));
 
     currentState = newState;
     return SUCCESS_DATA;

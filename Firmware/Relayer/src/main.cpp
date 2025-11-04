@@ -2,13 +2,7 @@
 //
 //     FILE : main.cpp
 //
-//  PROJECT : SMAC Framework
-//              │
-//              └── Publish
-//                    │
-//                    └── Firmware
-//                          │
-//                          └── Relayer
+//  PROJECT : SMAC Framework - Relayer
 //
 //    NOTES : This is the firmware for the SMAC Relayer Module.
 //
@@ -20,18 +14,22 @@
 //              · Red   = Error booting (see Serial Monitor for messages)
 //              · Green = ESP-NOW and Serial comms started, module ready and running
 //
-//            ∙ The Relayer passes data and messages between the Interface and
+//            ∙ The Relayer passes data and commands between the Interface and
 //              Remote Node Modules/Devices.
 //
 //            ∙ The Relayer connects to Nodes using Espressif's Wireless ESP-NOW WiFi protocol.
 //
-//            ∙ The Relayer connects to the Interface through direct USB Serial.
+//            ∙ The Relayer connects to the SMAC Interface through direct USB Serial.
 //
-//            ∙ Messages from the Interface to the Relayer and Nodes
-//              are "Command Strings".
+//            ∙ Messages from the SMAC Interface to the Relayer are "Command Strings"
+//              and are forwarded directly to their target Node/Device for execution.
 //
-//            ∙ Messages from Nodes/Devices through the Relayer and to the Interface
-//              are "Data Strings".
+//            ∙ Messages from Nodes/Devices to the Relayer are usually "Data Strings"
+//              and are forwarded to the SMAC Interface for near real-time display.
+//              However, these Messages may also be Command Strings, which are
+//              re-directed to their target Node/Device for execution and copied
+//              to the SMAC Interface for Diagnostic display only.  This allows a Node
+//              or Device to send a Command to another Node/Device.
 //
 //            ∙ Each Node in your SMAC system will need to know the Relayer's MAC Address.
 //              Use the Set MAC Tool (setMAC.html in the Interface folder) to set the
@@ -75,7 +73,6 @@
 //--- Globals ----------------------------------------------
 
 Relayer  *TheRelayer;
-bool     newNode = false;
 
 
 //==========================================================
