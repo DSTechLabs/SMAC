@@ -380,7 +380,10 @@ void Node::Run ()
   // Check if this Node has been silent for some time.
   // If so, send a PONG to let the Interface know it is still alive.
   if (millis() - lastPacketTime > MAX_SILENT_DURATION)
-    SendCommand (nodeID, "--", "PONG");
+  {
+    strcpy (SMACData.values, "PONG");
+    SendData ("--");
+  }
 }
 
 //--- GetVersion ------------------------------------------

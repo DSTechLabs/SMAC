@@ -388,11 +388,11 @@ class SMAC_Dial extends HTMLElement
   get labels       (     ) { return this.Labels;        }
   set labels       (value) { this.Labels = value;       }
 
-  get changeAction (     ) { return this.ChangeAction;  }
-  set changeAction (value) { this.ChangeAction = value; }
-
   get size         (     ) { return this.Size;          }
   set size         (value) { this.Size = value;         }
+
+  get changeAction (     ) { return this.ChangeAction;  }
+  set changeAction (value) { this.ChangeAction = value; }
 
   get currentIndex (     ) { return this.CurrentIndex;  }
   set currentIndex (value) { this.CurrentIndex = value; }
@@ -412,8 +412,8 @@ class SMAC_Dial extends HTMLElement
 
       // Set optional attributes
       this.Labels       = this.hasAttribute ('labels'      ) ?         this.getAttribute ('labels'      )  : undefined;
-      this.ChangeAction = this.hasAttribute ('changeAction') ?         this.getAttribute ('changeAction')  : undefined;
       this.Size         = this.hasAttribute ('size'        ) ? Number (this.getAttribute ('size'        )) : 10;
+      this.ChangeAction = this.hasAttribute ('changeAction') ?         this.getAttribute ('changeAction')  : undefined;
       this.CurrentIndex = this.hasAttribute ('currentIndex') ? Number (this.getAttribute ('currentIndex')) : 0;
 
       // Create angle and label arrays
@@ -536,29 +536,29 @@ class SMAC_Slider extends HTMLElement
 
   //--- Attributes ----------------------------------------
 
-  get width          (     ) { return this.Width;            }
-  set width          (value) { this.Width = value;           }
+  get width          (     ) { return this.Width;           }
+  set width          (value) { this.Width = value;          }
 
-  get height         (     ) { return this.Height;           }
-  set height         (value) { this.Height = value;          }
+  get height         (     ) { return this.Height;          }
+  set height         (value) { this.Height = value;         }
 
-  get knobImage      (     ) { return this.KnobImage;        }
-  set knobImage      (value) { this.KnobImage = value;       }
+  get knobImage      (     ) { return this.KnobImage;       }
+  set knobImage      (value) { this.KnobImage = value;      }
 
-  get minValue       (     ) { return this.MinValue;         }
-  set minValue       (value) { this.MinValue = value;        }
+  get minValue       (     ) { return this.MinValue;        }
+  set minValue       (value) { this.MinValue = value;       }
 
-  get maxValue       (     ) { return this.MaxValue;         }
-  set maxValue       (value) { this.MaxValue = value;        }
+  get maxValue       (     ) { return this.MaxValue;        }
+  set maxValue       (value) { this.MaxValue = value;       }
 
-  get value          (     ) { return this.Value;            }
-  set value          (value) { this.Value = value;           }
+  get value          (     ) { return this.Value;           }
+  set value          (value) { this.Value = value;          }
 
-  get backColor      (     ) { return this.BackColor;        }
-  set backColor      (value) { this.BackColor = value;       }
+  get backColor      (     ) { return this.BackColor;       }
+  set backColor      (value) { this.BackColor = value;      }
 
-  get fillColor      (     ) { return this.FillColor;        }
-  set fillColor      (value) { this.FillColor = value;       }
+  get fillColor      (     ) { return this.FillColor;       }
+  set fillColor      (value) { this.FillColor = value;      }
 
   get scaleColor     (     ) { return this.ScaleColor;      }
   set scaleColor     (value) { this.ScaleColor = value;     }
@@ -566,8 +566,15 @@ class SMAC_Slider extends HTMLElement
   get scalePlacement (     ) { return this.ScalePlacement;  }
   set scalePlacement (value) { this.ScalePlacement = value; }
 
-  get units          (     ) { return this.Units;            }
-  set units          (value) { this.Units = value;           }
+  get units          (     ) { return this.Units;           }
+  set units          (value) { this.Units = value;          }
+
+  get moveAction     (     ) { return this.MoveAction;      }
+  set moveAction     (value) { this.MoveAction = value;     }
+
+  get doneAction     (     ) { return this.DoneAction;      }
+  set doneAction     (value) { this.DoneAction = value;     }
+
 
   //--- connectedCallback ---------------------------------
 
@@ -588,11 +595,13 @@ class SMAC_Slider extends HTMLElement
       this.MinValue       = this.hasAttribute ('minValue'      ) ? Number (this.getAttribute ('minValue'      )) : 0;
       this.MaxValue       = this.hasAttribute ('maxValue'      ) ? Number (this.getAttribute ('maxValue'      )) : 4095;
       this.Value          = this.hasAttribute ('value'         ) ? Number (this.getAttribute ('value'         )) : this.MinValue;
-      this.BackColor      = this.hasAttribute ('backColor'     ) ?         this.getAttribute ('backColor'     )  : '#303030';
-      this.FillColor      = this.hasAttribute ('fillColor'     ) ?         this.getAttribute ('fillColor'     )  : '#A0A0A0';
-      this.ScaleColor     = this.hasAttribute ('scaleColor'    ) ?         this.getAttribute ('scaleColor'    )  : undefined;
-      this.ScalePlacement = this.hasAttribute ('scalePlacement') ?         this.getAttribute ('scalePlacement')  : 'left';
-      this.Units          = this.hasAttribute ('units'         ) ?         this.getAttribute ('units'         )  : '';
+      this.BackColor      = this.hasAttribute ('backColor'     ) ?         this.getAttribute ('backColor'      ) : '#303030';
+      this.FillColor      = this.hasAttribute ('fillColor'     ) ?         this.getAttribute ('fillColor'      ) : '#A0A0A0';
+      this.ScaleColor     = this.hasAttribute ('scaleColor'    ) ?         this.getAttribute ('scaleColor'     ) : undefined;
+      this.ScalePlacement = this.hasAttribute ('scalePlacement') ?         this.getAttribute ('scalePlacement' ) : 'left';
+      this.Units          = this.hasAttribute ('units'         ) ?         this.getAttribute ('units'          ) : '';
+      this.MoveAction     = this.hasAttribute ('moveAction'    ) ?         this.getAttribute ('moveAction'     ) : undefined;
+      this.DoneAction     = this.hasAttribute ('doneAction'    ) ?         this.getAttribute ('doneAction'     ) : undefined;
 
       SetAsInlineBlock (this);
 
@@ -2535,8 +2544,11 @@ class SMAC_TimeGraph extends HTMLElement
   get devices        (     ) { return this.Devices;         }
   set devices        (value) { this.Devices = value;        }
 
-  get valueIndex     (     ) { return this.ValueIndex;      }
-  set valueIndex     (value) { this.ValueIndex = value;     }
+  get width          (     ) { return this.Width;           }
+  set width          (value) { this.Width = value;          }
+
+  get height         (     ) { return this.Height;          }
+  set height         (value) { this.Height = value;         }
 
   get minValue       (     ) { return this.MinValue;        }
   set minValue       (value) { this.MinValue = value;       }
@@ -2555,12 +2567,6 @@ class SMAC_TimeGraph extends HTMLElement
 
   get timeSpan       (     ) { return this.TimeSpan;        }
   set timeSpan       (value) { this.TimeSpan = value;       }
-
-  get width          (     ) { return this.Width;           }
-  set width          (value) { this.Width = value;          }
-
-  get height         (     ) { return this.Height;          }
-  set height         (value) { this.Height = value;         }
 
   get backColor      (     ) { return this.BackColor;       }
   set backColor      (value) { this.BackColor = value;      }
@@ -2589,36 +2595,37 @@ class SMAC_TimeGraph extends HTMLElement
 
       // Build multi-device arrays
       const deviceArray = this.getAttribute ('devices').replaceAll (' ', '').split ('|');
-      // deviceArray[0] = 'nodeID,deviceID,plotColor'
-      // deviceArray[1] = 'nodeID,deviceID,plotColor'
+      // deviceArray[0] = 'nodeID,deviceID,valueIndex,plotColor'
+      // deviceArray[1] = 'nodeID,deviceID,valueIndex,plotColor'
       //  :
 
-      this.NodeID    = [];
-      this.DeviceID  = [];
-      this.PlotColor = [];
+      this.NodeID     = [];
+      this.DeviceID   = [];
+      this.ValueIndex = [];
+      this.PlotColor  = [];
 
       let deviceInfo;
       const self = this;
       deviceArray.forEach ((item) =>
       {
         deviceInfo = item.split (',');
-        self.NodeID   .push (Number (deviceInfo[0]));
-        self.DeviceID .push (Number (deviceInfo[1]));
-        self.PlotColor.push (        deviceInfo[2]);
+        self.NodeID    .push (Number (deviceInfo[0]));
+        self.DeviceID  .push (Number (deviceInfo[1]));
+        self.ValueIndex.push (Number (deviceInfo[2]));
+        self.PlotColor .push (        deviceInfo[3] );
       });
 
       SetAsInlineBlock (this);
 
       // Set optional attributes
-      this.ValueIndex     = this.hasAttribute ('valueIndex'    ) ?         this.getAttribute ('valueIndex'    ) : 0;
+      this.Width          = this.hasAttribute ('width'         ) ? Number (this.getAttribute ('width'        )) : 32;
+      this.Height         = this.hasAttribute ('height'        ) ? Number (this.getAttribute ('height'       )) : 18;
       this.MinValue       = this.hasAttribute ('minValue'      ) ? Number (this.getAttribute ('minValue'     )) : 0;
       this.MaxValue       = this.hasAttribute ('maxValue'      ) ? Number (this.getAttribute ('maxValue'     )) : 4095;
       this.AlarmLow       = this.hasAttribute ('alarmLow'      ) ? Number (this.getAttribute ('alarmLow'     )) : undefined;
       this.AlarmHigh      = this.hasAttribute ('alarmHigh'     ) ? Number (this.getAttribute ('alarmHigh'    )) : undefined;
       this.TimeUnit       = this.hasAttribute ('timeUnit'      ) ?         this.getAttribute ('timeUnit'      ) : 'sec';
       this.TimeSpan       = this.hasAttribute ('timeSpan'      ) ? Number (this.getAttribute ('timeSpan'     )) : 60;
-      this.Width          = this.hasAttribute ('width'         ) ? Number (this.getAttribute ('width'        )) : 32;
-      this.Height         = this.hasAttribute ('height'        ) ? Number (this.getAttribute ('height'       )) : 18;
       this.BackColor      = this.hasAttribute ('backColor'     ) ?         this.getAttribute ('backColor'     ) : '#303030';
       this.GridColor      = this.hasAttribute ('gridColor'     ) ?         this.getAttribute ('gridColor'     ) : undefined;
       this.ScaleColor     = this.hasAttribute ('scaleColor'    ) ?         this.getAttribute ('scaleColor'    ) : undefined;
@@ -2633,9 +2640,13 @@ class SMAC_TimeGraph extends HTMLElement
       {
         // This is a multi-device display
         // Match this UI widget to any of its devices
-        for (let i=0; i<self.NodeID.length; i++)
+        const valueFields     = values.split (',');
+        const timestampNumber = Number (timestamp);
+
+        let newValue;
+        for (let plotIndex=0; plotIndex<self.NodeID.length; plotIndex++)
         {
-          if (nodeID == self.NodeID[i] && deviceID == self.DeviceID[i])
+          if (nodeID == self.NodeID[plotIndex] && deviceID == self.DeviceID[plotIndex])
           {
             // // Show current sampling rate on hover
             // if (!self.hasAttribute ('title'))
@@ -2644,8 +2655,9 @@ class SMAC_TimeGraph extends HTMLElement
             //       self.setAttribute ('title', 'Current rate: ' + Nodes[nodeID].devices[deviceID].rate.toString() + ' s/hour');
 
             // Update this widget
-            window.requestAnimationFrame.bind (self.updateWidget (i, values, Number(timestamp)));
-            break;
+            // Get new value from values array
+            newValue = Number (valueFields[self.ValueIndex[plotIndex]]);
+            window.requestAnimationFrame.bind (self.updateWidget (plotIndex, newValue, timestampNumber));
           }
         }
       });
@@ -2714,11 +2726,11 @@ class SMAC_TimeGraph extends HTMLElement
       this.StartStamp = [];
       this.PrevX      = [];
       this.PrevY      = [];
-      for (let i=0; i<this.NodeID.length; i++)
+      for (let plotIndex=0; plotIndex<this.NodeID.length; plotIndex++)
       {
-        this.StartStamp[i] = -1;
-        this.PrevX     [i] = 0;
-        this.PrevY     [i] = 0;
+        this.StartStamp[plotIndex] = -1;
+        this.PrevX     [plotIndex] = 0;
+        this.PrevY     [plotIndex] = 0;
       }
 
       // Background gradient
@@ -2756,27 +2768,20 @@ class SMAC_TimeGraph extends HTMLElement
 
   //--- updateWidget --------------------------------------
 
-  updateWidget = function (i, values, timestamp)
+  updateWidget = function (plotIndex, newValue, timestamp)
   {
     try
     {
-      // Get new value from values array
-      const valueFields = values.split (',');
-      if (this.ValueIndex >= valueFields.length)
-        return;
-
-      const newValue = Number (valueFields[this.ValueIndex]);
-
       let refreshGrid = false;
       let cx = 0;
       let cy = 0;
 
       // Check flag to refresh grid
-      if (this.StartStamp[i] < 0)
+      if (this.StartStamp[plotIndex] < 0)
         refreshGrid = true;
       else
       {
-        cx = Math.round ((timestamp - this.StartStamp[i]) / this.TimeFactor * this.ScaleFactorX);
+        cx = Math.round ((timestamp - this.StartStamp[plotIndex]) / this.TimeFactor * this.ScaleFactorX);
 
         // Check if past end of graph
         if (cx > this.GraphWidth)
@@ -2790,7 +2795,7 @@ class SMAC_TimeGraph extends HTMLElement
       // Does grid need refreshing?
       if (refreshGrid)
       {
-        this.StartStamp[i] = timestamp;
+        this.StartStamp[plotIndex] = timestamp;
         this.smacCanvas.drawRectangle (this.OffsetX, this.OffsetY, this.GraphWidth, this.GraphHeight, this.BackGrad, fill);
 
         // Do not redraw scales
@@ -2810,15 +2815,15 @@ class SMAC_TimeGraph extends HTMLElement
             this.smacCanvas.drawLinearScale (this.OffsetX                , this.OffsetY+this.GraphHeight, this.GraphWidth, this.GraphHeight, ScaleOrientation.VertLeft , this.MinValue, this.MaxValue, '', undefined, this.GridColor);  // Y-Axis
         }
 
-        this.PrevX[i] = 0;
-        this.PrevY[i] = cy;
+        this.PrevX[plotIndex] = 0;
+        this.PrevY[plotIndex] = cy;
       }
       else
       {
-        this.smacCanvas.drawLine (this.PrevX[i]+this.OffsetX, this.PrevY[i]+this.OffsetY, cx+this.OffsetX, cy+this.OffsetY, this.PlotColor[i], 2);
+        this.smacCanvas.drawLine (this.PrevX[plotIndex]+this.OffsetX, this.PrevY[plotIndex]+this.OffsetY, cx+this.OffsetX, cy+this.OffsetY, this.PlotColor[plotIndex], 2);
 
-        this.PrevX[i] = cx;
-        this.PrevY[i] = cy;
+        this.PrevX[plotIndex] = cx;
+        this.PrevY[plotIndex] = cy;
       }
 
       // Check alarm ranges
@@ -2866,9 +2871,6 @@ class SMAC_XYGraph extends HTMLElement
 
   get device         (     ) { return this.Device;          }
   set device         (value) { this.Device = value;         }
-
-  get valueIndex     (     ) { return this.ValueIndex;      }
-  set valueIndex     (value) { this.ValueIndex = value;     }
 
   get width          (     ) { return this.Width;           }
   set width          (value) { this.Width = value;          }
@@ -2929,7 +2931,6 @@ class SMAC_XYGraph extends HTMLElement
       SetAsInlineBlock (this);
 
       // Set optional attributes
-      this.ValueIndex     = this.hasAttribute ('valueIndex'    ) ?         this.getAttribute ('valueIndex'    ) : 0;
       this.Width          = this.hasAttribute ('width'         ) ? Number (this.getAttribute ('width'        )) : 30;
       this.Height         = this.hasAttribute ('height'        ) ? Number (this.getAttribute ('height'       )) : 20;
       this.XMin           = this.hasAttribute ('xMin'          ) ? Number (this.getAttribute ('xMin'         )) : 0;

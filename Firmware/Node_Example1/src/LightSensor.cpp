@@ -62,7 +62,6 @@ IRAM_ATTR ProcessStatus LightSensor::DoPeriodic ()
   //
   // where precision is the the number of digits to appear after the decimal point.
   // If precision is negative, all digits are converted.
-
   itoa (sample, SMACData.values, 10);  // SMACData.values must be a terminated string
 
   // DoPeriodic() must return one of four possible "ProcessStatus" values:
