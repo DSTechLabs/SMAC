@@ -39,6 +39,7 @@
 //               ∙ smac-venndiagram
 //               ∙ smac-bloomfield
 //               ∙ smac-camera
+//               √ smac-dataaction
 //
 //     NOTES : To cast shadows correctly, some of these Widgets require two images - usually a base image and a knob image.
 //
@@ -411,9 +412,9 @@ class SMAC_Dial extends HTMLElement
       this.Angles = this.getAttribute ('angles');
 
       // Set optional attributes
-      this.Labels       = this.hasAttribute ('labels'      ) ?         this.getAttribute ('labels'      )  : undefined;
+      this.Labels       = this.hasAttribute ('labels'      ) ?         this.getAttribute ('labels'       ) : undefined;
       this.Size         = this.hasAttribute ('size'        ) ? Number (this.getAttribute ('size'        )) : 10;
-      this.ChangeAction = this.hasAttribute ('changeAction') ?         this.getAttribute ('changeAction')  : undefined;
+      this.ChangeAction = this.hasAttribute ('changeAction') ?         this.getAttribute ('changeAction' ) : undefined;
       this.CurrentIndex = this.hasAttribute ('currentIndex') ? Number (this.getAttribute ('currentIndex')) : 0;
 
       // Create angle and label arrays
@@ -922,13 +923,13 @@ class SMAC_Joystick extends HTMLElement
       SetAsInlineBlock (this);
 
       // Set optional attributes
-      // this.Width        = this.hasAttribute ('width'       ) ? Number (this.getAttribute ('width'       )) : 8;
-      // this.Height       = this.hasAttribute ('height'      ) ? Number (this.getAttribute ('height'      )) : 15;
-      this.KnobImage    = this.hasAttribute ('knobImage'   ) ?         this.getAttribute ('knobImage'    ) : 'Images/ui_JoystickKnob1.png';
-      this.BackImage    = this.hasAttribute ('backImage'   ) ?         this.getAttribute ('backImage'    ) : 'Images/ui_JoystickBack1.png';
-      this.Size         = this.hasAttribute ('size'        ) ? Number (this.getAttribute ('size'        )) : 10;
-      this.MoveAction   = this.hasAttribute ('moveAction'  ) ?         this.getAttribute ('moveAction'   ) : undefined;
-      this.DoneAction   = this.hasAttribute ('doneAction'  ) ?         this.getAttribute ('doneAction'   ) : undefined;
+      // this.Width        = this.hasAttribute ('width'       ) ? Number (this.getAttribute ('width'     )) : 8;
+      // this.Height       = this.hasAttribute ('height'      ) ? Number (this.getAttribute ('height'    )) : 15;
+      this.KnobImage    = this.hasAttribute ('knobImage'   ) ?         this.getAttribute ('knobImage'  ) : 'Images/ui_JoystickKnob1.png';
+      this.BackImage    = this.hasAttribute ('backImage'   ) ?         this.getAttribute ('backImage'  ) : 'Images/ui_JoystickBack1.png';
+      this.Size         = this.hasAttribute ('size'        ) ? Number (this.getAttribute ('size'      )) : 10;
+      this.MoveAction   = this.hasAttribute ('moveAction'  ) ?         this.getAttribute ('moveAction' ) : undefined;
+      this.DoneAction   = this.hasAttribute ('doneAction'  ) ?         this.getAttribute ('doneAction' ) : undefined;
       this.SnapToCenter = this.hasAttribute ('snapToCenter');
 
       // Build this widget
@@ -1163,17 +1164,20 @@ class SMAC_LED extends HTMLElement
 
   //--- Attributes ----------------------------------------
 
-  get device     (     ) { return this.Device;               }
-  set device     (value) { this.Device = value;              }
+  get device       (     ) { return this.Device;               }
+  set device       (value) { this.Device = value;              }
 
-  get valueIndex (     ) { return this.ValueIndex;           }
-  set valueIndex (value) { this.ValueIndex = value;          }
+  get valueIndex   (     ) { return this.ValueIndex;           }
+  set valueIndex   (value) { this.ValueIndex = value;          }
 
-  get color      (     ) { return this.Color;                }
-  set color      (value) { this.Color = value;               }
+  get color        (     ) { return this.Color;                }
+  set color        (value) { this.Color = value;               }
 
-  get on         (     ) { return this.On;                   }
-  set on         (value) { this.On = (value ? true : false); }
+  get on           (     ) { return this.On;                   }
+  set on           (value) { this.On = (value ? true : false); }
+
+  get changeAction (     ) { return this.ChangeAction;         }
+  set changeAction (value) { this.ChangeAction = value;        }
 
   //--- connectedCallback ---------------------------------
 
@@ -1192,8 +1196,9 @@ class SMAC_LED extends HTMLElement
       SetAsInlineBlock (this);
 
       // Set optional attributes
-      this.ValueIndex = this.hasAttribute ('valueIndex') ? this.getAttribute ('valueIndex') : 0;
-      this.Color      = this.hasAttribute ('color'     ) ? this.getAttribute ('color'     ) : 'green';
+      this.ValueIndex   = this.hasAttribute ('valueIndex'  ) ? this.getAttribute ('valueIndex'  ) : 0;
+      this.Color        = this.hasAttribute ('color'       ) ? this.getAttribute ('color'       ) : 'green';
+      this.ChangeAction = this.hasAttribute ('changeAction') ? this.getAttribute ('changeAction') : undefined;
 
       // Set class for when LED is on (default is green)
       this.onClass = 'smac-ledGreen';
@@ -1205,8 +1210,9 @@ class SMAC_LED extends HTMLElement
       else if (this.Color == 'purple') this.onClass = 'smac-ledPurple';
       else if (this.Color == 'white' ) this.onClass = 'smac-ledWhite' ;
 
-      // Initial display
-      this.updateWidget ('0');
+      // Intially off
+      this.On = false;
+      this.classList = 'smac-ledOff';
 
       //--- React to device data ---
       const self = this;
@@ -1222,7 +1228,7 @@ class SMAC_LED extends HTMLElement
           //       self.setAttribute ('title', 'Current rate: ' + Nodes[nodeID].devices[deviceID].rate.toString() + ' s/hour');
 
           // Update this widget
-          window.requestAnimationFrame.bind (self.updateWidget (values));
+          window.requestAnimationFrame.bind (self.updateWidget (values, timestamp));
         }
       });
     }
@@ -1234,7 +1240,7 @@ class SMAC_LED extends HTMLElement
 
   //--- updateWidget --------------------------------------
 
-  updateWidget = function (values)
+  updateWidget = function (values, timestamp)
   {
     try
     {
@@ -1261,6 +1267,10 @@ class SMAC_LED extends HTMLElement
         this.classList.remove (this.onClass);
         this.classList.add ('smac-ledOff');
       }
+
+      // Execute action, if any
+      if (this.ChangeAction != undefined)
+        window[this.ChangeAction]();  // (this.On, timestamp)
     }
     catch (ex)
     {
@@ -1287,17 +1297,20 @@ class SMAC_PanelLight extends HTMLElement
 
   //--- Attributes ----------------------------------------
 
-  get device     (     ) { return this.Device;               }
-  set device     (value) { this.Device = value;              }
+  get device       (     ) { return this.Device;               }
+  set device       (value) { this.Device = value;              }
 
-  get valueIndex (     ) { return this.ValueIndex;           }
-  set valueIndex (value) { this.ValueIndex = value;          }
+  get valueIndex   (     ) { return this.ValueIndex;           }
+  set valueIndex   (value) { this.ValueIndex = value;          }
 
-  get color      (     ) { return this.Color;                }
-  set color      (value) { this.Color = value;               }
+  get color        (     ) { return this.Color;                }
+  set color        (value) { this.Color = value;               }
 
-  get on         (     ) { return this.On;                   }
-  set on         (value) { this.On = (value ? true : false); }
+  get on           (     ) { return this.On;                   }
+  set on           (value) { this.On = (value ? true : false); }
+
+  get changeAction (     ) { return this.ChangeAction;         }
+  set changeAction (value) { this.ChangeAction = value;        }
 
   //--- connectedCallback ---------------------------------
 
@@ -1316,8 +1329,9 @@ class SMAC_PanelLight extends HTMLElement
       SetAsInlineBlock (this);
 
       // Set optional attributes
-      this.ValueIndex = this.hasAttribute ('valueIndex') ? this.getAttribute ('valueIndex') : 0;
-      this.Color      = this.hasAttribute ('color'     ) ? this.getAttribute ('color'     ) : 'green';
+      this.ValueIndex   = this.hasAttribute ('valueIndex'  ) ? this.getAttribute ('valueIndex'  ) : 0;
+      this.Color        = this.hasAttribute ('color'       ) ? this.getAttribute ('color'       ) : 'green';
+      this.ChangeAction = this.hasAttribute ('changeAction') ? this.getAttribute ('changeAction') : undefined;
 
       // Initially off
       this.On = false;
@@ -1333,8 +1347,9 @@ class SMAC_PanelLight extends HTMLElement
       else if (this.Color == 'purple') this.onClass = 'smac-panellightPurple';
       else if (this.Color == 'white' ) this.onClass = 'smac-panellightWhite' ;
 
-      // Initial display
-      this.updateWidget ('0');
+      // Initially off
+      this.On = false;
+      this.classList = 'smac-panellightOff';
 
       //--- React to device data ---
       const self = this;
@@ -1350,7 +1365,7 @@ class SMAC_PanelLight extends HTMLElement
           //       self.setAttribute ('title', 'Current rate: ' + Nodes[nodeID].devices[deviceID].rate.toString() + ' s/hour');
 
           // Update this widget
-          window.requestAnimationFrame.bind (self.updateWidget (values));
+          window.requestAnimationFrame.bind (self.updateWidget (values, timestamp));
         }
       });
     }
@@ -1362,7 +1377,7 @@ class SMAC_PanelLight extends HTMLElement
 
   //--- updateWidget --------------------------------------
 
-  updateWidget = function (values)
+  updateWidget = function (values, timestamp)
   {
     try
     {
@@ -1389,6 +1404,10 @@ class SMAC_PanelLight extends HTMLElement
         this.classList.remove (this.onClass);
         this.classList.add ('smac-panellightOff');
       }
+
+      // Execute action, if any
+      if (this.ChangeAction != undefined)
+        window[this.ChangeAction](this.On, timestamp);
     }
     catch (ex)
     {
@@ -1841,7 +1860,7 @@ class SMAC_Growbar extends HTMLElement
       this.ScaleColor     = this.hasAttribute ('scaleColor'    ) ?         this.getAttribute ('scaleColor'     ) : undefined;
       this.ScalePlacement = this.hasAttribute ('scalePlacement') ?         this.getAttribute ('scalePlacement' ) : 'left';
       this.Units          = this.hasAttribute ('units'         ) ?         this.getAttribute ('units'          ) : '';
-      this.OrgBorder = this.style.border;  // To restore after alarm conditions
+      this.OrgBorder      = this.style.border;  // To restore after alarm conditions
 
       // Default orientation is vertical with scale on left side
       this.Horizontal = false;
@@ -2440,8 +2459,8 @@ class SMAC_Compass extends HTMLElement
       this.smacCanvas.drawCircularScale (this.Center, this.Center, this.NeedleRadius, 0, 360, 0, 360, '°', '#F0F0F0');
 
       // N, E, S, W
-      const fontSize   = Math.floor (cSize / 18);
-      const font       = fontSize.toString() + 'px font_beamweaponCondensed';
+      const fontSize = Math.floor (cSize / 18);
+      const font     = fontSize.toString() + 'px font_beamweaponCondensed';
       this.smacCanvas.drawText (this.Center-fontSize*0.3        , this.Center-innerRadius+1       , 'n', '#FFFF00', font);
       this.smacCanvas.drawText (this.Center-fontSize*0.3        , this.Center+innerRadius-fontSize, 's', '#FFFF00', font);
       this.smacCanvas.drawText (this.Center-innerRadius+1       , this.Center-fontSize*0.5        , 'w', '#FFFF00', font);
@@ -2630,7 +2649,7 @@ class SMAC_TimeGraph extends HTMLElement
       this.GridColor      = this.hasAttribute ('gridColor'     ) ?         this.getAttribute ('gridColor'     ) : undefined;
       this.ScaleColor     = this.hasAttribute ('scaleColor'    ) ?         this.getAttribute ('scaleColor'    ) : undefined;
       this.ScalePlacement = this.hasAttribute ('scalePlacement') ?         this.getAttribute ('scalePlacement') : 'leftBottom';
-      this.OrgBorder = this.style.border;  // To restore after alarm conditions
+      this.OrgBorder      = this.style.border;  // To restore after alarm conditions
 
       // Build this widget
       this.build ();
@@ -3146,4 +3165,85 @@ class SMAC_XYGraph extends HTMLElement
 };
 
 customElements.define ('smac-xygraph', SMAC_XYGraph);
+
+
+//=============================================================================
+//  <smac-dataaction> element
+//=============================================================================
+
+class SMAC_DataAction extends HTMLElement
+{
+  //--- Constructor ---------------------------------------
+
+  constructor ()
+  {
+    super ();
+  }
+
+  //--- Attributes ----------------------------------------
+
+  get device     (     ) { return this.Device;      }
+  set device     (value) { this.Device = value;     }
+
+  get valueIndex (     ) { return this.ValueIndex;  }
+  set valueIndex (value) { this.ValueIndex = value; }
+
+  get action     (     ) { return this.Action;      }
+  set action     (value) { this.Action = value;     }
+
+  //--- connectedCallback ---------------------------------
+
+  connectedCallback ()
+  {
+    try
+    {
+      // Check for required attribute
+      if (!this.hasAttribute ('device'))
+        throw '(smac-dataaction): Missing device attribute';
+
+      const deviceInfo = this.getAttribute ('device').replaceAll (' ', '').split (',');
+      this.NodeID   = Number (deviceInfo[0]);
+      this.DeviceID = Number (deviceInfo[1]);
+
+      SetAsInlineBlock (this);
+      this.style = "display:none";  // nothing to display
+
+      // Set optional attributes
+      this.ValueIndex = this.hasAttribute ('valueIndex') ? this.getAttribute ('valueIndex') : 0;
+      this.Action     = this.hasAttribute ('action'    ) ? this.getAttribute ('action'    ) : undefined;
+
+      //--- React to device data ---
+      const self = this;
+      $(document.body).on ('deviceData', function (event, nodeID, deviceID, values, timestamp)
+      {
+        // Match this UI widget to its Node and device
+        if (nodeID == self.NodeID && deviceID == self.DeviceID)
+        {
+          // Call the specified action function
+          if (self.Action != undefined)
+            window[self.Action](values, timestamp);
+        }
+      });
+    }
+    catch (ex)
+    {
+      ShowException (ex);
+    }
+  }
+
+  //  //--- Sample Action function ---
+  //  myActionFunction (values, timestamp)
+  //  {
+  //    // Get new value from values array
+  //    const valueFields = values.split (',');
+  //    const newValue = valueFields[$('#myDataActionElementID').valueIndex];
+  //
+  //    // Do something with newValue and timestamp
+  //    // ...
+  //
+  //  }
+
+};
+
+customElements.define ('smac-dataaction', SMAC_DataAction);
 

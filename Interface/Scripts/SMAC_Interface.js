@@ -14,7 +14,7 @@
 
 //--- Globals ---------------------------------------------
 
-const AppVersion = '── 2025.11.07 ──';
+const AppVersion = '── 2025.11.09 ──';
 const Debugging  = false;  // Set to false for production use
 
 let TotalPages  = 0;
