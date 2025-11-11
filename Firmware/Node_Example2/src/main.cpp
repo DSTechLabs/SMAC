@@ -24,8 +24,8 @@
 //              ∙ Device
 //                  │
 //                  ├── LightSensor -- Demo to show how sensor data can be sent to the SMAC Interface
-//                  ├── Button      -- Demo to show how the Interface can react to remote hardware
-//                  └── LED         -- Demo to show how remote hardware can react to the Interface
+//                  ├── Button      -- Demo to show how your Device can interact with the SMAC Interface
+//                  └── LED         -- Demo to show how the SMAC Interface can interact with your Device
 //
 //  DEBUGGING : Set the global <Debugging> to true to see debugging info in Serial Monitor.
 //              Be sure to set <Debugging> to false for production builds!
@@ -48,7 +48,7 @@
 
 //--- Globals ---------------------------------------------
 
-bool            Debugging = false;  // ((( Set to false for production builds )))
+bool            Debugging = true;  // ((( Set to false for production builds )))
 char            Serial_Message[SERIAL_MAX_LENGTH];
 char            Serial_NextChar;
 int             Serial_Length = 0;
@@ -69,7 +69,8 @@ Node            *ThisNode;   // The global Node object
 // Set the NodeID for this ESP32 module (0-19)
 // The NodeID's for a SMAC Systems with multiple Nodes
 // must be unique and cannot be duplicated.
-int  ThisNodeID = 0;  // NodeID (0-19)
+int   ThisNodeID = 0;                     // NodeID (0-19)
+char  ThisNodeName[] = "My Second Node";  // Name for this node (max 32 chars)
 
 //--- Declarations ----------------------------------------
 
@@ -104,14 +105,8 @@ void setup()
 
   Serial.println ("Starting the Node ...");
 
-  //=======================================================
-  // Create an instance of a Node here.
-  // The 1st param is a name for your Node (to show in the SMAC Interface).
-  // The 2nd param is the Node's unique ID (0-19).
-  // Node ID's cannot be duplicated in your SMAC System.
-  // --- Do not use the same ID for other Nodes ---
-  //=======================================================
-  ThisNode = new Node ("My First Node", ThisNodeID);
+  //--- Create Node Instance ---
+  ThisNode = new Node (ThisNodeName, ThisNodeID);
 
 
   //=======================================================
@@ -128,6 +123,7 @@ void setup()
   ThisNode->AddDevice (new LightSensor ("Light Sensor" , 6));  // Gets assigned Device ID 00
   ThisNode->AddDevice (new Button      ("Little Button", 5));  // Gets assigned Device ID 01
   ThisNode->AddDevice (new LED         ("Yellow LED"   , 4));  // Gets assigned Device ID 02
+
 
 
   // PING the Relayer once per second until it responds with PONG

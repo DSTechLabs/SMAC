@@ -65,7 +65,8 @@ Node            *ThisNode;   // The global Node object
 // Set the NodeID for this ESP32 module (0-19)
 // The NodeID's for a SMAC Systems with multiple Nodes
 // must be unique and cannot be duplicated.
-int  ThisNodeID = 0;  // NodeID (0-19)
+int   ThisNodeID = 0;                    // NodeID (0-19)
+char  ThisNodeName[] = "My First Node";  // Name for this node (max 32 chars)
 
 //--- Declarations ----------------------------------------
 
@@ -100,14 +101,8 @@ void setup()
 
   Serial.println ("Starting the Node ...");
 
-  //=======================================================
-  // Create an instance of a Node here.
-  // The 1st param is a name for your Node (to show in the SMAC Interface).
-  // The 2nd param is the Node's unique ID (0-19).
-  // Node ID's cannot be duplicated in your SMAC System.
-  // --- Do not use the same ID for other Nodes ---
-  //=======================================================
-  ThisNode = new Node ("My First Node", ThisNodeID);
+  //--- Create Node Instance ---
+  ThisNode = new Node (ThisNodeName, ThisNodeID);
 
 
   //=======================================================
@@ -122,6 +117,7 @@ void setup()
   // Add all Devices to this Node
   //=======================================================
   ThisNode->AddDevice (new LightSensor ("Light Sensor", 6));  // Gets assigned Device ID 00
+
 
 
   // PING the Relayer once per second until it responds with PONG

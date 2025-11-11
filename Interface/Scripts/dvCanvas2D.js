@@ -563,25 +563,56 @@ class dvCanvas2D
     }
   }
 
+  //--- loadImage -----------------------------------------
+  loadImage (url, loadedCallback)  // loadedCallback is required
+  {
+    try
+    {
+      if (loadedCallback == undefined)
+        throw 'ERROR: dvCanvas2D.loadImage(): loadedCallback is required.';
+
+      // url cannot be file:///....
+      // Must load from local or remote server to avoid CORS block
+      const img = new Image();
+      img.crossOrigin = '*';
+      img.onload = () => { loadedCallback (img); };
+
+      // Start loading
+      img.src = url;
+    }
+    catch (ex)
+    {
+      ShowException (ex);
+    }
+  }
+
+  //--- drawLoadedImage -----------------------------------
+  drawLoadedImage (x, y, loadedImage)
+  {
+    try
+    {
+      this.cc.drawImage (loadedImage, x-1, y-1);
+    }
+    catch (ex)
+    {
+      ShowException (ex);
+    }
+  }
+
   //--- drawImage -----------------------------------------
-  drawImage (x, y, url, loadedCallback)
+  drawImage (x, y, url, drawnCallback)
   {
     try
     {
       // url cannot be file:///....
       // Must load from local or remote server to avoid CORS block
-      const img = new Image();
-      img.crossOrigin = '*';
-      img.onload = () =>
+      this.loadImage (url, (img) =>
       {
-        this.cc.drawImage (img, x-1, y-1);
+        this.drawLoadedImage (x, y, img);
 
-        if (loadedCallback != undefined)
-          loadedCallback (img);
-      };
-
-      // Start loading
-      img.src = url;
+        if (drawnCallback != undefined)
+          drawnCallback (img);
+      });
     }
     catch (ex)
     {
