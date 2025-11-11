@@ -66,11 +66,11 @@ char            ESPNOW_String[MAX_ESPNOW_LENGTH];
 Node            *ThisNode;   // The global Node object
 
 // SMAC Systems can have up to 20 Nodes.
-// Set the NodeID for this ESP32 module (0-19)
+// Set the Name and NodeID for this ESP32 module (0-19).
 // The NodeID's for a SMAC Systems with multiple Nodes
 // must be unique and cannot be duplicated.
-int   ThisNodeID = 0;                     // NodeID (0-19)
 char  ThisNodeName[] = "My Second Node";  // Name for this node (max 32 chars)
+int   ThisNodeID     = 0;                 // NodeID (0-19)
 
 //--- Declarations ----------------------------------------
 
