@@ -381,7 +381,7 @@ class SMAC_Dial extends HTMLElement
   //--- Attributes ----------------------------------------
 
   get knobImage    (     ) { return this.KnobImage;     }
-  set knobImage    (value) { this.KnobImage = value;    }
+  set knobImage    (value) { this.KbobImage = value;    }
 
   get angles       (     ) { return this.Angles;        }
   set angles       (value) { this.Angles = value;       }
@@ -412,10 +412,10 @@ class SMAC_Dial extends HTMLElement
       this.Angles = this.getAttribute ('angles');
 
       // Set optional attributes
-      this.Labels       = this.hasAttribute ('labels'      ) ?           this.getAttribute ('labels'      )  : undefined;
-      this.Size         = this.hasAttribute ('size'        ) ? Number   (this.getAttribute ('size'        )) : 5;
-      this.ChangeAction = this.hasAttribute ('changeAction') ?           this.getAttribute ('changeAction')  : undefined;
-      this.CurrentIndex = this.hasAttribute ('currentIndex') ? parseInt (this.getAttribute ('currentIndex')) : 0;
+      this.Labels       = this.hasAttribute ('labels'      ) ?         this.getAttribute ('labels'       ) : undefined;
+      this.Size         = this.hasAttribute ('size'        ) ? Number (this.getAttribute ('size'        )) : 10;
+      this.ChangeAction = this.hasAttribute ('changeAction') ?         this.getAttribute ('changeAction' ) : undefined;
+      this.CurrentIndex = this.hasAttribute ('currentIndex') ? Number (this.getAttribute ('currentIndex')) : 0;
 
       // Create angle and label arrays
       this.angleArray = this.Angles.replaceAll (' ', '').split (',');
@@ -430,70 +430,59 @@ class SMAC_Dial extends HTMLElement
 
       // Build the dial with a fixed drop shadow direction
       SetAsInlineBlock (this);
-      this.style.overflow = 'hidden';
 
-      // Create a knob layer to hold the dial and labels.
-      // This is necessary to apply a drop shadow in a fixed direction without the shadow rotating with the dial.
+      // Create a knob layer to hold the dial.
+      // This is necessary to apply a drop shadow in a fixed direction
+      // without the shadow rotating with the dial.
       this.knobLayer = document.createElement ('div');
-      this.knobLayer.classList.add ('dsBlock');
-      this.knobLayer.style = 'overflow:hidden; filter:drop-shadow(' + this.Size/30 + 'vw ' + this.Size/30 + 'vw 0.4vh var(--dark))';
-      this.append (this.knobLayer);
+      this.knobLayer.style = 'display:inline-block; position:relative; margin:0; padding:0; filter:drop-shadow(' + this.Size/30 + 'vw ' + this.Size/30 + 'vw 0.4vh var(--dark)); vertical-align:top';
 
       // Create knob image
-      this.knobImg = document.createElement ('img');
-      this.knobImg.setAttribute ('draggable', 'false');
-      this.knobImg.onload = () =>
+      this.imgKnob = document.createElement ('img');
+      this.imgKnob.setAttribute ('draggable', 'false');
+      this.imgKnob.style = 'position:absolute; left:0; top:0; width:' + this.Size + 'vw; cursor:pointer; vertical-align:top; user-drag:none';
+      this.imgKnob.src = this.KnobImage;
+
+      this.imgKnob.onload = () =>
       {
-        // Add knob image to knob layer
-        this.knobImg.style = 'position:absolute; width:' + this.Size + 'vw; user-drag:none';
-        this.knobLayer.append (this.knobImg);
+        // Add knob to knob layer
+        this.knobLayer.append (this.imgKnob);
 
-        // Outer radius for labels
-        const knobWidth  = $(this.knobImg).width();            // The knob image should be square (width = height)
-        const labelSpace = this.Size * GetBrowserWidth()/800;  // Extra space for labels
-        const radius     = knobWidth/2 + labelSpace;
+        // Add knobLayer to this dial
+        this.append (this.knobLayer);
 
-        // Set knob position
-        this.knobImg.style.left = (radius - knobWidth/2 + labelSpace  ).toString() + 'px';
-        this.knobImg.style.top  = (radius - knobWidth/2 + labelSpace/2).toString() + 'px';
-
-        // Generate labels for each angle
-        let maxLabelLength = 0;
-        for (let i=0; i<this.numAngles; i++)
+        // Add labels to dial
+        if (this.Labels != undefined)
         {
-          const radAngle = (90.0 - Number(this.angleArray[i])) / 57.3;  // convert angle to radians
-          const x = radius + radius * Math.cos (radAngle);
-          const y = radius - radius * Math.sin (radAngle);
+          const centerX = $(this.imgKnob).width () / 2;
+          const centerY = $(this.imgKnob).height() / 2;
+          const radius  = centerY + 3*this.Size;  // Extra space for labels
 
-          const label = document.createElement ('div');
-          this.append (label);
+          for (let i=0; i<this.numAngles; i++)
+          {
+            const radAngle = (90 - Number(this.angleArray[i])) / 57.3;  // convert angle to radians
+            const left = centerX + radius * Math.cos (radAngle);
+            const top  = centerY - radius * Math.sin (radAngle);
 
-          label.classList.add ('smac-dialLabel');
-          label.style      = 'font-size:' + this.Size/8 + 'vw';
-          label.innerHTML  = this.Labels != undefined ? this.labelArray[i] : '●';  // Use dot as default label
-          label.tabIndex   = i;  // angle index
+            const label = document.createElement ('label');
 
-          const lw = $(label).width();
-          label.style.left = (x - lw               /2 + labelSpace  ) + 'px';
-          label.style.top  = (y - $(label).height()/2 + labelSpace/2) + 'px';
+            label.style = 'position:absolute; font-family:font_robotoRegular, sans-serif; font-size:' + this.Size/8 + 'em; font-weight:bold; text-shadow:1px 1px 1px var(--light); vertical-align:top';
 
-          if (lw > maxLabelLength)
-            maxLabelLength = lw;
+            label.innerHTML = this.labelArray[i];
 
-          // Change angle setting when clicked
-          label.addEventListener ('pointerdown', (event) => { StopEvent(event); this.setDial(event); });
+            this.append (label);
+
+            label.style.left = (left - $(label).width ()/2) + 'px';
+            label.style.top  = (top  - $(label).height()/2) + 'px';
+          }
         }
 
-        // The overall size of the knob layer and this element depend on the size of the labels.
-        this.knobLayer.style.width  = (2*radius + maxLabelLength).toString() + 'px';
-        this.knobLayer.style.height = (2*radius + labelSpace    ).toString() + 'px';
+        // Set currentIndex angle
+        this.imgKnob.style.rotate = this.angleArray[this.CurrentIndex] + 'deg';
 
-        // Set initial knob angle
-        this.knobImg.style.rotate = this.angleArray[this.CurrentIndex] + 'deg';
+        // Change angle setting when clicked
+        this.addEventListener ('pointerdown', (event) => { StopEvent(event); this.setDial(event); });
       };
-
-      // Load knob image
-      this.knobImg.src = this.KnobImage;
     }
     catch (ex)
     {
@@ -507,11 +496,14 @@ class SMAC_Dial extends HTMLElement
   {
     try
     {
-      // Set new angle
-      this.CurrentIndex = event.target.tabIndex;
+      // Advance to next angle
+      if (this.CurrentIndex < this.numAngles - 1)
+        ++this.CurrentIndex;
+      else
+        this.CurrentIndex = 0;
 
       // Rotate knob to new position
-      this.knobImg.style.rotate = this.angleArray[this.CurrentIndex] + 'deg';
+      this.imgKnob.style.rotate = this.angleArray[this.CurrentIndex] + 'deg';
 
       // Execute action, if any
       if (this.ChangeAction != undefined)
@@ -895,6 +887,12 @@ class SMAC_Joystick extends HTMLElement
 
   //--- Attributes ----------------------------------------
 
+//   get width        (     ) { return this.Width;         }
+//   set width        (value) { this.Width = value;        }
+//
+//   get height       (     ) { return this.Height;        }
+//   set height       (value) { this.Height = value;       }
+
   get knobImage    (     ) { return this.KnobImage;     }
   set knobImage    (value) { this.KnobImage = value;    }
 
@@ -913,12 +911,6 @@ class SMAC_Joystick extends HTMLElement
   get snapToCenter (     ) { return this.SnapToCenter;  }
   set snapToCenter (value) { this.SnapToCenter = value; }
 
-//   get x            (     ) { return this.X;             }
-//   set x            (value) { this.X = value;            }
-//
-//   get y            (     ) { return this.Y;             }
-//   set y            (value) { this.Y = value;            }
-
   //--- connectedCallback ---------------------------------
 
   connectedCallback ()
@@ -931,11 +923,13 @@ class SMAC_Joystick extends HTMLElement
       SetAsInlineBlock (this);
 
       // Set optional attributes
-      this.KnobImage    = this.hasAttribute ('knobImage'   ) ?         this.getAttribute ('knobImage'    ) : 'Images/ui_JoystickKnob1.png';
-      this.BackImage    = this.hasAttribute ('backImage'   ) ?         this.getAttribute ('backImage'    ) : 'Images/ui_JoystickBack1.png';
-      this.Size         = this.hasAttribute ('size'        ) ? Number (this.getAttribute ('size'        )) : 10;
-      this.MoveAction   = this.hasAttribute ('moveAction'  ) ?         this.getAttribute ('moveAction'   ) : undefined;
-      this.DoneAction   = this.hasAttribute ('doneAction'  ) ?         this.getAttribute ('doneAction'   ) : undefined;
+      // this.Width        = this.hasAttribute ('width'       ) ? Number (this.getAttribute ('width'     )) : 8;
+      // this.Height       = this.hasAttribute ('height'      ) ? Number (this.getAttribute ('height'    )) : 15;
+      this.KnobImage    = this.hasAttribute ('knobImage'   ) ?         this.getAttribute ('knobImage'  ) : 'Images/ui_JoystickKnob1.png';
+      this.BackImage    = this.hasAttribute ('backImage'   ) ?         this.getAttribute ('backImage'  ) : 'Images/ui_JoystickBack1.png';
+      this.Size         = this.hasAttribute ('size'        ) ? Number (this.getAttribute ('size'      )) : 10;
+      this.MoveAction   = this.hasAttribute ('moveAction'  ) ?         this.getAttribute ('moveAction' ) : undefined;
+      this.DoneAction   = this.hasAttribute ('doneAction'  ) ?         this.getAttribute ('doneAction' ) : undefined;
       this.SnapToCenter = this.hasAttribute ('snapToCenter');
 
       // Build this widget
@@ -954,10 +948,11 @@ class SMAC_Joystick extends HTMLElement
     try
     {
       // Canvas dimensions are percentages of Browser's size
-      const cSize = Math.round (this.Size * GetBrowserWidth () / 100);
+      const cWidth  = Math.max (Math.round (this.Size * GetBrowserWidth () / 100), 90);
+      const cHeight = Math.round (cWidth / 1.2);
 
       // Create a 2D data visualization canvas (dvCanvas2D)
-      this.smacCanvas = new dvCanvas2D (cSize, cSize, 'transparent');
+      this.smacCanvas = new dvCanvas2D (cWidth, cHeight, 'black');
 
       // Check if a canvas already exists from a previous build
       if (this.firstChild == undefined)
@@ -965,45 +960,23 @@ class SMAC_Joystick extends HTMLElement
       else
         this.replaceChild (this.smacCanvas.canvas, this.firstChild);  // Replace existing canvas
 
-      // Initial center position of knob
-      this.Center = cSize / 2;
-
-      // Scale the canvas and draw back and knob images
-      this.smacCanvas.loadImage (this.BackImage, (backImg) =>
+      // Draw background image
+      this.smacCanvas.drawImage (0, 0, this.BackImage, () =>
       {
-        // Fit back image to specified width/height
-        const scale = cSize / backImg.naturalWidth;
-        this.smacCanvas.cc.scale (scale, scale);
-        this.smacCanvas.cc.drawImage (backImg, -1, -1);
-
-        // Load knob image
-        this.smacCanvas.loadImage (this.KnobImage, (knobImg) =>
-        {
-
-
-          this.KnobCenter = cSize / 2 - (scale * knobImg.naturalWidth) / 2;
-
-
-
-
-          // this.smacCanvas.drawLoadedImage (this.KnobCenter, this.KnobCenter, knobImg);
 
 
 
 
 
-// this.smacCanvas.drawRectangle (0, 0, cWidth, cHeight, '#F00000');
+this.smacCanvas.drawRectangle (0, 0, cWidth, cHeight, '#F00000');
 
 
 
 
 
-
-
-          // Draw Joystick "Knob" (draggable)
-          this.smacCanvas.drawDraggable (this.KnobCenter, this.KnobCenter, this.KnobImage, this.MoveAction, this.doneAction);
-        });
-
+        // Draw Joystick "Knob" (draggable)
+        this.smacCanvas.drawDraggable (this.GraphWidth/2, this.GraphHeight/2, this.KnobImage, this.MoveAction, this.doneAction);
+      });
 
 
 
@@ -1085,7 +1058,6 @@ class SMAC_Joystick extends HTMLElement
 
 
 
-      });
     }
     catch (ex)
     {

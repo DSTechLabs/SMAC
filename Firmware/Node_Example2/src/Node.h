@@ -86,7 +86,7 @@ class Node
     Device         *devices[MAX_DEVICES];                            // Holds the array of Devices for this Node
     int            numDevices = 0;                                   // Number of added Devices
     char           *commandString;                                   // Command string from buffer
-    unsigned long  lastPacketTime;                                   // Holds last SMACPacket time, used for keep alive
+    unsigned long  lastPacketTime;                                   // Holds last Node communication time, used for keep alive
     ProcessStatus  pStatus;
 
   public:

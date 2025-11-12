@@ -35,7 +35,6 @@ LED::LED (const char *inName, int inLEDPin)
 
 ProcessStatus LED::ExecuteCommand (char *command, char *params)
 {
-  // Command info is held in the global <CommandPacket> structure.
   // This method is only called for commands targeted for this device.
 
   // First call the base class ExecuteCommand method
