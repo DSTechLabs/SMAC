@@ -101,7 +101,7 @@ class Dev_DCMotor : public Device
 
     //--- Overrides ---
     ProcessStatus  DoImmediate    ();  // Device class override
-    ProcessStatus  ExecuteCommand ();  // Device class override
+    ProcessStatus  ExecuteCommand (char *command, char *params);  // Device class override
 };
 
 #endif

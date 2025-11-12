@@ -90,9 +90,7 @@
                 current[idx] = getCurrentAmps(idx) * 1000; // convert to ma
             }
 
-            DataPacket.timestamp = millis ();
-            sprintf(DataPacket.value, "BATX|%f|%f|%f|%f|%f|%f",
-                    busVolt[0], current[0], busVolt[1], current[1], busVolt[2], current[2]);
+            sprintf (SMACData.values, "BATX|%f|%f|%f|%f|%f|%f", busVolt[0], current[0], busVolt[1], current[1], busVolt[2], current[2]);
 
             return (SUCCESS_DATA);
         }
@@ -103,7 +101,7 @@
          *
          * @return ProcessStatus
          */
-        ProcessStatus Dev_INA3221_PowerMonitor::ExecuteCommand()
+        ProcessStatus Dev_INA3221_PowerMonitor::ExecuteCommand(char *command, char *params)
         {
             ProcessStatus retVal = NOT_HANDLED;
             return (retVal);

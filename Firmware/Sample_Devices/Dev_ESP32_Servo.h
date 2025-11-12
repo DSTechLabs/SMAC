@@ -35,7 +35,7 @@ class ESP32_Servo : public Device
   public:
     ESP32_Servo (const char *inName, int inServoPin);
 
-    ProcessStatus ExecuteCommand ();  // override default processing
+    ProcessStatus ExecuteCommand (char *command, char *params);  // override default processing
 };
 
 #endif

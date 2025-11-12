@@ -241,39 +241,38 @@ ProcessStatus  Dev_DCMotor::DoImmediate ()
 
 //--- ExecuteCommand --------------------------------------
 
-ProcessStatus Dev_DCMotor::ExecuteCommand ()
+ProcessStatus Dev_DCMotor::ExecuteCommand (char *command, char *params)
 {
-  // Command info is held in the global <CommandPacket> structure.
   // This method is only called for commands targeted for this device.
 
   // First call the base class ExecuteCommand method
-  pStatus = Device::ExecuteCommand ();
+  pStatus = Device::ExecuteCommand (command, params);
 
   // Check if command was handled by the base class
   if (pStatus == NOT_HANDLED)
   {
     // The command was NOT handled by the base class, so handle custom commands.
-    // We only need to look at CommandPacket.command and CommandPacket.params fields.
+    // We only need to look at command and params fields.
 
     //--- E-Stop ---
-    if (strcmp (CommandPacket.command, "ESTP") == 0)
+    if (strcmp (command, "ESTP") == 0)
     {
       EStop ();
       pStatus = SUCCESS_NODATA;
     }
 
     //--- Set Ramp ---
-    else if (strcmp (CommandPacket.command, "SRMP") == 0)
+    else if (strcmp (command, "SRMP") == 0)
     {
       // Check for value
-      if (strlen (CommandPacket.params) < 1)
+      if (strlen (params) < 1)
       {
-        strcpy (DataPacket.value, "Missing ramp value 0-9");
+        strcpy (SMACData.values, "Missing ramp value 0-9");
         pStatus = FAIL_DATA;
       }
       else
       {
-        int ramp = atoi (CommandPacket.params);
+        int ramp = atoi (params);
 
         // Check specified ramp value
         if (ramp >= 0 && ramp <= 9)
@@ -284,39 +283,39 @@ ProcessStatus Dev_DCMotor::ExecuteCommand ()
     }
 
     //--- GO Forward/Backward ---
-    else if (strncmp (CommandPacket.command, "GO", 2) == 0)
+    else if (strncmp (command, "GO", 2) == 0)
     {
       // Check for speed
-      if (strlen (CommandPacket.params) > 0)
+      if (strlen (params) > 0)
       {
-        Go (CommandPacket.command[2] == 'F' ? DCMOTOR_CW : DCMOTOR_CCW, atoi (CommandPacket.params));
+        Go (command[2] == 'F' ? DCMOTOR_CW : DCMOTOR_CCW, atoi (params));
         pStatus = SUCCESS_NODATA;
       }
       else
       {
-        strcpy (DataPacket.value, "Missing speed");
+        strcpy (SMACData.values, "Missing speed");
         pStatus = FAIL_DATA;
       }
     }
 
     //--- STOP ---
-    else if (strcmp (CommandPacket.command, "STOP") == 0)
+    else if (strcmp (command, "STOP") == 0)
     {
       Stop ();
       pStatus = SUCCESS_NODATA;
     }
 
     //--- GET STATE ---
-    else if (strcmp (CommandPacket.command, "GSTA") == 0)
+    else if (strcmp (command, "GSTA") == 0)
     {
       switch (state)
       {
-        case DCMOTOR_STOPPED      : strcpy (DataPacket.value, "ST"); break;
-        case DCMOTOR_RAMPING_UP   : strcpy (DataPacket.value, "RU"); break;
-        case DCMOTOR_RAMPING_DOWN : strcpy (DataPacket.value, "RD"); break;
-        case DCMOTOR_AT_SPEED     : strcpy (DataPacket.value, "AS"); break;
+        case DCMOTOR_STOPPED      : strcpy (SMACData.values, "ST"); break;
+        case DCMOTOR_RAMPING_UP   : strcpy (SMACData.values, "RU"); break;
+        case DCMOTOR_RAMPING_DOWN : strcpy (SMACData.values, "RD"); break;
+        case DCMOTOR_AT_SPEED     : strcpy (SMACData.values, "AS"); break;
 
-        default : strcpy (DataPacket.value, "??"); break;
+        default : strcpy (SMACData.values, "??"); break;
       }
 
       pStatus = SUCCESS_DATA;
@@ -324,7 +323,7 @@ ProcessStatus Dev_DCMotor::ExecuteCommand ()
 
     else
     {
-      strcpy (DataPacket.value, "Unknown command");
+      strcpy (SMACData.values, "Unknown command");
       pStatus = SUCCESS_DATA;
     }
   }

@@ -57,8 +57,7 @@ ProcessStatus Dev_HCSR04_Distance::DoPeriodic ()
   distance = duration / 148.1f;    // inches
 
   // Return distance
-  DataPacket.timestamp = millis ();
-  sprintf (DataPacket.value, "%.2f", distance);
+  sprintf (SMACData.values, "%.2f", distance);
 
   return SUCCESS_DATA;
 }

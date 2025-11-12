@@ -30,7 +30,7 @@ class Dev_LED : public Device
   public:
     Dev_LED (const char *inName, int inLEDPin);
 
-    ProcessStatus  ExecuteCommand ();  // override
+    ProcessStatus  ExecuteCommand (char *command, char *params);  // override
 };
 
 #endif

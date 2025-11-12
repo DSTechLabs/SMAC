@@ -238,7 +238,7 @@ class Dev_StepperMotor_2Phase : public Device
 
     //--- Device Overrides ---
     ProcessStatus  DoImmediate    ();  // Device class override
-    ProcessStatus  ExecuteCommand ();  // Device class override
+    ProcessStatus  ExecuteCommand (char *command, char *params);  // Device class override
 };
 
 #endif

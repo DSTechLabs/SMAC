@@ -40,13 +40,12 @@ ESP32_Servo::ESP32_Servo (const char *inName, int inServoPin)
 
 //--- DoPeriodic (override) -------------------------------
 
-ProcessStatus ESP32_Servo::ExecuteCommand ()
+ProcessStatus ESP32_Servo::ExecuteCommand (char *command, char *params)
 {
-  // Command info is held in the global <CommandPacket> structure.
   // This method is only called for commands targeted for this device.
 
   // First call the base class ExecuteCommand method
-  pStatus = Device::ExecuteCommand ();
+  pStatus = Device::ExecuteCommand (command, params);
 
   // Check if command was handled by the base class
   if (pStatus == NOT_HANDLED)
@@ -55,9 +54,9 @@ ProcessStatus ESP32_Servo::ExecuteCommand ()
     // so handle custom commands:
 
     //--- Rotate Servo to Angle ---
-    if (strcmp (CommandPacket.command, "GOTO") == 0)
+    if (strcmp (command, "GOTO") == 0)
     {
-      int angle = atoi (CommandPacket.params);
+      int angle = atoi (params);
 
       if (angle >= -90 && angle <= 90)
         servo.write (angle + 90);

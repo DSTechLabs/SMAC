@@ -61,12 +61,11 @@ IRAM_ATTR ProcessStatus Dev_Button::DoImmediate ()
   // Hardware debouncing should be done with an RC circuit
   newState = digitalRead (buttonPin);
 
-  // Send DataPacket if button has changed state
+  // Send new state if button has changed state
   if (newState != currentState)
   {
-    // Send DataPacket
-    DataPacket.timestamp = millis ();
-    strcpy (DataPacket.value, (newState==0 ? "0" : "1"));
+    // Send Data
+    strcpy (SMACData.values, (newState==0 ? "0" : "1"));
 
     currentState = newState;
     return SUCCESS_DATA;

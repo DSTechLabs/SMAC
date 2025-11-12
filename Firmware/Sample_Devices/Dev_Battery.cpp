@@ -38,11 +38,10 @@ Dev_Battery::Dev_Battery (const char *inName, int inBatteryPin)
 ProcessStatus Dev_Battery::DoPeriodic ()
 {
   // Read the battery pin
-  int value = analogRead (batteryPin);
+  int newValue = analogRead (batteryPin);
 
   // Populate the Data Structure
-  DataPacket.timestamp = millis ();
-  itoa (value, DataPacket.value, 10);
+  itoa (SMACData.values, newValue, 10);
 
   return SUCCESS_DATA;
 }

@@ -487,19 +487,19 @@ ProcessStatus Dev_StepperMotor_4Phase::DoImmediate ()
       break;
 
     case STEPPER4_RUN_COMPLETE       :   // Motion complete, reached target position normally
-      sprintf (DataPacket.value, "RC%d", AbsolutePosition);
+      sprintf (SMACData.values, "RC%d", AbsolutePosition);
       pStatus = SUCCESS_DATA;
       break;
 
     case STEPPER4_RANGE_ERROR_LOWER  :   // Reached lower range limit
     case STEPPER4_RANGE_ERROR_UPPER  :   // Reached upper range limit
-      strcpy (DataPacket.value, "RE");
+      strcpy (SMACData.values, "RE");
       pStatus = FAIL_DATA;
       break;
 
     case STEPPER4_LIMIT_SWITCH_LOWER :   // Lower limit switch triggered
     case STEPPER4_LIMIT_SWITCH_UPPER :   // Upper limit switch triggered
-      strcpy (DataPacket.value, "LS");
+      strcpy (SMACData.values, "LS");
       pStatus = FAIL_DATA;
   }
 
@@ -508,105 +508,104 @@ ProcessStatus Dev_StepperMotor_4Phase::DoImmediate ()
 
 //--- ExecuteCommand --------------------------------------
 
-ProcessStatus Dev_StepperMotor_4Phase::ExecuteCommand ()
+ProcessStatus Dev_StepperMotor_4Phase::ExecuteCommand (char *command, char *params)
 {
-  // Command info is held in the global <CommandPacket> structure.
   // This method is only called for commands targeted for this device.
 
   // First call the base class ExecuteCommand method
-  pStatus = Device::ExecuteCommand ();
+  pStatus = Device::ExecuteCommand (command, params);
 
   // Check if command was handled by the base class
   if (pStatus == NOT_HANDLED)
   {
     // The command was NOT handled by the base class, so handle custom commands.
-    // We only need to look at CommandPacket.command and CommandPacket.params fields.
+    // We only need to look at command and params fields.
 
     // Set default pStatus
     pStatus = SUCCESS_NODATA;
 
     //--- E-Stop ---
-    if (strcmp (CommandPacket.command, "STOP") == 0)
+    if (strcmp (command, "STOP") == 0)
       EStop ();
 
     //--- Enable/Disable ---
-    else if (strcmp (CommandPacket.command, "ENAB") == 0)
+    else if (strcmp (command, "ENAB") == 0)
       Enable ();
-    else if (strcmp (CommandPacket.command, "DISA") == 0)
+    else if (strcmp (command, "DISA") == 0)
       Disable ();
 
     //--- Find Home ---
-    else if (strcmp (CommandPacket.command, "FHOM") == 0)
+    else if (strcmp (command, "FHOM") == 0)
       FindHome ();
 
     //--- Set Home and Lower/Upper Limits ---
-    else if (strcmp (CommandPacket.command, "SHOM") == 0)
+    else if (strcmp (command, "SHOM") == 0)
       SetHomePosition ();
-    else if (strcmp (CommandPacket.command, "SLOW") == 0)
+    else if (strcmp (command, "SLOW") == 0)
     {
       // Check for value
-      if (strlen (CommandPacket.params) < 1)
+      if (strlen (params) < 1)
       {
-        strcpy (DataPacket.value, "Missing lower limit value");
+        strcpy (SMACData.values, "Missing lower limit value");
         pStatus = FAIL_DATA;
       }
       else
-        SetLowerLimit (atol (CommandPacket.params));
+        SetLowerLimit (atol (params));
     }
-    else if (strcmp (CommandPacket.command, "SUPP") == 0)
+    else if (strcmp (command, "SUPP") == 0)
     {
       // Check for value
-      if (strlen (CommandPacket.params) < 1)
+      if (strlen (params) < 1)
       {
-        strcpy (DataPacket.value, "Missing upper limit value");
+        strcpy (SMACData.values, "Missing upper limit value");
         pStatus = FAIL_DATA;
       }
       else
-        SetUpperLimit (atol (CommandPacket.params));
+        SetUpperLimit (atol (params));
     }
 
     //--- Set Ramp ---
-    else if (strcmp (CommandPacket.command, "SRMP") == 0)
+    else if (strcmp (command, "SRMP") == 0)
     {
       // Check for value
-      if (strlen (CommandPacket.params) < 1)
+      if (strlen (params) < 1)
       {
-        strcpy (DataPacket.value, "Missing ramp value 0-9");
+        strcpy (SMACData.values, "Missing ramp value 0-9");
         pStatus = FAIL_DATA;
       }
       else
-        SetRamp ((int)(CommandPacket.params[0])-48);
+        SetRamp ((int)(params[0])-48);
     }
 
     //--- Rotate commands ---
-    else if (strcmp (CommandPacket.command, "RABS") == 0 || strcmp (CommandPacket.command, "RREL") == 0)
+    else if (strcmp (command, "RABS") == 0 || strcmp (command, "RREL") == 0)
     {
       // Check for speed and target/numSteps value
       // Speed is first four(4) digits of params, (0001 - 9999) steps per second
-      if (strlen (CommandPacket.params) < 5)
+      if (strlen (params) < 5)
       {
-        strcpy (DataPacket.value, "Bad rotate command");
+        strcpy (SMACData.values, "Bad rotate command");
         pStatus = FAIL_DATA;
       }
       else
       {
         // Parse speed and target/numSteps
-        strncpy (SpeedString, CommandPacket.params, 4);
+        strncpy (SpeedString, params, 4);
         SpeedString[4] = 0;
         Speed = atoi (SpeedString);
-        TargetOrSteps = atol (CommandPacket.params + 4);  // Target position or number of steps is remainder of params
+        TargetOrSteps = atol (params + 4);  // Target position or number of steps is remainder of params
 
-        if (strcmp (CommandPacket.command, "RABS") == 0)
+        if (strcmp (command, "RABS") == 0)
           RotateAbsolute (TargetOrSteps, Speed);
         else
           RotateRelative (TargetOrSteps, Speed);
       }
     }
-    else if (strcmp (CommandPacket.command, "RHOM") == 0)
+    else if (strcmp (command, "RHOM") == 0)
       RotateToHome ();
-    else if (strcmp (CommandPacket.command, "RLOW") == 0)
+    else if (strcmp (command, "RLOW") == 0)
       RotateToLowerLimit ();
-    else if (strcmp (CommandPacket.command, "RUPP") == 0)
+    else if (strcmp (command, "RUPP") == 0)
       RotateToUpperLimit ();
 
     else
@@ -617,28 +616,28 @@ ProcessStatus Dev_StepperMotor_4Phase::ExecuteCommand ()
       pStatus = SUCCESS_DATA;
 
       //--- Get State ---
-      if (strcmp (CommandPacket.command, "GSTA") == 0)
+      if (strcmp (command, "GSTA") == 0)
       {
         switch (State)
         {
-          case STEPPER4_ENABLED  : strcpy (DataPacket.value, "EN"); break;
-          case STEPPER4_DISABLED : strcpy (DataPacket.value, "DI"); break;
-          case STEPPER4_RUNNING  : strcpy (DataPacket.value, "RU"); break;
-          case STEPPER4_ESTOPPED : strcpy (DataPacket.value, "ES"); break;
+          case STEPPER4_ENABLED  : strcpy (SMACData.values, "EN"); break;
+          case STEPPER4_DISABLED : strcpy (SMACData.values, "DI"); break;
+          case STEPPER4_RUNNING  : strcpy (SMACData.values, "RU"); break;
+          case STEPPER4_ESTOPPED : strcpy (SMACData.values, "ES"); break;
 
-          default : strcpy (DataPacket.value, "ERROR: Invalid State"); break;
+          default : strcpy (SMACData.values, "ERROR: Invalid State"); break;
         }
       }
 
       //--- Other query commands ---
-      else if (strcmp (CommandPacket.command, "GABS") == 0)
-        sprintf (DataPacket.value, "AP%d", GetAbsolutePosition());
-      else if (strcmp (CommandPacket.command, "GREL") == 0)
-        sprintf (DataPacket.value, "RP%d", GetRelativePosition());
-      else if (strcmp (CommandPacket.command, "GLOW") == 0)
-        sprintf (DataPacket.value, "LL%d", GetLowerLimit());
-      else if (strcmp (CommandPacket.command, "GUPP") == 0)
-        sprintf (DataPacket.value, "UL%d", GetUpperLimit());
+      else if (strcmp (command, "GABS") == 0)
+        sprintf (SMACData.values, "AP%d", GetAbsolutePosition());
+      else if (strcmp (command, "GREL") == 0)
+        sprintf (SMACData.values, "RP%d", GetRelativePosition());
+      else if (strcmp (command, "GLOW") == 0)
+        sprintf (SMACData.values, "LL%d", GetLowerLimit());
+      else if (strcmp (command, "GUPP") == 0)
+        sprintf (SMACData.values, "UL%d", GetUpperLimit());
 
       //--- Unknown command ---
       else pStatus = NOT_HANDLED;

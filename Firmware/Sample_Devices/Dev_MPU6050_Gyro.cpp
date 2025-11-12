@@ -61,8 +61,7 @@ ProcessStatus Dev_MPU6050_Gyro::DoPeriodic ()
   roll  = atan2 (-accelY, accelZ);  // radians,  * 57.3 for degrees
 
   // Return readings
-  DataPacket.timestamp = millis ();
-  sprintf (DataPacket.value, "%.2f,%.2f", pitch, roll);
+  sprintf (SMACData.values, "%.2f,%.2f", pitch, roll);
 
   return SUCCESS_DATA;
 }

@@ -86,5 +86,5 @@ class Dev_INA3221_PowerMonitor : public Adafruit_INA3221, public Device
         bool setup(int I2CAddr,  TwoWire *theWire); // Set up the driver, initialize I2C
         ProcessStatus  DoImmediate    () override ;  // Override this method for processing your device continuously
         ProcessStatus  DoPeriodic     () override;  // Override this method for processing your device periodically
-        ProcessStatus  ExecuteCommand () override;  // Override this method to handle custom commands
+        ProcessStatus  ExecuteCommand (char *command, char *params) override;  // Override this method to handle custom commands
 };
