@@ -172,7 +172,7 @@ uint32_t ftoa(char *str, size_t size, float f, int32_t precision) {
         ve--;
       }
   } else if (w >= 0x7f800000U) { /* not a number, infinity */
-    msg = w > 0x7f800000U ? "nan" : "inf";
+    msg = w > 0x7f800000U ? (char *)"nan" : (char *)"inf";    // WTD: Modified to suppress warning
   } else { /* normal number */
     ve = (f2.i >> 23) - 127 - 1;
     f2.i = ((f2.i & SP_SIGNIFICAND_MASK) | SP_HIDDEN_BIT);
