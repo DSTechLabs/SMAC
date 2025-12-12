@@ -2,31 +2,10 @@
 //
 //       FILE : main.cpp
 //
-//    PROJECT : SMAC Framework - Example 1
+//    PROJECT : SMAC Framework - Main Entry
 //
-//      NOTES : This is the PIO firmware for the SMAC Node of Example 1.
-//
-//              About this template:
-//              - The SMAC System uses Espressif's ESP-NOW protocol between Node Modules and the Relayer Module.
-//              - Device is the base class from which your custom Devices are derived.
-//              - This "template" creates a Node with a single Device, a LightSensor.
-//              - Node Modules first attempt to connect to the Relayer Module.
-//              - Once connected, the LightSensor Device "measures" a value and outputs a "Data String" with its value.
-//              - The above operation is performed periodically to maintain continuous data.
-//              - All Device data can be visualized with gauges and graphs using the SMAC Interface (a Chrome browser app).
-//              - The SMAC System is bidirectional. You can send commands to both Nodes and individual Devices.
-//              - Commands can be sent directly from the SMAC Interface using buttons, dials, sliders, etc.
-//              - The Node and Device base classes handle standard commands and child classes can handle custom commands.
-//
-//              Classes in this example:
-//
-//              ∙ Node   -- at least one Node is required for any SMAC system
-//              ∙ Device
-//                  │
-//                  └── LightSensor -- Demo to show how sensor data can be sent to the SMAC Interface
-//
-//  DEBUGGING : Set the global <Debugging> to true to see debugging info in Serial Monitor.
-//              Be sure to set <Debugging> to false for production builds!
+//      NOTES : There is no need to edit this file.
+//              Build your SMAC System in the SMACSystem.cpp file.
 //
 //     AUTHOR : Bill Daniels
 //              Copyright 2021-2025, D+S Tech Labs, Inc.
@@ -39,8 +18,7 @@
 #include <Arduino.h>
 #include <Preferences.h>
 #include "common.h"
-#include "Node.h"
-#include "LightSensor.h"
+#include "SMACSystem.h"
 
 //--- Globals ---------------------------------------------
 
@@ -59,14 +37,7 @@ const int       CommandOffset = MIN_COMMAND_LENGTH - COMMAND_SIZE;
 const int       ParamsOffset  = MIN_COMMAND_LENGTH + 1;
 SMACDataPacket  SMACData;
 char            ESPNOW_String[MAX_ESPNOW_LENGTH];
-Node            *ThisNode;   // The global Node object
-
-// SMAC Systems can have up to 20 Nodes.
-// Set the Name and NodeID for this ESP32 module (0-19).
-// The NodeID's for a SMAC Systems with multiple Nodes
-// must be unique and cannot be duplicated.
-char  ThisNodeName[] = "My First Node";  // Name for this node (max 32 chars)
-int   ThisNodeID     = 0;                // NodeID (0-19)
+SMACSystem      *ThisSMACSystem = nullptr;  // The global SMACSystem object
 
 //--- Declarations ----------------------------------------
 
@@ -76,6 +47,7 @@ void Serial_ProcessMessage ();
 
 //=========================================================
 //  setup
+//  NO NEED TO CHANGE THIS CODE
 //=========================================================
 
 void setup()
@@ -99,26 +71,16 @@ void setup()
   // Init Command buffer (a circular FIFO buffer)
   CommandBuffer = new RingBuffer (FIFO);
 
-  Serial.println ("Starting the Node ...");
+  // Create the SMAC System
+  Serial.println ("Building the SMAC System ...");
+  ThisSMACSystem = new SMACSystem ();
 
-  //--- Create Node Instance ---
-  ThisNode = new Node (ThisNodeName, ThisNodeID);
-
-
-  //=======================================================
-  // Create or Start/Begin any infrastructure your Devices
-  // may need. Then, if necessary, pass those references
-  // to your Devices' constructors.
-  //=======================================================
-  // ...
-
-
-  //=======================================================
-  // Add all Devices to this Node
-  //=======================================================
-  ThisNode->AddDevice (new LightSensor ("Light Sensor", 6));  // Gets assigned Device ID 00
-
-
+  // Check if created
+  if (ThisSMACSystem == nullptr || ThisSMACSystem->ThisNode == nullptr)
+  {
+    Serial.println ("The SMAC System or Node was not created.");
+    while (true);
+  }
 
   // PING the Relayer once per second until it responds with PONG
   Serial.println ("PINGing Relayer ...");
@@ -131,7 +93,7 @@ void setup()
     if (nowMillis - lastMillis > 1000L)
     {
       lastMillis = nowMillis;
-      ThisNode->SendData ("--");
+      ThisSMACSystem->ThisNode->SendData ("--");
     }
 
     // Check for Set MAC Tool
@@ -154,7 +116,10 @@ void setup()
 void loop()
 {
   // Keep the Node running
-  ThisNode->Run ();
+  ThisSMACSystem->ThisNode->Run ();
+
+  // Run any auxilary loop code outside the SMAC System
+  ThisSMACSystem->AuxLoop ();
 
   // Check for serial chars
   Serial_CheckInput ();

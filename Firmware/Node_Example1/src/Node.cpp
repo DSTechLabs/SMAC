@@ -21,6 +21,7 @@
 #include <esp_wifi.h>
 #include "Node.h"
 #include "Device.h"
+#include "SMACSystem.h"
 
 //--- Declarations ----------------------------------------
 
@@ -50,7 +51,7 @@ Node::Node (const char *inName, int inNodeID)
 
   sprintf (nodeID, "%02d", inNodeID);
 
-  strcpy (version, "3.0.0");  // no more than 9 chars
+  strcpy (version, "3.1");  // no more than 9 chars
 
 
   //================================================

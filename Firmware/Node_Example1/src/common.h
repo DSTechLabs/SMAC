@@ -21,29 +21,6 @@
 
 //--- Defines ----------------------------------------------
 
-// Built-in LED on board
-//-----------------------
-// #define USE_MONO_LED   // Use this for boards with mono color leds
-#define USE_RGB_LED       // Use this for boards with RGB leds
-
-//--- Status LED ---
-#if defined USE_MONO_LED && defined USE_RGB_LED
-#error "ERROR: Only one of USE_MONO_LED or USE_RGB_LED may be defined"
-#endif
-
-#if (defined(USE_MONO_LED))
-#define STATUS_LED_PIN         LED_BUILTIN
-#define STATUS_LED_BAD         (digitalWrite (STATUS_LED_PIN, LOW))
-#define STATUS_LED_GOOD        (digitalWrite (STATUS_LED_PIN, HIGH))
-
-#elif (defined(USE_RGB_LED))
-#define STATUS_LED_PIN         38  // GPIO-48 for v1.0 boards, GPIO-38 for v1.1 boards
-#define STATUS_LED_BRIGHTNESS  20  // Not recommended above 64
-#define STATUS_LED_BAD         (rgbLedWrite (STATUS_LED_PIN, STATUS_LED_BRIGHTNESS, 0, 0))
-#define STATUS_LED_GOOD        (rgbLedWrite (STATUS_LED_PIN, 0, STATUS_LED_BRIGHTNESS, 0))
-#endif
-
-//--- Common Stuff ---
 #define SERIAL_BAUDRATE      115200
 #define SERIAL_MAX_LENGTH        80
 #define MAX_NODES                20  // Maximum number of ESP-NOW peers
@@ -57,7 +34,6 @@
 #define MAX_NAME_LENGTH          32
 #define MAX_ESPNOW_LENGTH       250  // Max message size for ESP-NOW protocol
 #define MAX_VALUES_LENGTH       230  // Need to leave room for appended timestamp
-// #define MAX_PARAMS_LENGTH       236
 #define MAX_SILENT_DURATION   30000  // Maximum millis of silence while testing for dead Node
 
 //--- Types -----------------------------------------------

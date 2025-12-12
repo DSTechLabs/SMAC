@@ -14,7 +14,7 @@
 
 //--- Globals ---------------------------------------------
 
-const AppVersion = '── 2025.11.12 ──';
+const AppVersion = '── 2025.12.12 ──';
 const Debugging  = false;  // Set to false for production use
 
 let TotalPages  = 0;
@@ -439,21 +439,20 @@ async function ProcessRelayerMessage (smacString)
             // Update Node info fields: name, version, macAddress, numDevices
             const niFields   = values.split (',');
             Nodes[nodeIndex] = {
-                                name        : niFields[0].substring(7),
-                                version     : niFields[1],
-                                macAddress  : niFields[2],
-                                numDevices  : Number (niFields[3]),
-                                devices     : [],          // Device objects { name, version, ipEnabled, ppEnabled, rate }
-                                monitor     : undefined,
-                                lastMsgTime : timestamp
-                              };
+                                 name        : niFields[0].substring(7),
+                                 version     : niFields[1],
+                                 macAddress  : niFields[2],
+                                 numDevices  : Number (niFields[3]),
+                                 devices     : [],          // Device objects { name, version, ipEnabled, ppEnabled, rate }
+                                 monitor     : undefined,
+                                 lastMsgTime : timestamp
+                               };
 
             // Update the Diagnostics UI
             Diagnostics.BuildSystem ();
 
             // Always show this message
             Diagnostics.LogToMonitor (nodeIndex, 'Node ' + nodeIndex.toString() + ' connected.');
-
 
 
             // // Trigger an event to inform anyone that a new Node was added
@@ -544,19 +543,16 @@ async function ProcessRelayerMessage (smacString)
           Diagnostics.UpdateDevices (nodeIndex);
         }
 
-        else if (values.startsWith ('ERROR:'))
-        {
-          // Error messages from a Node or Device post their error message in the values field.
-          // The values field should start with ERROR:
-
-          // Always show these messages
-          Diagnostics.LogToMonitor (nodeIndex, values);
-        }
-
         else if (values.startsWith ('PONG'))
         {
           // Alway show PONG messages
           Diagnostics.LogToMonitor (nodeIndex, 'PONG Received');
+        }
+
+        else if (values.startsWith ('ERROR:'))
+        {
+          // Alway show Error messages
+          Diagnostics.LogToMonitor (nodeIndex, values);
         }
 
         else if (values.startsWith ('FILES='))
@@ -567,12 +563,6 @@ async function ProcessRelayerMessage (smacString)
         else if (values.startsWith ('FILE='))
         {
           // TODO: File contents
-        }
-
-        else
-        {
-          // Alway show unknow Data messages
-          Diagnostics.LogToMonitor (nodeIndex, 'Unknown Data value: ' + values);
         }
 
       }  // end of Data String handling

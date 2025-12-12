@@ -1,8 +1,9 @@
 //=========================================================
 //
-//     FILE : Dev_HCSR04_Distance.cpp
+//     FILE : Distance.cpp
 //
-//  PROJECT : Any (SMAC Framework)
+//  PROJECT : Any SMAC Device using the HC-SR04
+//            Ultrasonic Distance Sensor
 //
 //   AUTHOR : Bill Daniels
 //            Copyright 2025, D+S Tech Labs, Inc.
@@ -13,12 +14,12 @@
 //--- Includes --------------------------------------------
 
 #include <Arduino.h>
-#include "Dev_HCSR04_Distance.h"
+#include "Distance.h"
 
 //--- Constructor -----------------------------------------
 
-Dev_HCSR04_Distance::Dev_HCSR04_Distance (const char *inName, int inTriggerPin, int inEchoPin)
-                    :Device (inName)
+Distance::Distance (const char *inName, int inTriggerPin, int inEchoPin)
+         :Device (inName)
 {
   // Save trigger and echo pins
   triggerPin = inTriggerPin;
@@ -29,35 +30,43 @@ Dev_HCSR04_Distance::Dev_HCSR04_Distance (const char *inName, int inTriggerPin, 
 	pinMode (echoPin   , INPUT );
 
   // Set default periodic rate
-  SetRate (36000);  // 10 samples per second
+  SetRate (4 * 3600);  // 4 samples per second
 
   // No need for Immediate processing
   immediateEnabled = false;
+}
 
-  // Set Version for this Device
-  strcpy (version, "1.0.0");  // no more than 9 chars
+//--- getDistance  ----------------------------------------
+
+float Distance::getDistance ()
+{
+  // Send 10 µs trigger pulse
+  digitalWrite (triggerPin, LOW ); delayMicroseconds ( 2);
+  digitalWrite (triggerPin, HIGH); delayMicroseconds (10);
+  digitalWrite (triggerPin, LOW );
+
+  // Measure echo (timeout protects from hangs)
+  duration = pulseIn (echoPin, HIGH, timeout);
+
+  // Return only good range
+  if (duration > minDuration && duration < maxDuration)
+    return duration / 146.5455f;  // inches
+    // return duration / 5769.51f;   // meters
+    // return duration / 57.6951f;   // centimeters
+
+  return NAN;
 }
 
 //--- DoPeriodic (override) -------------------------------
 
-ProcessStatus Dev_HCSR04_Distance::DoPeriodic ()
+ProcessStatus Distance::DoPeriodic ()
 {
-  // Start with trigger pin low
-	digitalWrite (triggerPin, LOW);
-	delayMicroseconds (2);
+  newDistance = getDistance ();
 
-  // Trigger a pulse
-	digitalWrite (triggerPin, HIGH);
-	delayMicroseconds (10);
-	digitalWrite (triggerPin, LOW);
+  // Return only valid readings
+  if (!isnan (newDistance))
+    prevDistance = newDistance;
 
-  // Listen for echo
-  duration = (float) pulseIn (echoPin, HIGH, 20000UL);
-  // distance = duration / 5830.9f;   // meters
-  distance = duration / 148.1f;    // inches
-
-  // Return distance
-  sprintf (SMACData.values, "%.2f", distance);
-
+  ftoa (SMACData.values, 10, prevDistance, 2);
   return SUCCESS_DATA;
 }

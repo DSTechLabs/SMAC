@@ -20,13 +20,12 @@
 
 //--- Globals ---------------------------------------------
 
-char                 Version[] = "2025-11-01";
+char                 Version[] = "2025-12-11";
 esp_err_t            ESPNOW_Result;                   // Error code from ESP-NOW functions
 esp_now_peer_info_t  PeerInfo = {};                   // Required to set new ESP-NOW peers
 uint8_t              NodeMACs[MAX_NODES][MAC_SIZE];   // Each node MAC address is 6 bytes (xx:xx:xx:xx:xx:xx)
 bool                 ProcessingESPNOWString = false;  // Used to block from reentering ESPNOW_Receiver()
 int                  NodeIndex;                       // Global for performance
-bool                 NewNode = false;
 char                 DataString[MAX_ESPNOW_LENGTH];
 char                 TimestampField[MAX_TIMESTAMP_LENGTH+1] = "|";  // First char must be '|'
 
@@ -223,7 +222,7 @@ void Relayer::espnow_SendCommandString ()
       if (ESPNOW_Result != ESP_OK)
       {
         Serial.print   ("ERROR: Unable to send Command String: ");
-        Serial.println (ESPNOW_Result);
+        Serial.println (commandString);
       }
 
       return;
@@ -319,33 +318,8 @@ IRAM_ATTR void ESPNOW_Receiver (const esp_now_recv_info_t *info, const uint8_t *
   //===================================
   if ((char) espnowString[0] == 'D')
   {
-    NewNode = false;
-
-    // Handle "PING" from a new Node: D|nn|--|PING
-    if (strcmp ((const char *) espnowString + VC_OFFSET, "PING") == 0)
-    {
-      NewNode = true;
-
-      // Send back a "PONG" to the Node
-      esp_now_send (NodeMACs[NodeIndex], (const uint8_t *) "PONG", COMMAND_SIZE);
-    }
-    else
-    {
-      // Check if this Data string came from an unregistered Node
-      if (NodeMACs[NodeIndex][0] == 0xFF)
-        NewNode = true;
-
-      //=====================================================
-      // Append timestamp and relay Data String to Interface
-      //=====================================================
-      memcpy (DataString, espnowString, stringLength);
-      DataString[stringLength] = 0;
-      strcat (DataString, TimestampField);  // TimestampField includes the initial '|' char
-      Serial.println (DataString);
-    }
-
-    // Add new Node, if any
-    if (NewNode)
+    // Handle "PING" from a new Node: D|nn|--|PING or unregistered Node
+    if ((strcmp ((const char *) espnowString + VC_OFFSET, "PING") == 0) || NodeMACs[NodeIndex][0] == 0xFF)
     {
       // Haven't heard from this Node yet, so register it as a new peer
       // Save MAC address in array
@@ -353,7 +327,7 @@ IRAM_ATTR void ESPNOW_Receiver (const esp_now_recv_info_t *info, const uint8_t *
       memcpy (NodeMACs[NodeIndex], nodeMAC, MAC_SIZE);
 
       // Register new Node as an esp_now peer (if not already a peer)
-      if (!esp_now_is_peer_exist (PeerInfo.peer_addr))
+      if (!esp_now_is_peer_exist (nodeMAC))
       {
         memcpy (PeerInfo.peer_addr, nodeMAC, MAC_SIZE);
         ESPNOW_Result = esp_now_add_peer (&PeerInfo);
@@ -361,12 +335,32 @@ IRAM_ATTR void ESPNOW_Receiver (const esp_now_recv_info_t *info, const uint8_t *
         {
           Serial.print   ("ERROR: Unable to add Node as ESP-NOW peer: ");
           Serial.println (ESPNOW_Result);
+          return;
         }
+      }
+
+      // Send back a "PONG" to the Node
+      ESPNOW_Result = esp_now_send (NodeMACs[NodeIndex], (const uint8_t *) "PONG", COMMAND_SIZE);
+      if (ESPNOW_Result != ESP_OK)
+      {
+        Serial.print   ("ERROR: Unable to send PONG to new Node ");
+        Serial.println (NodeIndex);
+        return;
       }
 
       // Send special message to Interface to indicate
       // that a new Node has connected: NODE|nn
       sprintf (DataString, "NODE|%02d", NodeIndex);
+      Serial.println (DataString);
+    }
+    else
+    {
+      //=====================================================
+      // Append timestamp and relay Data String to Interface
+      //=====================================================
+      memcpy (DataString, espnowString, stringLength);
+      DataString[stringLength] = 0;
+      strcat (DataString, TimestampField);  // TimestampField includes the initial '|' char
       Serial.println (DataString);
     }
   }

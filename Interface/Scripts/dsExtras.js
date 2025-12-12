@@ -176,6 +176,21 @@ function GetTimestamp (newDate, format)
   return '';
 }
 
+//--- Delay -----------------------------------------------
+// Use with await
+
+function Delay (ms)
+{
+  try
+  {
+    return new Promise (resolve => setTimeout (resolve, ms));
+  }
+  catch (ex)
+  {
+    ShowException (ex);
+  }
+}
+
 //--- GetDayName ------------------------------------------
 
 function GetDayName (newDate, abbr)

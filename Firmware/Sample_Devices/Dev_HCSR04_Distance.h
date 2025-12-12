@@ -1,8 +1,13 @@
 //=========================================================
 //
-//     FILE : Dev_HCSR04_Distance.h
+//     FILE : Distance.h
 //
-//  PROJECT : Any (SMAC Framework)
+//  PROJECT : Any SMAC Device using the HC-SR04
+//            Ultrasonic Distance Sensor
+//
+//    NOTES : Measurements assume:
+//              75ºF, 50% humidity and at sea level
+//              Speed of sound ~ 346.65 meters/sec
 //
 //   AUTHOR : Bill Daniels
 //            Copyright 2025, D+S Tech Labs, Inc.
@@ -10,8 +15,8 @@
 //
 //=========================================================
 
-#ifndef DEV_HCSR04_H
-#define DEV_HCSR04_H
+#ifndef DISTANCE_H
+#define DISTANCE_H
 
 //--- Includes --------------------------------------------
 
@@ -24,20 +29,27 @@
 
 
 //=========================================================
-//  class Dev_HCSR04_Distance
+//  class Distance
 //=========================================================
 
-class Dev_HCSR04_Distance : public Device
+class Distance : public Device
 {
-  protected:
-    int  triggerPin = TRIGGER_PIN;  // default
-    int  echoPin    = ECHO_PIN;     // default
+  private:
+    const unsigned long  minDuration = 230UL;    // Lower limit ~4cm
+    const unsigned long  maxDuration = 23078UL;  // Upper limit ~4m
+    const unsigned long  timeout     = 30000UL;  // Echo timeout
+    unsigned long        duration;
 
-    float  duration;
-    float  distance;  // in meters
+  protected:
+    int    triggerPin   = TRIGGER_PIN;  // default
+    int    echoPin      = ECHO_PIN;     // default
+    float  prevDistance = 10.0f;
+    float  newDistance  = 10.0f;
+
+    float  getDistance ();
 
   public:
-    Dev_HCSR04_Distance (const char *inName, int inTriggerPin=TRIGGER_PIN, int inEchoPin=ECHO_PIN);
+    Distance (const char *inName, int inTriggerPin=TRIGGER_PIN, int inEchoPin=ECHO_PIN);
 
     ProcessStatus  DoPeriodic ();  // override
 };

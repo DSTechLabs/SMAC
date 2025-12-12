@@ -30,7 +30,7 @@ Device::Device (const char *inName)
     if (name[i] == ',') name[i] = '.';
 
   // Set version
-  strcpy (version, "3.0.0");  // no more than 9 chars
+  strcpy (version, "3.1");  // no more than 9 chars
 }
 
 //--- SetID -----------------------------------------------
