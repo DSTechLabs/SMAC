@@ -5,10 +5,10 @@
 //    PROJECT : SMAC Framework - Main Entry
 //
 //      NOTES : There is no need to edit this file.
-//              Build your SMAC System in the SMACSystem.cpp file.
+//              Build your SMAC Node in ThisNode.cpp file.
 //
 //     AUTHOR : Bill Daniels
-//              Copyright 2021-2025, D+S Tech Labs, Inc.
+//              Copyright 2021-2026, D+S Tech Labs, Inc.
 //              All Rights Reserved
 //
 //=============================================================================
@@ -18,11 +18,10 @@
 #include <Arduino.h>
 #include <Preferences.h>
 #include "common.h"
-#include "SMACSystem.h"
+#include "ThisNode.h"
 
 //--- Globals ---------------------------------------------
 
-bool            Debugging = false;  // ((( Set to false for production builds )))
 char            Serial_Message[SERIAL_MAX_LENGTH];
 char            Serial_NextChar;
 int             Serial_Length = 0;
@@ -37,7 +36,7 @@ const int       CommandOffset = MIN_COMMAND_LENGTH - COMMAND_SIZE;
 const int       ParamsOffset  = MIN_COMMAND_LENGTH + 1;
 SMACDataPacket  SMACData;
 char            ESPNOW_String[MAX_ESPNOW_LENGTH];
-SMACSystem      *ThisSMACSystem = nullptr;  // The global SMACSystem object
+ThisNode        *ThisNodeInstance = nullptr;  // The global Node object
 
 //--- Declarations ----------------------------------------
 
@@ -71,14 +70,14 @@ void setup()
   // Init Command buffer (a circular FIFO buffer)
   CommandBuffer = new RingBuffer (FIFO);
 
-  // Create the SMAC System
-  Serial.println ("Building the SMAC System ...");
-  ThisSMACSystem = new SMACSystem ();
+  // Create the Node
+  Serial.println ("Building the Node ...");
+  ThisNodeInstance = new ThisNode ();
 
   // Check if created
-  if (ThisSMACSystem == nullptr || ThisSMACSystem->ThisNode == nullptr)
+  if (ThisNodeInstance == nullptr || !ThisNodeInstance->GoodToGo())
   {
-    Serial.println ("The SMAC System or Node was not created.");
+    Serial.println ("ThisNode had a problem starting.");
     while (true);
   }
 
@@ -93,7 +92,7 @@ void setup()
     if (nowMillis - lastMillis > 1000L)
     {
       lastMillis = nowMillis;
-      ThisSMACSystem->ThisNode->SendData ("--");
+      ThisNodeInstance->GetNode()->SendData ("--", false);
     }
 
     // Check for Set MAC Tool
@@ -116,10 +115,10 @@ void setup()
 void loop()
 {
   // Keep the Node running
-  ThisSMACSystem->ThisNode->Run ();
+  ThisNodeInstance->GetNode()->Run ();
 
   // Run any auxilary loop code outside the SMAC System
-  ThisSMACSystem->AuxLoop ();
+  ThisNodeInstance->AuxLoop ();
 
   // Check for serial chars
   Serial_CheckInput ();

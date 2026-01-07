@@ -1,6 +1,6 @@
 //=============================================================================
 //
-//       FILE : System.cpp
+//       FILE : ThisNode.cpp
 //
 //    PROJECT : SMAC Framework - Example 1
 //
@@ -19,40 +19,46 @@
 //              - The Node and Device base classes handle standard commands and child classes can handle custom commands.
 //
 //              Devices in this example:
-//
 //                LightSensor -- Demo to show how sensor data can be sent to the SMAC Interface
 //
 //  DEBUGGING : Set the global <Debugging> to true to see debugging info in Serial Monitor.
 //              Be sure to set <Debugging> to false for production builds!
 //
 //     AUTHOR : Bill Daniels
-//              Copyright 2025, D+S Tech Labs, Inc.
+//              Copyright 2025-2026, D+S Tech Labs, Inc.
 //              All Rights Reserved
 //
 //=============================================================================
 
 //--- Includes --------------------------------------------
 
-#include "SMACSystem.h"
+#include "ThisNode.h"
 
 // Place your Device includes here
 #include "LightSensor.h"
 
+//--- Debugging -------------------------------------------
+
+bool  Debugging = false;  // ((( Set to false for production builds )))
 
 //--- Constructor -----------------------------------------
 
-SMACSystem::SMACSystem ()
+ThisNode::ThisNode ()
 {
+  // Start with a bad status
+  goodToGo = false;
+
+
   // SMAC Systems can have up to 20 Nodes.
-  // Set the Name and NodeID for the ESP32 module (0-19).
-  // The NodeID's for a SMAC Systems with multiple Nodes
-  // must be unique and cannot be duplicated.
+  // Set the Name and unique Node index for this Node (0-19).
+  // The Node indexes for a SMAC System with multiple Nodes must be unique and cannot be duplicated.
 
   //--- Create the Node Instance ---
   //                          ┌───────────── The Name of your Node
   //                          │         ┌─── The Unique Node Index (0-19)
   //                          │         │
-  ThisNode = new Node ("My First Node", 0);
+  thisNode = new Node ("My First Node", 0);
+  if (thisNode == nullptr) return;
 
 
 
@@ -68,15 +74,35 @@ SMACSystem::SMACSystem ()
   //=======================================================
   // Add all Devices to your Node
   //=======================================================
-  ThisNode->AddDevice (new LightSensor ("Light Sensor", 6));  // Gets assigned Device ID 00
+  thisNode->AddDevice (new LightSensor ("Light Sensor", 6));  // Gets assigned Device ID 00
+
+
+
+  // Startup is good
+  goodToGo = true;
+}
+
+//--- GetNode ---------------------------------------------
+
+Node  *ThisNode::GetNode ()
+{
+  return thisNode;
+}
+
+//--- GoodToGo --------------------------------------------
+
+bool  ThisNode::GoodToGo ()
+{
+  return goodToGo;
 }
 
 //--- AuxLoop ---------------------------------------------
 
-void SMACSystem::AuxLoop ()
+void  ThisNode::AuxLoop ()
 {
   // If you have any "loop()" code that is outside the SMAC System, place it here.
   // It will be called in the main loop() function.
 
+  // ...
 
 }

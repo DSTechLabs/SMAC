@@ -20,6 +20,7 @@
 //               ────────────────
 //               √ smac-led
 //               √ smac-panellight
+//               √ smac-rawvalue
 //               ∙ smac-flasher
 //               √ smac-digital
 //               ∙ smac-odometer
@@ -61,7 +62,7 @@
 //               ∙ https://front-end.social/@chriscoyier/111383513656341191
 //
 //   AUTHOR  : Bill Daniels
-//             Copyright 2020-2025, D+S Tech Labs, Inc.
+//             Copyright 2020-2026, D+S Tech Labs, Inc.
 //             All Rights Reserved
 //
 //=============================================================================
@@ -1298,7 +1299,7 @@ class SMAC_LED extends HTMLElement
 
       // Execute action, if any
       if (this.ChangeAction != undefined)
-        window[this.ChangeAction]();  // (this.On, timestamp)
+        window[this.ChangeAction](this.On, timestamp);
     }
     catch (ex)
     {
@@ -1772,7 +1773,7 @@ class SMAC_Display extends HTMLElement
       if (this.numLines < this.MaxLines)
       {
         this.innerHTML += newValue + '<br>';  // Add new value line
-        this.scroll (0, 100000);           // Auto-scroll to bottom
+        this.scroll (0, 100000);              // Auto-scroll to bottom
         ++this.numLines;
       }
       else
@@ -2045,6 +2046,7 @@ class SMAC_Growbar extends HTMLElement
         return;
 
       const newValue = Number (valueFields[this.ValueIndex]);
+      if (isNaN (newValue)) return;
 
       let level = Math.round ((newValue - this.MinValue) * this.ScaleFactor);
       if (level < 0) level = 0;
@@ -2293,6 +2295,7 @@ class SMAC_Gauge extends HTMLElement
 
       // Clamp to min/max values
       const newValue = Clamp (Number (valueFields[this.ValueIndex]), this.MinValue, this.MaxValue);
+      if (isNaN (newValue)) return;
 
       const valueAngle = (newValue - this.MinValue) * this.ScaleFactor + this.StartAngle;
 
@@ -2516,6 +2519,7 @@ class SMAC_Compass extends HTMLElement
 
       // Clamp to min/max values
       const newValue = Clamp (Number (valueFields[this.ValueIndex]), 0, 359.999);
+      if (isNaN (newValue)) return;
 
       // Clear compass
       this.smacCanvas.drawEllipse (this.Center, this.Center, this.NeedleRadius-1, this.NeedleRadius-1, this.FaceGrad, fill);
@@ -2704,7 +2708,9 @@ class SMAC_TimeGraph extends HTMLElement
             // Update this widget
             // Get new value from values array
             newValue = Number (valueFields[self.ValueIndex[plotIndex]]);
-            window.requestAnimationFrame.bind (self.updateWidget (plotIndex, newValue, timestampNumber));
+
+            if (!isNaN (newValue))
+              window.requestAnimationFrame.bind (self.updateWidget (plotIndex, newValue, timestampNumber));
           }
         }
       });
@@ -3122,6 +3128,7 @@ class SMAC_XYGraph extends HTMLElement
 
       const xValue = Number (valueFields[0]);
       const yValue = Number (valueFields[1]);
+      if (isNaN (xValue) || isNaN (yValue)) return;
 
       // Calculate next graphic position
       const cx = this.OffsetX                    + Math.round ((xValue - this.XMin) * this.ScaleFactorX);

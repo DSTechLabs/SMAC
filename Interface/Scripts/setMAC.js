@@ -13,14 +13,14 @@
 //            - Follow on-screen instructions
 //
 //   AUTHOR : Bill Daniels
-//            Copyright (c) 2022-2025, D+S Tech Labs, Inc.
+//            Copyright (c) 2022-2026, D+S Tech Labs, Inc.
 //            All Rights Reserved
 //
 //=============================================================================
 
 //--- Globals ---------------------------------------------
 
-const AppVersion = '─── Version 2025.11.03 ───';
+const AppVersion = '─── Version 2026.01.05 ───';
 
 const SerialPortSettings =
 {

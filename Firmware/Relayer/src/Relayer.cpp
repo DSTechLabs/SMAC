@@ -5,7 +5,7 @@
 //  PROJECT : SMAC Framework
 //
 //   AUTHOR : Bill Daniels
-//            Copyright 2021-2025, D+S Tech Labs, Inc.
+//            Copyright 2021-2026, D+S Tech Labs, Inc.
 //            All Rights Reserved
 //
 //=========================================================
@@ -20,7 +20,7 @@
 
 //--- Globals ---------------------------------------------
 
-char                 Version[] = "2025-12-11";
+char                 Version[] = "2026.01.06";
 esp_err_t            ESPNOW_Result;                   // Error code from ESP-NOW functions
 esp_now_peer_info_t  PeerInfo = {};                   // Required to set new ESP-NOW peers
 uint8_t              NodeMACs[MAX_NODES][MAC_SIZE];   // Each node MAC address is 6 bytes (xx:xx:xx:xx:xx:xx)
@@ -88,13 +88,13 @@ Relayer::Relayer ()
   ESPNOW_Result = esp_now_register_recv_cb ((esp_now_recv_cb_t) &ESPNOW_Receiver);
   if (ESPNOW_Result != ESP_OK)
   {
-    Serial.print   ("ERROR: Unable to register ESP-NOW data listener: ");
+    Serial.print   ("ERROR: Unable to register ESP-NOW listener: ");
     Serial.println (ESPNOW_Result);
     return;
   }
 
   // Good to go
-  Serial.print   ("Relayer is running: MAC=");
+  Serial.print   ("S|--|--|Relayer is running: MAC=");
   Serial.println (WiFi.macAddress ());
 
   startupStatus = true;
@@ -143,7 +143,7 @@ void Relayer::serial_CheckInput ()
           commandString[commandLength++] = serial_NextChar;
         else  // too long
         {
-          Serial.println ("ERROR: Serial message to Relayer is too long.");
+          Serial.println ("S|--|--|ERROR: Serial message from Interface is too long.");
 
           // Ignore and start new message
           commandLength = 0;
@@ -170,7 +170,7 @@ void Relayer::serial_ProcessCommand ()
 
   // Check Command String length
   if (commandLength < MIN_COMMAND_LENGTH)
-    Serial.println ("ERROR: Invalid Command String.");
+    Serial.println ("S|--|--|ERROR: Invalid Command String from Interface.");
   else
   {
     // First check if requesting MAC address (from the Set MAC Tool)
@@ -221,7 +221,7 @@ void Relayer::espnow_SendCommandString ()
       ESPNOW_Result = esp_now_send (NodeMACs[NodeIndex], (const uint8_t *)commandString, strlen(commandString) + 1);
       if (ESPNOW_Result != ESP_OK)
       {
-        Serial.print   ("ERROR: Unable to send Command String: ");
+        Serial.print   ("S|--|--|ERROR: Unable to send Command String from Relayer: ");
         Serial.println (commandString);
       }
 
@@ -229,7 +229,7 @@ void Relayer::espnow_SendCommandString ()
     }
   }
 
-  Serial.println ("ERROR: Unable to send command; Node does not exist.");
+  Serial.println ("S|--|--|ERROR: Unable to send command; Node does not exist.");
 }
 
 
@@ -249,12 +249,12 @@ IRAM_ATTR void ESPNOW_Receiver (const esp_now_recv_info_t *info, const uint8_t *
   //  Data string format:
   //-------------------------
   //
-  //   ┌──────────── 1-char packet type ('D' for Data)
+  //   ┌──────────── 1-char packet type ('W' for Widget Data, 'S' for System Data)
   //   │ ┌────────── 2-char source nodeID (00-19)
   //   │ │  ┌─────── 2-char source deviceID (00-99)
   //   │ │  │    ┌── variable length string of values (multiple values are comma delimited)
   //   │ │  │    │
-  //   D|nn|dd|values
+  //   d|nn|dd|values
   //
   // A bar char '|" and a variable length timestamp field is appended to the string
   // before being relayed to the SMAC Interface.
@@ -289,7 +289,7 @@ IRAM_ATTR void ESPNOW_Receiver (const esp_now_recv_info_t *info, const uint8_t *
   // data rate for your devices.
   if (ProcessingESPNOWString)
   {
-    Serial.println ("ERROR: ESP-NOW Message overflow.");
+    Serial.println ("S|--|--|ERROR: ESP-NOW Message overflow.");
     return;
   }
 
@@ -299,7 +299,7 @@ IRAM_ATTR void ESPNOW_Receiver (const esp_now_recv_info_t *info, const uint8_t *
   // Check minimum string length
   if (stringLength < MIN_DATA_LENGTH)
   {
-    Serial.println ("ERROR: Node/Device String too short.");
+    Serial.println ("S|--|--|ERROR: Node/Device String too short.");
     ProcessingESPNOWString = false;
     return;
   }
@@ -308,7 +308,7 @@ IRAM_ATTR void ESPNOW_Receiver (const esp_now_recv_info_t *info, const uint8_t *
   NodeIndex = 10*((int)(espnowString[2])-48) + ((int)(espnowString[3])-48);
   if (NodeIndex >= MAX_NODES)
   {
-    Serial.println ("ERROR: Invalid NodeID in Node message.");
+    Serial.println ("S|--|--|ERROR: Invalid NodeID in Node message.");
     ProcessingESPNOWString = false;
     return;
   }
@@ -316,9 +316,9 @@ IRAM_ATTR void ESPNOW_Receiver (const esp_now_recv_info_t *info, const uint8_t *
   //===================================
   // Handle Data strings
   //===================================
-  if ((char) espnowString[0] == 'D')
+  if ((char) espnowString[0] == 'W' || (char) espnowString[0] == 'S')
   {
-    // Handle "PING" from a new Node: D|nn|--|PING or unregistered Node
+    // Handle "PING" from a new Node: S|nn|--|PING or unregistered Node
     if ((strcmp ((const char *) espnowString + VC_OFFSET, "PING") == 0) || NodeMACs[NodeIndex][0] == 0xFF)
     {
       // Haven't heard from this Node yet, so register it as a new peer
@@ -333,7 +333,7 @@ IRAM_ATTR void ESPNOW_Receiver (const esp_now_recv_info_t *info, const uint8_t *
         ESPNOW_Result = esp_now_add_peer (&PeerInfo);
         if (ESPNOW_Result != ESP_OK)
         {
-          Serial.print   ("ERROR: Unable to add Node as ESP-NOW peer: ");
+          Serial.print   ("S|--|--|ERROR: Unable to add Node as ESP-NOW peer: ");
           Serial.println (ESPNOW_Result);
           return;
         }
@@ -343,14 +343,14 @@ IRAM_ATTR void ESPNOW_Receiver (const esp_now_recv_info_t *info, const uint8_t *
       ESPNOW_Result = esp_now_send (NodeMACs[NodeIndex], (const uint8_t *) "PONG", COMMAND_SIZE);
       if (ESPNOW_Result != ESP_OK)
       {
-        Serial.print   ("ERROR: Unable to send PONG to new Node ");
+        Serial.print   ("S|--|--|ERROR: Unable to send PONG to new Node ");
         Serial.println (NodeIndex);
         return;
       }
 
-      // Send special message to Interface to indicate
-      // that a new Node has connected: NODE|nn
-      sprintf (DataString, "NODE|%02d", NodeIndex);
+      // Send System Data message to Interface to indicate
+      // that a new Node has connected: S|nn|--|NEWNODE
+      sprintf (DataString, "S|%02d|--|NEWNODE", NodeIndex);
       Serial.println (DataString);
     }
     else
@@ -377,7 +377,7 @@ IRAM_ATTR void ESPNOW_Receiver (const esp_now_recv_info_t *info, const uint8_t *
 
     // Check data length
     if (stringLength < MIN_COMMAND_LENGTH)
-      Serial.println ("ERROR: Node/Device Command String too short.");
+      Serial.println ("S|--|--|ERROR: Node/Device Command String too short.");
     else if (strncmp ((const char *) espnowString + VC_OFFSET, "WFCH", COMMAND_SIZE) == 0)
     {
       // Change WiFi Channel
@@ -395,11 +395,13 @@ IRAM_ATTR void ESPNOW_Receiver (const esp_now_recv_info_t *info, const uint8_t *
         //=====================================================
         esp_now_send (NodeMACs[NodeIndex], (const uint8_t *) espnowString, stringLength);
       }
+      else
+        Serial.println ("S|--|--|ERROR: Unable to relay command; Node does not exist.");
     }
   }
 
   else
-    Serial.println ("ERROR: Unknown ESP-NOW Message string.");
+    Serial.println ("S|--|--|ERROR: Unknown ESP-NOW Message string.");
 
   // Unlock
   ProcessingESPNOWString = false;

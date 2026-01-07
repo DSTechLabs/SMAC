@@ -17,7 +17,7 @@
 //                          pin
 //
 //   AUTHOR : Bill Daniels
-//            Copyright 2021-2025, D+S Tech Labs, Inc.
+//            Copyright 2021-2026, D+S Tech Labs, Inc.
 //            All Rights Reserved
 //
 //=========================================================
@@ -64,13 +64,12 @@ IRAM_ATTR ProcessStatus LightSensor::DoPeriodic ()
   // If precision is negative, all digits are converted.
   itoa (sample, SMACData.values, 10);  // SMACData.values must be a terminated string
 
-  // DoPeriodic() must return one of four possible "ProcessStatus" values:
+  // DoPeriodic() must return one of three possible "ProcessStatus" values:
   //
-  //   SUCCESS_DATA    - Process performed successfully, send SMACData to Relayer (such as a sensor reading)
-  //   SUCCESS_NODATA  - Process performed successfully, no data to send to Relayer
-  //   FAIL_DATA       - Process failed, send SMACData to Relayer (such as error code or message)
-  //   FAIL_NODATA     - Process failed, no data to send to Relayer
+  // WIDGET_DATA,  // Send SMACData to Interface Widgets
+  // SYSTEM_DATA,  // Send SMACData to Interface System
+  // NODATA,       // No data to send
 
   // For this example, we indicate a successful reading with data to send
-  return SUCCESS_DATA;
+  return WIDGET_DATA;
 }

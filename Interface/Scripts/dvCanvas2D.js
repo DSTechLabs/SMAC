@@ -16,7 +16,7 @@
 //             ∙ Compositing : https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation
 //
 //   AUTHOR  : Bill Daniels
-//             Copyright 2020-2025, D+S Tech Labs, Inc.
+//             Copyright 2020-2026, D+S Tech Labs, Inc.
 //             All Rights Reserved
 //
 //=============================================================================

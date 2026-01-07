@@ -68,8 +68,8 @@ IRAM_ATTR ProcessStatus Button::DoImmediate ()
 
     // Send Data
     strcpy (SMACData.values, (newState==0 ? "0" : "1"));
-    return SUCCESS_DATA;
+    return WIDGET_DATA;
   }
 
-  return SUCCESS_NODATA;
+  return NODATA;
 }

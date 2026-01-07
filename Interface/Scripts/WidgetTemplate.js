@@ -5,7 +5,7 @@
 //   PROJECT : System Monitor and Control (SMAC)
 //
 //   AUTHOR  : Bill Daniels
-//             Copyright 2020-2025, D+S Tech Labs, Inc.
+//             Copyright 2020-2026, D+S Tech Labs, Inc.
 //             All Rights Reserved
 //
 //=============================================================================
@@ -173,7 +173,7 @@ class SMAC_DataView extends HTMLElement
       {
         // Update this widget if its NodeID and DeviceID match
         if (nodeID == self.NodeID && deviceID == self.DeviceID)
-          window.requestAnimationFrame.bind (self.updateWidget (Number(value)));
+          window.requestAnimationFrame.bind (self.updateWidget (values, timestamp));
       });
     }
     catch (ex)
@@ -288,7 +288,7 @@ class SMAC_DataView extends HTMLElement
 
   //--- updateWidget --------------------------------------
 
-  updateWidget = function (values)
+  updateWidget = function (values, timestamp)
   {
     try
     {

@@ -10,7 +10,7 @@
 //            https://developer.mozilla.org/en-US/docs/Web/API/Serial
 //
 //   AUTHOR : Bill Daniels
-//            Copyright 2024-2025, D+S Tech Labs, Inc.
+//            Copyright 2024-2026, D+S Tech Labs, Inc.
 //            MIT License
 //
 //=========================================================

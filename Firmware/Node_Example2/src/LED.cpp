@@ -52,8 +52,8 @@ ProcessStatus LED::ExecuteCommand (char *command, char *params)
       // Turn on the LED pin
       digitalWrite (ledPin, HIGH);
 
-      // Indicate successful and no data to return
-      pStatus = SUCCESS_NODATA;
+      // Indicate no data to return
+      pStatus = NODATA;
     }
 
     //--- Turn Off ---
@@ -62,8 +62,8 @@ ProcessStatus LED::ExecuteCommand (char *command, char *params)
       // Turn off the LED pin
       digitalWrite (ledPin, LOW);
 
-      // Indicate successful and no data to return
-      pStatus = SUCCESS_NODATA;
+      // Indicate no data to return
+      pStatus = NODATA;
     }
   }
 

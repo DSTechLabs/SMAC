@@ -1,11 +1,11 @@
 //=============================================================================
 //
-//       FILE : SMACSystem.h
+//       FILE : ThisNode.h
 //
 //    PROJECT : SMAC Framework - Example 1
 //
 //     AUTHOR : Bill Daniels
-//              Copyright 2025, D+S Tech Labs, Inc.
+//              Copyright 2025-2026, D+S Tech Labs, Inc.
 //              All Rights Reserved
 //
 //=============================================================================
@@ -40,15 +40,19 @@
 
 
 //=========================================================
-//  class SMACSystem
+//  class ThisNode
 //=========================================================
 
-class SMACSystem
+class ThisNode
 {
+  protected:
+    bool   goodToGo = false;
+    Node  *thisNode = nullptr;
+
   public:
-    Node  *ThisNode = nullptr;
+    ThisNode ();
 
-    SMACSystem ();
-
-    void AuxLoop ();
+    Node  *GetNode  ();
+    bool   GoodToGo ();
+    void   AuxLoop  ();
 };

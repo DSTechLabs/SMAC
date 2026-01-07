@@ -5,7 +5,7 @@
 //  PROJECT : SMAC Framework
 //
 //   AUTHOR : Bill Daniels
-//            Copyright 2021-2025, D+S Tech Labs, Inc.
+//            Copyright 2021-2026, D+S Tech Labs, Inc.
 //            All Rights Reserved
 //
 //=========================================================
@@ -19,7 +19,7 @@
 #include <esp_now.h>
 #include "RingBuffer.h"
 
-//--- Defines ----------------------------------------------
+//--- Defines ---------------------------------------------
 
 #define SERIAL_BAUDRATE      115200
 #define SERIAL_MAX_LENGTH        80
@@ -38,20 +38,20 @@
 
 //--- Types -----------------------------------------------
 
-typedef struct SMACDataPacket
+struct SMACDataPacket
 {
   char  nodeID   [ID_SIZE+1];
   char  deviceID [ID_SIZE+1];
   char  values   [MAX_VALUES_LENGTH+1];  // Can hold multiple data values separated by commas
-} SMACDataPacket;
+};
 
+// ProcessStatus is used by DoImmediate(), DoPeriodic() and ExecuteCommand() methods of both the Node and Devices
 enum ProcessStatus
 {
-  SUCCESS_DATA,    // Process performed successfully, send SMACData to Relayer
-  SUCCESS_NODATA,  // Process performed successfully, no data to send to Relayer
-  FAIL_DATA,       // Process failed, error code or message stored in SMACData.values field
-  FAIL_NODATA,     // Process failed, no data to send to Relayer
-  NOT_HANDLED      // Command was not handled by base class ExecuteCommand(), child Node or Device class should handle the command
+  WIDGET_DATA,  // Process has Widget Data to send to Interface
+  SYSTEM_DATA,  // Process has System Data to send to Interface
+  NODATA,       // Process has no data to send
+  NOT_HANDLED   // Command was not handled
 };
 
 //--- Externs ---------------------------------------------
