@@ -446,10 +446,10 @@ async function ProcessRelayerMessage (smacString)
         StatusBar.SetMessage (msg, '#F0F000');
         Diagnostics.LogToMonitor (nodeIndex, msg);
 
-        // Request Node Info: D|nn|--|NOINFO=name,version,macAddress,numDevices|timestamp
+        // Request Node Info: S|nn|--|NOINFO=name,version,macAddress,numDevices|timestamp
         await Send_UItoRelayer (nodeIndex, 0, 'GNOI');
 
-        // Request Device Info: D|nn|dd|DEINFO=name,version,ipEn(Y/N),ppEn(Y/N),rate|timestamp (for each Device)
+        // Request Device Info: S|nn|dd|DEINFO=name,version,ipEn(Y/N),ppEn(Y/N),rate|timestamp (for each Device)
         await Send_UItoRelayer (nodeIndex, 0, 'GDEI');
       }
 
