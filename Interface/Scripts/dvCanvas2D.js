@@ -621,7 +621,7 @@ class dvCanvas2D
   }
 
   //--- drawDraggable -------------------------------------
-  drawDraggable (x, y, url, dragCallback, doneCallback, allowH=true, allowV=true)  // allow both horizontal and vertical motion by default
+  drawDraggable (startX, startY, url, dragCallback, doneCallback, snapBack=false, allowH=true, allowV=true)  // allow both horizontal and vertical motion by default
   {
     try
     {
@@ -633,13 +633,13 @@ class dvCanvas2D
         this.backImage.src = URL.createObjectURL (blob);
 
         // Draw draggable image
-        this.drawImage (x, y, url, (img) =>
+        this.drawImage (startX, startY, url, (img) =>
         {
           // Save returned image as draggable
           this.dragImage = img;
           // this.dragImage.style.cursor = 'move';
-          this.dragX = x;
-          this.dragY = y;
+          this.dragX = startX;
+          this.dragY = startY;
 
           // Check for mouse down
           this.downListener = this.canvas.onpointerdown = async (event) =>
@@ -659,6 +659,20 @@ class dvCanvas2D
               this.canvas.onpointerup = () =>
               {
                 this.canvas.onpointermove = null;
+
+                // Snap back to starting position if specified
+                if (snapBack)
+                {
+                  this.dragX = startX;
+                  this.dragY = startY;
+
+                  // Replace background
+                  this.cc.clearRect (-1, -1, this.canvasRect.width, this.canvasRect.height);  // required so semi-transparent shadows do not stack up
+                  this.cc.drawImage (this.backImage, -1, -1);  // the whole canvas seems to shift +1 pixel both horiz and vert !!!
+
+                  // Draw draggable at new location
+                  this.cc.drawImage (this.dragImage, this.dragX-1, this.dragY-1);
+                }
 
                 // Release cursor lock
                 document.exitPointerLock ();
@@ -681,8 +695,8 @@ class dvCanvas2D
               this.moveListener = this.canvas.onpointermove = (event) =>
               {
                 // Get new location of image
-                newX = allowH ? this.dragX + event.movementX : x;
-                newY = allowV ? this.dragY + event.movementY : y;
+                newX = allowH ? this.dragX + event.movementX : startX;
+                newY = allowV ? this.dragY + event.movementY : startY;
 
                 // Check bounds
                 if (newX < 0) newX = 0; else if (newX > maxX) newX = maxX;
@@ -696,6 +710,7 @@ class dvCanvas2D
                   this.dragY = newY;
 
                   // Replace background
+                  this.cc.clearRect (-1, -1, this.canvasRect.width, this.canvasRect.height);  // required so semi-transparent shadows do not stack up
                   this.cc.drawImage (this.backImage, -1, -1);  // the whole canvas seems to shift +1 pixel both horiz and vert !!!
 
                   // Draw draggable at new location
